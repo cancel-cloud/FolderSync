@@ -13,7 +13,7 @@ Checkpoint: 2026-10-16, after source `88c18c2` and the subsequent progress/cance
 | Editable task IDs | UUIDs remain internal immutable identities | Missing user-editable IDs |
 | Task grouping | Editable group label shown on cards | Partial: no functional group filtering/collapse/bulk group management |
 | Local/USB/UNC root validation and identity | filesystem/windows_paths/windows_safety tests; native identity checks | Local/junction/Unicode/long paths verified; physical USB and real SMB pending |
-| Unsafe pair/task overlap rejection | validate_roots/save_task guards and tests | Automatic intersecting roots rejected; exhaustive alias/reparse races pending |
+| Unsafe pair/task overlap rejection | validate_roots/save_task guards and tests, including login-only triggers in either save order | Automatic intersecting roots rejected; exhaustive alias/reparse races pending |
 | Four real modes | planner/integration/windows_paths tests with actual files | Verified local modes; broader GUI per-mode matrix pending |
 | Two-way edit/edit, delete/edit, concurrent creates and deletion baseline | integration/automation/review_safety tests, actual GUI conflict preservation | Verified tested cases; explicit ambiguous rename/out-of-order event regressions still needed |
 | Immutable Preview/Apply and stale inputs | filesystem tests, frontend confirmation tests, installed 300-file Preview proof | Verified principal boundary |
@@ -28,7 +28,7 @@ Checkpoint: 2026-10-16, after source `88c18c2` and the subsequent progress/cance
 | Overflow/missed events/restart recovery scan | injected overflow flag, durable uncertainty/restart/reconnect tests | Verified injected/local cases; native OS buffer exhaustion untested |
 | Durable queue, baseline transactions, bounded retries/bandwidth | automation/scheduler/transfer modules and tests | Implemented; explicit fairness/large simultaneous-task acceptance needs coverage |
 | Schedules/login, last/next run, missed occurrences/DST | scheduler/automation_recovery/runtime tests; actual last-run refresh GUI | Persisted calendar logic verified; actual OS sign-in/sleep/resume and startup registration GUI pending |
-| Progress and cancellation | New latest-snapshot sampler; actual streamed-hash/staging cancellation tests; frontend progress and failure-result tests | Automated evidence in current milestone; installed GUI progress/Stop verification pending |
+| Progress and cancellation | Latest-snapshot sampler; actual streamed-hash/staging cancellation tests; installed partial 16 MiB copy and Stop with source/stage/conflict checks | Verified partial copy/Stop, localized cancellation, source/stage safety and fresh successful retry in installed 2ee8089 |
 | Close-to-tray, reopen, Quit, pause | actual hidden-window sync, single-instance reopen and Settings Quit; native menu visible | Tray command dispatch remains unsupported by current Computer Use targeting; process-local pause |
 | Toast conflict/failure delivery and task deep link | localized native builders and routing unit test | Actual Windows delivery/activation pending |
 | Settings/logging/import-export | actual language/log viewer/native JSON save/open; management/privacy tests | Verified principal workflows; configurable close/tray behavior absent |
@@ -41,7 +41,7 @@ Checkpoint: 2026-10-16, after source `88c18c2` and the subsequent progress/cance
 ## Mandatory test gaps to close
 
 - Add explicit rename/ambiguous rename, out-of-order event and timestamp-preserving event regressions; confirm actual system-attribute scope behavior.
-- Exercise installed progress/Stop/cancel and failed Apply outcomes, then a fresh successful retry.
+- Exercise additional installed failure modes beyond the verified progress/Stop/cancel and successful retry workflow.
 - Verify every required task-management control and recovery after task deletion; do not equate internal UUIDs or group labels with completed management features.
 - Cover baseline-approved automatic deletion with reviewed opt-in and mass-deletion thresholds; current all-removals-review policy does not satisfy the requested unattended deletion workflow.
 - Verify startup registration and schedule dispatch through the real app. Actual sign-in/sleep and toast activation need an available OS session/interface; do not simulate these as OS passes.
