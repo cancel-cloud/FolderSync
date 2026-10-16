@@ -69,14 +69,23 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
                         None
                     };
                     let last = match r.engine.lock() {
-                        Ok(e) => match initial_work(&e, &t, startup) {
-                            Ok(last) => last,
-                            Err(error) => {
-                                let _ =
-                                    app.emit("background-error", format!("{}: {error:#}", t.name));
+                        Ok(e) => {
+                            if !e
+                                .tasks()
+                                .ok()
+                                .is_some_and(|tasks| tasks.iter().any(|current| current == &t))
+                            {
                                 continue;
                             }
-                        },
+                            match initial_work(&e, &t, startup) {
+                                Ok(last) => last,
+                                Err(error) => {
+                                    let _ = app
+                                        .emit("background-error", format!("{}: {error:#}", t.name));
+                                    continue;
+                                }
+                            }
+                        }
                         Err(_) => continue,
                     };
                     watched.insert(
@@ -103,6 +112,13 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
                 }
                 if batch.uncertain || !batch.paths.is_empty() {
                     if let Ok(e) = r.engine.lock() {
+                        if !e
+                            .tasks()
+                            .ok()
+                            .is_some_and(|tasks| tasks.iter().any(|current| current == &t))
+                        {
+                            continue;
+                        }
                         let _ = e.queue_watch_batch(&t.id, &batch);
                     }
                     w.last = Some(Instant::now());
@@ -122,7 +138,12 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
                     .engine
                     .lock()
                     .map_err(|_| anyhow::anyhow!("Engine lock failed"))
-                    .and_then(|mut e| e.process_queue(&t.id));
+                    .and_then(|mut e| {
+                        if !e.tasks()?.iter().any(|current| current == &t) {
+                            return Ok(None);
+                        }
+                        e.process_queue(&t.id)
+                    });
                 match result {
                     Ok(Some(plan)) => {
                         w.events = 0;
@@ -198,6 +219,7 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
                                     .extra("task_id", &t.id)
                                     .title(title)
                                     .body(body)
+                                    .sound("Default")
                                     .show();
                             }
                         }
@@ -246,6 +268,7 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
                                 .extra("task_id", &t.id)
                                 .title(title)
                                 .body(body)
+                                .sound("Default")
                                 .show();
                         }
                     }

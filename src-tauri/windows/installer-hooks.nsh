@@ -60,6 +60,21 @@ FunctionEnd
   ${EndIf}
 !macroend
 
+!macro NSIS_HOOK_PREUNINSTALL
+  ${If} $UpdateMode != 1
+  ${AndIf} $DeleteAppDataCheckboxState == 1
+    ClearErrors
+    ExecWait '"$INSTDIR\${MAINBINARYNAME}.exe" --remove-local-data' $0
+    ${If} ${Errors}
+      MessageBox MB_ICONSTOP "FolderSync local data could not be removed safely. Close FolderSync and retry. Files in the synchronized folders are never removed by uninstall." /SD IDOK
+      Abort
+    ${ElseIf} $0 != 0
+      MessageBox MB_ICONSTOP "FolderSync local data could not be removed safely. Close FolderSync and check the application data folders before retrying." /SD IDOK
+      Abort
+    ${EndIf}
+  ${EndIf}
+!macroend
+
 !macro NSIS_HOOK_POSTUNINSTALL
   ${If} $UpdateMode != 1
     DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "FolderSync"

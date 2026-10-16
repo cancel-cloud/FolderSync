@@ -697,7 +697,7 @@ impl Engine {
         let root = if side == "A" { &t.a } else { &t.b };
         let source = syncfs::safe_path(root, path)?;
         let id = uuid::Uuid::new_v4().to_string();
-        let stored = self.storage().join("versions").join(&id);
+        let stored = self.new_version_path(&t.id, &id)?;
         self.transfer(&source, &stored, &entry.digest, None, t, m)?;
         let v = Version {
             id,

@@ -1069,9 +1069,10 @@ checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 
 [[package]]
 name = "foldersync"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
+ "dirs",
  "foldersync-engine",
  "rusqlite",
  "serde",
@@ -1082,12 +1083,14 @@ dependencies = [
  "tauri-plugin-notification",
  "tauri-plugin-single-instance",
  "tempfile",
+ "windows",
  "windows-registry",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
 name = "foldersync-engine"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "blake3",

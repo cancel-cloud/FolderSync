@@ -63,24 +63,34 @@ afterEach(() => {
 });
 test("startup uses native current-user registration without changing tasks", async () => {
   let enabled = false;
-  api.invoke.mockImplementation(async (command: string, args?: { enabled: boolean }) => {
-    if (command === "tasks" || command === "statuses") return [];
-    if (command === "startup_enabled") return enabled;
-    if (command === "set_startup") enabled = Boolean(args?.enabled);
-    return null;
-  });
+  api.invoke.mockImplementation(
+    async (command: string, args?: { enabled: boolean }) => {
+      if (command === "tasks" || command === "statuses") return [];
+      if (command === "startup_enabled") return enabled;
+      if (command === "set_startup") enabled = Boolean(args?.enabled);
+      return null;
+    },
+  );
   const user = userEvent.setup();
   render(<App />);
   await user.click(await screen.findByRole("button", { name: "Settings" }));
-  const checkbox = screen.getByRole("checkbox", { name: "Start FolderSync when I sign in" });
+  const checkbox = screen.getByRole("checkbox", {
+    name: "Start FolderSync when I sign in",
+  });
   expect((checkbox as HTMLInputElement).checked).toBe(false);
   await user.click(checkbox);
-  await waitFor(() => expect((checkbox as HTMLInputElement).checked).toBe(true));
+  await waitFor(() =>
+    expect((checkbox as HTMLInputElement).checked).toBe(true),
+  );
   await user.click(checkbox);
-  await waitFor(() => expect((checkbox as HTMLInputElement).checked).toBe(false));
+  await waitFor(() =>
+    expect((checkbox as HTMLInputElement).checked).toBe(false),
+  );
   expect(api.invoke).toHaveBeenCalledWith("set_startup", { enabled: true });
   expect(api.invoke).toHaveBeenCalledWith("set_startup", { enabled: false });
-  expect(api.invoke.mock.calls.some(([command]) => command === "save_task")).toBe(false);
+  expect(
+    api.invoke.mock.calls.some(([command]) => command === "save_task"),
+  ).toBe(false);
 });
 
 test("quit-on-close immediately requests safe quit when there is no draft", async () => {
@@ -491,7 +501,7 @@ test("enabling automatic deletion requires a separate policy confirmation before
   await user.click(await screen.findByRole("button", { name: "Configure" }));
   await user.click(
     screen.getByRole("checkbox", {
-      name: "Allow proven baseline deletions automatically",
+      name: "Propagate proven deletions automatically",
     }),
   );
   await user.click(screen.getByRole("button", { name: "Save task" }));
@@ -1084,4 +1094,154 @@ test("cancelled discovery refreshes persisted status and shows a localized cance
   expect(screen.getByText("Abgebrochen")).toBeTruthy();
   expect(screen.queryByRole("alert")).toBeNull();
   expect(screen.queryByText("[FolderSync:Cancelled]")).toBeNull();
+});
+
+test("preference saves do not insert synchronization progress or a settings footer", async () => {
+  let finish: (() => void) | undefined;
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks" || command === "statuses") return [];
+    if (command === "startup_enabled") return false;
+    if (command === "set_startup")
+      await new Promise<void>((resolve) => {
+        finish = resolve;
+      });
+    return null;
+  });
+  const user = userEvent.setup();
+  const { container } = render(<App />);
+  await user.click(await screen.findByRole("button", { name: "Settings" }));
+  await user.click(
+    screen.getByRole("checkbox", { name: "Start FolderSync when I sign in" }),
+  );
+  await waitFor(() => expect(finish).toBeDefined());
+  expect(
+    screen.queryByText("Working… files are verified before replacement."),
+  ).toBeNull();
+  expect(container.querySelector("footer")).toBeNull();
+  await act(async () => finish?.());
+});
+
+test("settings exposes version information separately from local data", async () => {
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks" || command === "statuses") return [];
+    if (command === "storage") return "C:/owned/FolderSync";
+    return null;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "Settings" }));
+  expect(screen.getByRole("heading", { name: "Local data" })).toBeTruthy();
+  await user.click(screen.getByRole("tab", { name: "Version" }));
+  expect(
+    screen.getByRole("heading", { name: "FolderSync 0.1.2" }),
+  ).toBeTruthy();
+  expect(screen.queryByRole("heading", { name: "Local data" })).toBeNull();
+  expect(screen.getByText(/Automatic updates are not configured/)).toBeTruthy();
+});
+
+test("tile and list views retain selection and bulk delete requires its own confirmation", async () => {
+  const task = { ...newTask(), name: "Owned pair", a: "A", b: "B" };
+  let tasks = [task];
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks") return tasks;
+    if (command === "statuses") return [];
+    if (command === "delete_tasks") tasks = [];
+    return null;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(
+    await screen.findByRole("checkbox", { name: "Select Owned pair" }),
+  );
+  await user.click(screen.getByRole("button", { name: "List" }));
+  expect(
+    (
+      screen.getByRole("checkbox", {
+        name: "Select Owned pair",
+      }) as HTMLInputElement
+    ).checked,
+  ).toBe(true);
+  await user.click(screen.getByRole("button", { name: "Disable selected" }));
+  await waitFor(() =>
+    expect(api.invoke).toHaveBeenCalledWith("disable_tasks", {
+      ids: [task.id],
+    }),
+  );
+  await user.click(screen.getByRole("checkbox", { name: "Select Owned pair" }));
+  await user.click(screen.getByRole("button", { name: "Delete selected" }));
+  expect(
+    screen.getByRole("dialog", { name: "Delete selected tasks?" }),
+  ).toBeTruthy();
+  expect(api.invoke.mock.calls.some(([name]) => name === "delete_tasks")).toBe(
+    false,
+  );
+  await user.click(screen.getByRole("button", { name: "Cancel" }));
+  expect(tasks).toHaveLength(1);
+  await user.click(screen.getByRole("button", { name: "Delete selected" }));
+  await user.click(screen.getByRole("button", { name: "Confirm" }));
+  await waitFor(() => expect(tasks).toHaveLength(0));
+});
+
+test("filter examples are placeholders and local help preserves an unsaved draft", async () => {
+  const task = { ...newTask(), name: "Draft pair", a: "A", b: "B" };
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks") return [task];
+    if (command === "statuses") return [];
+    if (command === "storage") return "C:/owned/FolderSync";
+    return null;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "Configure" }));
+  const include = screen.getByRole("textbox", {
+    name: "Include files",
+  }) as HTMLTextAreaElement;
+  expect(include.placeholder).toContain("*.step");
+  expect(include.value).toBe("");
+  await user.type(
+    screen.getByRole("textbox", { name: "Task name" }),
+    " unsaved",
+  );
+  await user.click(
+    screen.getByRole("button", { name: "Filter help & examples" }),
+  );
+  expect(
+    screen.getByRole("dialog", { name: "Filter help & examples" }),
+  ).toBeTruthy();
+  await user.click(screen.getByRole("button", { name: "Back to task" }));
+  expect(
+    (screen.getByRole("textbox", { name: "Task name" }) as HTMLInputElement)
+      .value,
+  ).toBe("Draft pair unsaved");
+  expect(
+    screen.getAllByText("C:/owned/FolderSync\\versions\\" + task.id).length,
+  ).toBeGreaterThan(0);
+});
+
+test("bulk deletion failure is visible and preserves the selected task", async () => {
+  const task = { ...newTask(), name: "Recoverable pair", a: "A", b: "B" };
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks") return [task];
+    if (command === "statuses") return [];
+    if (command === "delete_tasks")
+      throw new Error("Protected recovery pending");
+    return null;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(
+    await screen.findByRole("checkbox", { name: "Select Recoverable pair" }),
+  );
+  await user.click(screen.getByRole("button", { name: "Delete selected" }));
+  await user.click(screen.getByRole("button", { name: "Confirm" }));
+  expect((await screen.findByRole("alert")).textContent).toContain(
+    "Protected recovery pending",
+  );
+  expect(
+    (
+      screen.getByRole("checkbox", {
+        name: "Select Recoverable pair",
+      }) as HTMLInputElement
+    ).checked,
+  ).toBe(true);
 });

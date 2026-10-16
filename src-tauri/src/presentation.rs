@@ -4,6 +4,19 @@ pub enum NoticeKind {
     Review,
     Failure,
 }
+pub fn test_notice(de: bool) -> (String, String) {
+    if de {
+        (
+            "FolderSync — Testbenachrichtigung".into(),
+            "Test mit Standardsound. Windows steuert Banner und Ton über die Benachrichtigungseinstellungen und Nicht stören.".into(),
+        )
+    } else {
+        (
+            "FolderSync — notification test".into(),
+            "Test with the default sound. Windows controls banners and sound through notification settings and Do not disturb.".into(),
+        )
+    }
+}
 pub fn menu_labels(de: bool) -> [(&'static str, &'static str); 4] {
     if de {
         [
@@ -77,5 +90,15 @@ mod tests {
             assert!(failed.1.contains("Fixture"));
             assert_ne!(review.0, notice(de, NoticeKind::Success, "Fixture", 0).0);
         }
+    }
+    #[test]
+    fn test_notice_explains_windows_delivery_without_claiming_a_banner() {
+        let (english_title, english_body) = test_notice(false);
+        let (german_title, german_body) = test_notice(true);
+        assert!(english_title.contains("test"));
+        assert!(german_title.contains("Test"));
+        assert!(english_body.contains("Windows"));
+        assert!(german_body.contains("Windows"));
+        assert_ne!(english_body, german_body);
     }
 }
