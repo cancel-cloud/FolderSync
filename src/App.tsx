@@ -569,13 +569,6 @@ export default function App() {
             <span>{tasks.length}</span>
           </button>
           <button
-            className={page === "settings" ? "active" : ""}
-            onClick={() => navigate("settings")}
-          >
-            <Settings size={18} />
-            {tr("Settings", "Einstellungen")}
-          </button>
-          <button
             className={
               page === "recovery" || (page === "details" && archivedDetail)
                 ? "active"
@@ -585,6 +578,13 @@ export default function App() {
           >
             <FileClock size={18} />
             {tr("Recovery", "Wiederherstellung")}
+          </button>
+          <button
+            className={`settings-nav ${page === "settings" ? "active" : ""}`}
+            onClick={() => navigate("settings")}
+          >
+            <Settings size={18} />
+            {tr("Settings", "Einstellungen")}
           </button>
         </nav>
       </aside>
