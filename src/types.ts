@@ -68,10 +68,25 @@ export interface Metrics {
 export interface Plan {
   id: string;
   task: Task;
-  operations: Operation[];
+  summary: {
+    entries: number;
+    copies: number;
+    deletes: number;
+    conflicts: number;
+    unchanged: number;
+    to_a: number;
+    to_b: number;
+    remove_a: number;
+    remove_b: number;
+    explicit: boolean;
+  };
   metrics: Metrics;
   created_at: number;
   status: string;
+}
+export interface OperationPage {
+  operations: Operation[];
+  total: number;
 }
 export interface Version {
   id: string;

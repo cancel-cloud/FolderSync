@@ -13,6 +13,13 @@ impl Index {
     pub fn open(storage: &Path) -> Result<Self> {
         std::fs::create_dir_all(storage.join("versions"))?;
         let db = Connection::open(storage.join("foldersync.sqlite3"))?;
+        db.create_scalar_function(
+            "foldersync_fold",
+            1,
+            rusqlite::functions::FunctionFlags::SQLITE_UTF8
+                | rusqlite::functions::FunctionFlags::SQLITE_DETERMINISTIC,
+            |context| Ok(context.get::<String>(0)?.to_lowercase()),
+        )?;
         let version: i64 = db.query_row("PRAGMA user_version", [], |r| r.get(0))?;
         anyhow::ensure!(
             version <= 2,

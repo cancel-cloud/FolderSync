@@ -160,8 +160,8 @@ impl Engine {
     }
     pub fn statuses(&self) -> Result<Vec<TaskStatus>> {
         self.tasks()?.into_iter().map(|t|{
-            let last:Option<(String,String)>=self.index.db.query_row("SELECT json,status FROM runs WHERE task=? AND status!='Preview' ORDER BY rowid DESC LIMIT 1",[&t.id],|r|Ok((r.get(0)?,r.get(1)?))).optional()?;
-            let last_run=last.map(|(j,s)|->Result<Plan>{let mut p:Plan=serde_json::from_str(&j)?;p.status=s;Ok(p)}).transpose()?;
+            let last:Option<String>=self.index.db.query_row("SELECT id FROM runs WHERE task=? AND status!='Preview' ORDER BY rowid DESC LIMIT 1",[&t.id],|r|r.get(0)).optional()?;
+            let last_run=last.map(|id|self.plan_header(&id)).transpose()?;
             let pending_conflicts:i64=self.index.db.query_row("SELECT COUNT(*) FROM conflicts WHERE task=?",[&t.id],|r|r.get(0))?;
             Ok(TaskStatus{task_id:t.id.clone(),last_run,pending_conflicts:pending_conflicts as u64,next_run:self.setting(&format!("next/{}",t.id))?.and_then(|s|s.parse().ok())})
         }).collect()

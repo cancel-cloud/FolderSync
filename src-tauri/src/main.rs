@@ -1,5 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use foldersync_engine::{Engine, Plan, RestorePreview, Task, TaskStatus, Version};
+use foldersync_engine::{
+    Engine, OperationPage, OperationQuery, PlanHeader, RestorePreview, Task, TaskStatus, Version,
+};
 use std::sync::{
     Arc, Mutex,
     atomic::{AtomicBool, Ordering},
@@ -41,12 +43,18 @@ async fn save_task(r: State<'_, Runtime>, task: Task) -> Result<(), String> {
     work(r.inner().clone(), move |e| e.save_task(&task)).await
 }
 #[tauri::command]
-async fn preview(r: State<'_, Runtime>, id: String) -> Result<Plan, String> {
-    work(r.inner().clone(), move |e| e.preview(&id)).await
+async fn preview(r: State<'_, Runtime>, id: String) -> Result<PlanHeader, String> {
+    work(r.inner().clone(), move |e| {
+        Ok(PlanHeader::from(&e.preview(&id)?))
+    })
+    .await
 }
 #[tauri::command]
-async fn apply(r: State<'_, Runtime>, id: String, destructive: bool) -> Result<Plan, String> {
-    work(r.inner().clone(), move |e| e.apply(&id, destructive)).await
+async fn apply(r: State<'_, Runtime>, id: String, destructive: bool) -> Result<PlanHeader, String> {
+    work(r.inner().clone(), move |e| {
+        Ok(PlanHeader::from(&e.apply(&id, destructive)?))
+    })
+    .await
 }
 #[tauri::command]
 async fn resolve(
@@ -54,12 +62,23 @@ async fn resolve(
     id: String,
     path: String,
     choice: String,
-) -> Result<Plan, String> {
-    work(r.inner().clone(), move |e| e.resolve(&id, &path, &choice)).await
+) -> Result<PlanHeader, String> {
+    work(r.inner().clone(), move |e| {
+        Ok(PlanHeader::from(&e.resolve(&id, &path, &choice)?))
+    })
+    .await
 }
 #[tauri::command]
-async fn history(r: State<'_, Runtime>, id: String) -> Result<Vec<Plan>, String> {
-    work(r.inner().clone(), move |e| e.history(&id)).await
+async fn history(r: State<'_, Runtime>, id: String) -> Result<Vec<PlanHeader>, String> {
+    work(r.inner().clone(), move |e| e.history_headers(&id)).await
+}
+#[tauri::command]
+async fn operation_page(
+    r: State<'_, Runtime>,
+    id: String,
+    query: OperationQuery,
+) -> Result<OperationPage, String> {
+    work(r.inner().clone(), move |e| e.operation_page(&id, &query)).await
 }
 #[tauri::command]
 async fn versions(r: State<'_, Runtime>, id: String) -> Result<Vec<Version>, String> {
@@ -278,6 +297,7 @@ fn main() {
             apply,
             resolve,
             history,
+            operation_page,
             versions,
             restore_preview,
             restore_apply,

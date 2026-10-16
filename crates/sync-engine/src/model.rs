@@ -158,7 +158,56 @@ pub fn now() -> u64 {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TaskStatus {
     pub task_id: String,
-    pub last_run: Option<Plan>,
+    pub last_run: Option<PlanHeader>,
     pub pending_conflicts: u64,
     pub next_run: Option<i64>,
+}
+/// Presentation boundary: never includes the potentially large operation list.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PlanHeader {
+    pub id: String,
+    pub task: Task,
+    pub metrics: Metrics,
+    pub created_at: u64,
+    pub status: String,
+    #[serde(default)]
+    pub summary: PlanSummary,
+}
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct PlanSummary {
+    pub entries: u64,
+    pub copies: u64,
+    pub deletes: u64,
+    pub conflicts: u64,
+    pub unchanged: u64,
+    pub to_a: u64,
+    pub to_b: u64,
+    pub remove_a: u64,
+    pub remove_b: u64,
+    pub explicit: bool,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(default)]
+pub struct OperationQuery {
+    pub offset: u32,
+    pub limit: u32,
+    pub filter: String,
+    pub show_unchanged: bool,
+    pub sort: String,
+}
+impl Default for OperationQuery {
+    fn default() -> Self {
+        Self {
+            offset: 0,
+            limit: 200,
+            filter: String::new(),
+            show_unchanged: false,
+            sort: "path".into(),
+        }
+    }
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct OperationPage {
+    pub operations: Vec<Operation>,
+    pub total: u64,
 }
