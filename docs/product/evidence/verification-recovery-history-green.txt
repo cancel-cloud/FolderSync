@@ -1,0 +1,21 @@
+$ vitest run
+
+ RUN  v3.2.7 C:/Users/Lukas/Developer/SyncFolders
+
+ ✓ src/review.test.ts (2 tests) 4ms
+ ✓ src/i18n.test.ts (2 tests) 37ms
+ ✓ src/App.test.tsx (11 tests) 5053ms
+   ✓ deleted-task recovery stays separate from synchronization and restore requires confirmation  693ms
+   ✓ enabling automatic deletion requires a separate policy confirmation before saving  458ms
+   ✓ group filtering clears hidden selections and bulk reassignment refreshes collapsible groups  738ms
+   ✓ saving a selected task into another group clears its hidden bulk selection  594ms
+   ✓ nested conflict choice only revises preview; Apply requires its separate confirmation  590ms
+   ✓ review requests bounded pages and resets paging when filters change  824ms
+   ✓ terminal Apply result Failed: destination locked updates the dashboard and requires a fresh preview  370ms
+   ✓ terminal Apply result Cancelled updates the dashboard and requires a fresh preview  360ms
+
+ Test Files  3 passed (3)
+      Tests  15 passed (15)
+   Start at  14:32:15
+   Duration  13.34s (transform 4.44s, setup 0ms, collect 5.23s, tests 5.09s, environment 2.15s, prepare 1.19s)
+

@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use foldersync_engine::{
-    ApplyOutcome, Engine, OperationPage, OperationQuery, PlanHeader, ProgressState, RestorePreview,
-    RunProgress, Task, TaskStatus, Version,
+    ApplyOutcome, Engine, OperationPage, OperationQuery, PlanHeader, ProgressState, RecoveryTask,
+    RestorePreview, RunProgress, Task, TaskStatus, Version,
 };
 use std::sync::{
     Arc, Mutex,
@@ -109,6 +109,10 @@ async fn operation_page(
 #[tauri::command]
 async fn versions(r: State<'_, Runtime>, id: String) -> Result<Vec<Version>, String> {
     work(r.inner().clone(), move |e| e.versions(&id)).await
+}
+#[tauri::command]
+async fn recovery_tasks(r: State<'_, Runtime>) -> Result<Vec<RecoveryTask>, String> {
+    work(r.inner().clone(), |e| e.recovery_tasks()).await
 }
 #[tauri::command]
 async fn restore_preview(r: State<'_, Runtime>, id: String) -> Result<RestorePreview, String> {
@@ -330,6 +334,7 @@ fn main() {
             history,
             operation_page,
             versions,
+            recovery_tasks,
             restore_preview,
             restore_apply,
             delete_task,

@@ -1,7 +1,86 @@
 use crate::*;
 use anyhow::{Context, Result, ensure};
-use rusqlite::params;
+use rusqlite::{OptionalExtension, params};
 impl Engine {
+    pub fn recovery_tasks(&self) -> Result<Vec<RecoveryTask>> {
+        let mut statement=self.index.db.prepare("SELECT r.json,r.archived_at,count(v.id) FROM recovery_tasks r JOIN versions v ON v.task=r.id GROUP BY r.id ORDER BY r.archived_at DESC,r.id")?;
+        let rows = statement.query_map([], |r| {
+            Ok((
+                r.get::<_, String>(0)?,
+                r.get::<_, i64>(1)?,
+                r.get::<_, i64>(2)?,
+            ))
+        })?;
+        rows.map(|r| {
+            let (json, archived_at, versions) = r?;
+            Ok(RecoveryTask {
+                task: serde_json::from_str(&json)?,
+                archived_at: u64::try_from(archived_at)?,
+                versions: u64::try_from(versions)?,
+            })
+        })
+        .collect()
+    }
+    pub(crate) fn recover_legacy_catalog(&self) -> Result<()> {
+        let mut statement=self.index.db.prepare("SELECT DISTINCT v.task FROM versions v WHERE NOT EXISTS(SELECT 1 FROM tasks t WHERE t.id=v.task) AND NOT EXISTS(SELECT 1 FROM recovery_tasks r WHERE r.id=v.task)")?;
+        let ids = statement
+            .query_map([], |r| r.get::<_, String>(0))?
+            .collect::<rusqlite::Result<Vec<_>>>()?;
+        drop(statement);
+        for id in ids {
+            let json: Option<String> = self
+                .index
+                .db
+                .query_row(
+                    "SELECT json FROM runs WHERE task=? ORDER BY rowid DESC LIMIT 1",
+                    [&id],
+                    |r| r.get(0),
+                )
+                .optional()?;
+            let Some(plan) = json.and_then(|j| serde_json::from_str::<Plan>(&j).ok()) else {
+                continue;
+            };
+            if plan.task.id != id || plan.root_a.is_empty() || plan.root_b.is_empty() {
+                continue;
+            }
+            let mut task = plan.task;
+            task.monitor = false;
+            task.login = false;
+            task.schedule = Schedule::default();
+            task.deletion_policy.enabled = false;
+            self.index.db.execute(
+                "INSERT INTO recovery_tasks VALUES(?,?,?,?,?,?)",
+                params![
+                    id,
+                    serde_json::to_string(&task)?,
+                    plan.root_a,
+                    plan.root_b,
+                    plan.baseline_generation.saturating_add(2),
+                    i64::try_from(now())?
+                ],
+            )?;
+        }
+        Ok(())
+    }
+    fn validate_recovery_pair(&self, t: &Task) -> Result<()> {
+        let (_, _, _, a, b) = self.index.recovery_context(&t.id)?;
+        ensure!(
+            crate::fs::validate_roots(t, self.storage())? == (a, b),
+            "Recovery roots changed"
+        );
+        Ok(())
+    }
+    fn validate_recovery_root(&self, t: &Task, side: &str) -> Result<String> {
+        ensure!(matches!(side, "A" | "B"), "Invalid recovery side");
+        let (_, _, _, a, b) = self.index.recovery_context(&t.id)?;
+        let root = if side == "A" { &t.a } else { &t.b };
+        let identity = crate::fs::root_identity(root)?;
+        ensure!(
+            identity == if side == "A" { a } else { b },
+            "Recovery root changed; original root identity is required"
+        );
+        Ok(identity)
+    }
     pub(crate) fn preserve_displaced(
         &self,
         path: &std::path::Path,
@@ -80,10 +159,10 @@ impl Engine {
             .collect::<rusqlite::Result<Vec<_>>>()?;
         drop(statement);
         for (path, id, relative, side) in rows {
-            let Ok(t) = self.index.task(&id) else {
+            let Ok((t, _, _, _, _)) = self.index.recovery_context(&id) else {
                 continue;
             };
-            if self.validate(&t).is_err() {
+            if self.validate_recovery_pair(&t).is_err() {
                 continue;
             }
             let root = if side == "A" { &t.a } else { &t.b };
@@ -149,10 +228,10 @@ impl Engine {
             .collect::<rusqlite::Result<Vec<_>>>()?;
         drop(s);
         for (path, id) in rows {
-            let Ok(t) = self.index.task(&id) else {
+            let Ok((t, _, _, _, _)) = self.index.recovery_context(&id) else {
                 continue;
             };
-            if self.validate(&t).is_err() {
+            if self.validate_recovery_pair(&t).is_err() {
                 continue;
             }
             let path = std::path::PathBuf::from(path);
@@ -193,11 +272,11 @@ impl Engine {
                 .db
                 .query_row("SELECT json FROM versions WHERE id=?", [id], |r| r.get(0))?;
         let version: Version = serde_json::from_str(&json)?;
-        let t = self.index.task(&version.task_id)?;
+        let (t, archived, generation, _, _) = self.index.recovery_context(&version.task_id)?;
         let _progress = self
             .progress
             .begin(&t.id, None, ProgressPhase::Validating, 1);
-        self.validate(&t)?;
+        let root_identity = self.validate_recovery_root(&t, &version.side)?;
         let root = if version.side == "A" { &t.a } else { &t.b };
         let current = self.read_entry(
             root,
@@ -207,8 +286,10 @@ impl Engine {
         )?;
         let p = RestorePreview {
             id: uuid::Uuid::new_v4().to_string(),
-            generation: self.index.generation(&t.id)?,
-            root_identity: crate::fs::root_identity(root)?,
+            generation,
+            root_identity,
+            target_root: root.clone(),
+            archived,
             version,
             current,
         };
@@ -222,18 +303,22 @@ impl Engine {
             .setting(&format!("restore/{id}"))?
             .context("Restore preview missing or already used")?;
         let p: RestorePreview = serde_json::from_str(&json)?;
-        let t = self.index.task(&p.version.task_id)?;
+        let (t, archived, generation, _, _) = self.index.recovery_context(&p.version.task_id)?;
         let _progress = self
             .progress
             .begin(&t.id, None, ProgressPhase::Validating, 1);
         self.progress
             .update(|s| s.path = Some(p.version.path.clone()));
-        self.validate(&t)?;
+        self.validate_recovery_root(&t, &p.version.side)?;
         ensure!(
-            self.index.generation(&t.id)? == p.generation,
+            generation == p.generation && archived == p.archived,
             "Task changed; review restore again"
         );
         let root = if p.version.side == "A" { &t.a } else { &t.b };
+        ensure!(
+            *root == p.target_root,
+            "Restore target changed; preview again"
+        );
         ensure!(
             crate::fs::root_identity(root)? == p.root_identity,
             "Root changed"
@@ -261,6 +346,7 @@ impl Engine {
             ensure!(!current.directory, "Cannot replace a folder with a file");
             self.backup(&t, &p.version.path, &p.version.side, current, &mut metrics)?;
         }
+        self.validate_recovery_root(&t, &p.version.side)?;
         let target = crate::fs::safe_path(root, &p.version.path)?;
         std::fs::create_dir_all(target.parent().context("Missing parent")?)?;
         self.transfer(
@@ -276,7 +362,11 @@ impl Engine {
             [format!("restore/{id}")],
         )?;
         self.index.db.execute(
-            "UPDATE tasks SET generation=generation+1 WHERE id=?",
+            if archived {
+                "UPDATE recovery_tasks SET generation=generation+1 WHERE id=?"
+            } else {
+                "UPDATE tasks SET generation=generation+1 WHERE id=?"
+            },
             params![t.id],
         )?;
         self.cleanup_versions(&t)?;

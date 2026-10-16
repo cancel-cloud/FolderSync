@@ -15,7 +15,7 @@ Closing the window leaves the process running in the tray. Reopen with the short
 - Two-way, copy, mirror and verified move; baseline-aware conflicts and protected deletions.
 - Persistent tasks, groups, duplication, own versioned JSON import/export, native directory picker.
 - Scope globs, selected folders, hidden/system filters, filter tester, Unicode/long paths.
-- Immutable Preview/Apply, conflict choices, stale-input rejection, history and reviewed restore.
+- Immutable Preview/Apply, conflict choices, stale-input rejection, history and reviewed restore, including deleted-task recovery.
 - Native Windows notifications for filesystem changes, persistent dirty paths and incremental ancestor hashes.
 - Calendar/periodic schedules, bounded retries/debounce/bandwidth, pause/cancel, close-to-tray.
 - English/German principal screens, local optional operation logs, no telemetry/account/cloud service.

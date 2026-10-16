@@ -141,6 +141,13 @@ export interface RestorePreview {
   id: string;
   version: Version;
   current: Entry | null;
+  archived: boolean;
+  target_root: string;
+}
+export interface RecoveryTask {
+  task: Task;
+  versions: number;
+  archived_at: number;
 }
 export interface TaskStatus {
   task_id: string;

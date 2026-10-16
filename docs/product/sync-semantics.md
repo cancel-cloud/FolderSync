@@ -73,7 +73,7 @@ Exclusions win over includes. Folder exclusion prunes descendants. Selected top-
 
 Protected storage is outside synchronized namespaces and cannot be selected as a task root. Preserve replaced/deleted files for recovery; selective history controls additional version retention, with a configurable cap. Cleanup never follows links or removes active journal references. Restore is itself a reviewed, stale-checked operation with protection for the current destination.
 
-There is no reset control. Deleting a task configuration requires confirmation and discards its baseline while leaving user files and protected bytes. Recreating it uses conservative first-run rules. A task with pending displaced-file recovery cannot be deleted. No bulk filesystem deletion or baseline reset is exposed.
+There is no reset control. Deleting a task configuration requires confirmation and discards its baseline while leaving user files and protected bytes. Global Recovery retains the deleted task’s original root identities and exposes reviewed restore without reactivating synchronization. Restoring one side does not require the other side online. Replaced target roots and stale previews are rejected. Recreating it uses conservative first-run rules. A task with pending displaced-file recovery cannot be deleted. No bulk filesystem deletion or baseline reset is exposed.
 
 Root/mode edits require a fresh task. Included/excluded presence is distinguished before planning: hidden/system objects or ancestors on either side suppress operations for that path, rather than masquerading as deletion. Explicit restore inspects current contents independently of sync filters and protects them before restoring.
 

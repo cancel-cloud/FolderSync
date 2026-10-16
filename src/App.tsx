@@ -32,6 +32,7 @@ import type {
   OperationPage,
   ApplyOutcome,
   RunProgress,
+  RecoveryTask,
 } from "./types";
 import { newTask } from "./types";
 import {
@@ -98,6 +99,8 @@ export default function App() {
     [sort, setSort] = useState("path");
   const [progress, setProgress] = useState<RunProgress | null>(null);
   const [failedPlanId, setFailedPlanId] = useState("");
+  const [recoveryTasks, setRecoveryTasks] = useState<RecoveryTask[]>([]);
+  const [archivedDetail, setArchivedDetail] = useState(false);
   const [groupFilter, setGroupFilter] = useState("*");
   const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
   const [selectedGroup, setSelectedGroup] = useState("");
@@ -357,12 +360,19 @@ export default function App() {
       }
     });
   }
-  async function details(t: Task) {
+  async function details(t: Task, archived = false) {
     await perform(async () => {
       setTask(t);
+      setArchivedDetail(archived);
       setRuns(await invoke<Plan[]>("history", { id: t.id }));
       setVersions(await invoke<Version[]>("versions", { id: t.id }));
       setPage("details");
+    });
+  }
+  async function openRecovery() {
+    await perform(async () => {
+      setRecoveryTasks(await invoke<RecoveryTask[]>("recovery_tasks"));
+      navigate("recovery");
     });
   }
   async function choose(side: "a" | "b") {
@@ -408,14 +418,19 @@ export default function App() {
           "Geschützte Version wiederherstellen?",
         ),
         body: tr(
-          `${v.side} / ${v.path}. Current: ${meta(p.current)}. Restore: ${v.digest.slice(0, 16)}. The current version will also be protected.`,
-          `${v.side} / ${v.path}. Aktuell: ${meta(p.current)}. Wiederherstellen: ${v.digest.slice(0, 16)}. Die aktuelle Version wird ebenfalls geschützt.`,
+          `Destination: ${p.target_root}/${v.path}. Current: ${meta(p.current)}. Restore: ${v.digest.slice(0, 16)}. The current version will also be protected.`,
+          `Ziel: ${p.target_root}/${v.path}. Aktuell: ${meta(p.current)}. Wiederherstellen: ${v.digest.slice(0, 16)}. Die aktuelle Version wird ebenfalls geschützt.`,
         ),
         action: async () => {
           await perform(async () => {
             await invoke("restore_apply", { id: p.id });
             setMessage(
-              "Protected version restored. Preview the task to reconcile this change.",
+              p.archived
+                ? tr(
+                    "Protected version restored. The deleted task remains inactive.",
+                    "Geschützte Version wiederhergestellt. Die gelöschte Aufgabe bleibt inaktiv.",
+                  )
+                : "Protected version restored. Preview the task to reconcile this change.",
             );
             if (task)
               setVersions(await invoke<Version[]>("versions", { id: task.id }));
@@ -428,6 +443,7 @@ export default function App() {
     if (task) setTask({ ...task, ...p });
   }
   const summary = plan?.summary;
+  const archivedPlan = !!plan && !tasks.some((t) => t.id === plan.task.id);
   const direction = plan?.summary;
   return (
     <div className="app">
@@ -457,6 +473,17 @@ export default function App() {
             <Settings size={18} />
             {tr("Settings", "Einstellungen")}
           </button>
+          <button
+            className={
+              page === "recovery" || (page === "details" && archivedDetail)
+                ? "active"
+                : ""
+            }
+            onClick={() => void openRecovery()}
+          >
+            <FileClock size={18} />
+            {tr("Recovery", "Wiederherstellung")}
+          </button>
         </nav>
         <div className="aside-bottom">
           <ShieldCheck size={18} />
@@ -482,7 +509,7 @@ export default function App() {
                 ? tr("Task configuration", "Aufgabenkonfiguration")
                 : page === "preview"
                   ? tr("Operation review", "Aktionsprüfung")
-                  : page === "details"
+                  : page === "details" || page === "recovery"
                     ? tr("History & recovery", "Verlauf & Wiederherstellung")
                     : tr("Settings", "Einstellungen")}
           </div>
@@ -1515,51 +1542,55 @@ export default function App() {
                     {date(plan.created_at)} · {modeLabels[plan.task.mode]}
                   </p>
                 </div>
-                {["Preview", "Review required"].includes(plan.status) && (
-                  <Button
-                    disabled={
-                      busy ||
-                      failedPlanId === plan.id ||
-                      (summary.deletes > 0 && !approved)
-                    }
-                    onClick={() =>
-                      setConfirm({
-                        title: tr(
-                          "Apply reviewed operations?",
-                          "Geprüfte Aktionen anwenden?",
-                        ),
-                        body: tr(
-                          `${summary.copies} transfers, ${summary.deletes} removals, ${summary.conflicts} unresolved conflicts. Existing versions will be protected. This changes files in the selected folders.`,
-                          `${summary.copies} Übertragungen, ${summary.deletes} Entfernungen, ${summary.conflicts} offene Konflikte. Bestehende Versionen werden geschützt. Dateien in den ausgewählten Ordnern werden geändert.`,
-                        ),
-                        action: async () => {
-                          await perform(async () => {
-                            setFailedPlanId(plan.id);
-                            const result = await invoke<ApplyOutcome>("apply", {
-                              id: plan.id,
-                              destructive: approved || summary.explicit,
-                            });
-                            setPlan(result.plan);
-                            await refresh();
-                            if (result.plan.status === "Cancelled") {
-                              setMessage(
-                                "Run cancelled. Completed operations remain committed. Create a fresh preview to continue.",
+                {!archivedPlan &&
+                  ["Preview", "Review required"].includes(plan.status) && (
+                    <Button
+                      disabled={
+                        busy ||
+                        failedPlanId === plan.id ||
+                        (summary.deletes > 0 && !approved)
+                      }
+                      onClick={() =>
+                        setConfirm({
+                          title: tr(
+                            "Apply reviewed operations?",
+                            "Geprüfte Aktionen anwenden?",
+                          ),
+                          body: tr(
+                            `${summary.copies} transfers, ${summary.deletes} removals, ${summary.conflicts} unresolved conflicts. Existing versions will be protected. This changes files in the selected folders.`,
+                            `${summary.copies} Übertragungen, ${summary.deletes} Entfernungen, ${summary.conflicts} offene Konflikte. Bestehende Versionen werden geschützt. Dateien in den ausgewählten Ordnern werden geändert.`,
+                          ),
+                          action: async () => {
+                            await perform(async () => {
+                              setFailedPlanId(plan.id);
+                              const result = await invoke<ApplyOutcome>(
+                                "apply",
+                                {
+                                  id: plan.id,
+                                  destructive: approved || summary.explicit,
+                                },
                               );
-                              return;
-                            }
-                            if (result.error) throw new Error(result.error);
-                            setFailedPlanId("");
-                            setMessage(
-                              "Run finished. See the actual result and protected versions.",
-                            );
-                          });
-                        },
-                      })
-                    }
-                  >
-                    {tr("Apply reviewed plan", "Geprüften Plan anwenden")}
-                  </Button>
-                )}
+                              setPlan(result.plan);
+                              await refresh();
+                              if (result.plan.status === "Cancelled") {
+                                setMessage(
+                                  "Run cancelled. Completed operations remain committed. Create a fresh preview to continue.",
+                                );
+                                return;
+                              }
+                              if (result.error) throw new Error(result.error);
+                              setFailedPlanId("");
+                              setMessage(
+                                "Run finished. See the actual result and protected versions.",
+                              );
+                            });
+                          },
+                        })
+                      }
+                    >
+                      {tr("Apply reviewed plan", "Geprüften Plan anwenden")}
+                    </Button>
+                  )}
               </div>
               <div className="stats">
                 <div>
@@ -1634,7 +1665,8 @@ export default function App() {
                   )}
                 </section>
               )}
-              {summary.deletes > 0 &&
+              {!archivedPlan &&
+                summary.deletes > 0 &&
                 ["Preview", "Review required"].includes(plan.status) && (
                   <label className="alert warning">
                     <input
@@ -1680,13 +1712,15 @@ export default function App() {
                   />
                   {tr("Show unchanged", "Unveränderte anzeigen")}
                 </label>
-                <Button
-                  variant="outline"
-                  onClick={() => void preview(plan.task)}
-                  disabled={busy}
-                >
-                  {tr("Fresh preview", "Neue Vorschau")}
-                </Button>
+                {!archivedPlan && (
+                  <Button
+                    variant="outline"
+                    onClick={() => void preview(plan.task)}
+                    disabled={busy}
+                  >
+                    {tr("Fresh preview", "Neue Vorschau")}
+                  </Button>
+                )}
               </div>
               {!rows && (
                 <p role="status">
@@ -1727,7 +1761,8 @@ export default function App() {
                               {statusLabel(o.status || plan.status, lang)}
                             </small>
                           )}
-                          {o.action === "Conflict" &&
+                          {!archivedPlan &&
+                            o.action === "Conflict" &&
                             ["Preview", "Review required"].includes(
                               plan.status,
                             ) && (
@@ -1827,6 +1862,67 @@ export default function App() {
               </p>
             </>
           )}
+          {page === "recovery" && (
+            <>
+              <div className="page-heading">
+                <div>
+                  <h1>
+                    {tr(
+                      "Deleted-task recovery",
+                      "Wiederherstellung gelöschter Aufgaben",
+                    )}
+                  </h1>
+                  <p>
+                    {tr(
+                      "Protected versions remain available after deleting a task. Restoring does not restart synchronization or restore its baseline.",
+                      "Geschützte Versionen bleiben nach dem Löschen einer Aufgabe verfügbar. Wiederherstellung aktiviert weder Synchronisation noch Ausgangszustand erneut.",
+                    )}
+                  </p>
+                </div>
+              </div>
+              {recoveryTasks.length === 0 ? (
+                <section className="panel">
+                  <p>
+                    {tr(
+                      "No deleted tasks with protected versions.",
+                      "Keine gelöschten Aufgaben mit geschützten Versionen.",
+                    )}
+                  </p>
+                </section>
+              ) : (
+                recoveryTasks.map((r) => (
+                  <section className="panel" key={r.task.id}>
+                    <h2>{r.task.name}</h2>
+                    <p>
+                      {r.versions}{" "}
+                      {tr("protected versions", "geschützte Versionen")} ·{" "}
+                      {date(r.archived_at)}
+                    </p>
+                    <div className="paths">
+                      <div>
+                        <b>A</b>
+                        <code>{r.task.a}</code>
+                      </div>
+                      <div>
+                        <b>B</b>
+                        <code>{r.task.b}</code>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      aria-label={tr(
+                        `Open recovery for ${r.task.name}`,
+                        `Wiederherstellung für ${r.task.name} öffnen`,
+                      )}
+                      onClick={() => void details(r.task, true)}
+                    >
+                      {tr("Open recovery", "Wiederherstellung öffnen")}
+                    </Button>
+                  </section>
+                ))
+              )}
+            </>
+          )}
           {page === "details" && task && (
             <>
               <div className="page-heading">
@@ -1846,10 +1942,38 @@ export default function App() {
                     )}
                   </p>
                 </div>
-                <Button onClick={() => void preview(task)}>
-                  {tr("New preview", "Neue Vorschau")}
-                </Button>
+                {!archivedDetail && (
+                  <Button onClick={() => void preview(task)}>
+                    {tr("New preview", "Neue Vorschau")}
+                  </Button>
+                )}
               </div>
+              {archivedDetail && (
+                <section className="panel">
+                  <h2>
+                    {tr(
+                      "Deleted task — recovery only",
+                      "Gelöschte Aufgabe — nur Wiederherstellung",
+                    )}
+                  </h2>
+                  <p>
+                    {tr(
+                      "The synchronization baseline and triggers were removed. Original root identities are retained only for reviewed recovery. Create a new task to synchronize again.",
+                      "Sync-Ausgangszustand und Auslöser wurden entfernt. Ursprüngliche Ordneridentitäten bleiben nur für geprüfte Wiederherstellung erhalten. Für erneute Synchronisation eine neue Aufgabe erstellen.",
+                    )}
+                  </p>
+                  <div className="paths">
+                    <div>
+                      <b>A</b>
+                      <code>{task.a}</code>
+                    </div>
+                    <div>
+                      <b>B</b>
+                      <code>{task.b}</code>
+                    </div>
+                  </div>
+                </section>
+              )}
               <section className="panel">
                 <h2>
                   <FileClock size={20} />
@@ -1912,52 +2036,54 @@ export default function App() {
                   ))
                 )}
               </section>
-              <div className="toolbar">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    const t = {
-                      ...structuredClone(task),
-                      id: crypto.randomUUID(),
-                      name: `${task.name} ${tr("(copy)", "(Kopie)")}`,
-                      monitor: false,
-                      login: false,
-                      schedule: newTask().schedule,
-                      deletion_policy: {
-                        ...task.deletion_policy,
-                        enabled: false,
-                      },
-                    };
-                    edit(t);
-                  }}
-                >
-                  {tr("Duplicate configuration", "Konfiguration duplizieren")}
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() =>
-                    setConfirm({
-                      title: tr(
-                        "Delete task configuration?",
-                        "Aufgabenkonfiguration löschen?",
-                      ),
-                      body: tr(
-                        "This removes the task and its synchronization baseline. Files and protected versions remain.",
-                        "Die Aufgabe und ihr Sync-Ausgangszustand werden entfernt. Dateien und geschützte Versionen bleiben.",
-                      ),
-                      action: async () => {
-                        await perform(async () => {
-                          await invoke("delete_task", { id: task.id });
-                          await refresh();
-                          setPage("dashboard");
-                        });
-                      },
-                    })
-                  }
-                >
-                  {tr("Delete task", "Aufgabe löschen")}
-                </Button>
-              </div>
+              {!archivedDetail && (
+                <div className="toolbar">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const t = {
+                        ...structuredClone(task),
+                        id: crypto.randomUUID(),
+                        name: `${task.name} ${tr("(copy)", "(Kopie)")}`,
+                        monitor: false,
+                        login: false,
+                        schedule: newTask().schedule,
+                        deletion_policy: {
+                          ...task.deletion_policy,
+                          enabled: false,
+                        },
+                      };
+                      edit(t);
+                    }}
+                  >
+                    {tr("Duplicate configuration", "Konfiguration duplizieren")}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() =>
+                      setConfirm({
+                        title: tr(
+                          "Delete task configuration?",
+                          "Aufgabenkonfiguration löschen?",
+                        ),
+                        body: tr(
+                          "This removes the task and its synchronization baseline. Files and protected versions remain.",
+                          "Die Aufgabe und ihr Sync-Ausgangszustand werden entfernt. Dateien und geschützte Versionen bleiben.",
+                        ),
+                        action: async () => {
+                          await perform(async () => {
+                            await invoke("delete_task", { id: task.id });
+                            await refresh();
+                            setPage("dashboard");
+                          });
+                        },
+                      })
+                    }
+                  >
+                    {tr("Delete task", "Aufgabe löschen")}
+                  </Button>
+                </div>
+              )}
             </>
           )}
           {page === "settings" && (

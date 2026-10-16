@@ -117,6 +117,7 @@ impl Engine {
             cancel: Arc::new(AtomicBool::new(false)),
             progress: ProgressState::default(),
         };
+        engine.recover_legacy_catalog()?;
         engine.recover_displaced()?;
         engine.recover_stages()?;
         Ok(engine)
@@ -127,6 +128,14 @@ impl Engine {
     pub fn save_task(&mut self, t: &Task) -> Result<()> {
         ensure!(!t.name.trim().is_empty(), "Name is required");
         ensure!(uuid::Uuid::parse_str(&t.id).is_ok(), "Invalid task ID");
+        ensure!(
+            !self.index.db.query_row(
+                "SELECT EXISTS(SELECT 1 FROM recovery_tasks WHERE id=?)",
+                [&t.id],
+                |r| r.get::<_, bool>(0)
+            )?,
+            "This task ID is reserved by deleted-task recovery; create a new task"
+        );
         ensure!(
             t.debounce_secs <= 3600
                 && t.retries <= 10
@@ -853,9 +862,35 @@ impl Engine {
             pending == 0,
             "Protected recovery is pending; reconnect roots and restart before deleting this task"
         );
-        self.index
-            .db
-            .execute("DELETE FROM tasks WHERE id=?", [id])?;
+        let mut task = self.index.task(id)?;
+        task.monitor = false;
+        task.login = false;
+        task.schedule = Schedule::default();
+        task.deletion_policy.enabled = false;
+        let (a, b) = self.index.roots(id)?;
+        let generation = self.index.generation(id)? + 1;
+        let transaction = self.index.db.transaction()?;
+        transaction.execute(
+            "INSERT INTO recovery_tasks VALUES(?,?,?,?,?,?)",
+            params![
+                id,
+                serde_json::to_string(&task)?,
+                a,
+                b,
+                generation,
+                i64::try_from(now())?
+            ],
+        )?;
+        transaction.execute("DELETE FROM dirty WHERE task=?", [id])?;
+        transaction.execute("DELETE FROM merkle WHERE task=?", [id])?;
+        for prefix in ["next/", "watch-events/", "notification/"] {
+            transaction.execute(
+                "DELETE FROM settings WHERE key=?",
+                [format!("{prefix}{id}")],
+            )?;
+        }
+        transaction.execute("DELETE FROM tasks WHERE id=?", [id])?;
+        transaction.commit()?;
         Ok(())
     }
     pub fn export(&self) -> Result<String> {
