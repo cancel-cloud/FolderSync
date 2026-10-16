@@ -1,0 +1,68 @@
+{
+  "source_commit": "09ef954",
+  "run_id": "662963f1-0c1b-4123-ae30-334261e1df87",
+  "status": "Attention",
+  "sha256": {
+    "A": "2b07811057df887086f06a67edc6ebf911de8b6741156e7a2eb1416a4b8b1b2e",
+    "B": "2b07811057df887086f06a67edc6ebf911de8b6741156e7a2eb1416a4b8b1b2e"
+  },
+  "staging_rows": 0,
+  "run_summary": {
+    "id": "662963f1-0c1b-4123-ae30-334261e1df87",
+    "root_a": "\\\\?\\C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\A|4241541576|131072|2726252",
+    "root_b": "\\\\?\\C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\B|4241541576|65536|2726253",
+    "metrics": {
+      "scanned_entries": 1241,
+      "hashed_bytes": 92317098,
+      "copied_bytes": 4194304,
+      "queued_paths": 0,
+      "reconciliations": 1,
+      "watch_events": 0
+    },
+    "baseline_generation": 29,
+    "created_at": 1792157137,
+    "status": "Attention",
+    "deletion_review": null
+  },
+  "relevant_operations": [
+    {
+      "path": "close-quit.bin",
+      "action": "CopyToB",
+      "kind": "Create",
+      "reason": "One-sided creation or change",
+      "status": "Applied",
+      "a": {
+        "path": "close-quit.bin",
+        "digest": "f07d773396809ee18e28b44345f49c6e9a97bfd73ac7ba693ecd3dcd1616158d",
+        "directory": false,
+        "size": 4194304,
+        "mtime_ns": "1792156391908995100",
+        "file_id": "4241541576:2228224:2879492"
+      },
+      "b": null
+    },
+    {
+      "path": "from-a.txt",
+      "action": "Conflict",
+      "kind": "Conflict",
+      "reason": "Both sides differ from a common baseline, or there is no safe baseline",
+      "status": "Conflict",
+      "a": {
+        "path": "from-a.txt",
+        "digest": "4a86984ee4e8b69c4c514b6d54187f74262cc8ffaa0dfe63f96d8e2c92447118",
+        "directory": false,
+        "size": 26,
+        "mtime_ns": "1792143174629695000",
+        "file_id": "4241541576:393216:2784149"
+      },
+      "b": {
+        "path": "from-a.txt",
+        "digest": "b67532c9c042722755413f1dbf5d9258c1c68f2903e6e30ec7d0c832434b6bdf",
+        "directory": false,
+        "size": 35,
+        "mtime_ns": "1792143174631696300",
+        "file_id": "4241541576:65536:2772226"
+      }
+    }
+  ]
+}
