@@ -84,7 +84,7 @@ impl Default for Task {
             debounce_secs: 20,
             retries: 3,
             bandwidth_kib: 0,
-            transfer_concurrency: 1,
+            transfer_concurrency: 4,
             comparison: Comparison::default(),
             conflict_policy: ConflictPolicy::default(),
             history_enabled: true,

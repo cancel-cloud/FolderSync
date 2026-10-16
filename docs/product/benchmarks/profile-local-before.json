@@ -1,0 +1,111 @@
+{
+  "build": "release",
+  "bytes": 874806229,
+  "files": 35000,
+  "fixture": "C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools/FolderSync-35000-Test/Quelle",
+  "full_preview": {
+    "metrics": {
+      "copied_bytes": 0,
+      "hashed_bytes": 874806229,
+      "lineage_links": 0,
+      "peak_workers": 0,
+      "queued_paths": 0,
+      "reconciliations": 1,
+      "scanned_entries": 35350,
+      "watch_events": 0
+    },
+    "operations": 35350,
+    "wall_ms": 57546
+  },
+  "output": "C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-Perf-3c8ccc48-7e24-4463-834f-69c237614873",
+  "raw_hash": [
+    {
+      "hashed_bytes": 874806229,
+      "wall_ms": 10112,
+      "workers": 1
+    },
+    {
+      "hashed_bytes": 874806229,
+      "wall_ms": 3425,
+      "workers": 2
+    },
+    {
+      "hashed_bytes": 874806229,
+      "wall_ms": 3543,
+      "workers": 4
+    },
+    {
+      "hashed_bytes": 874806229,
+      "wall_ms": 1230,
+      "workers": 10
+    }
+  ],
+  "safe_scan": {
+    "entries": 35350,
+    "metrics": {
+      "copied_bytes": 0,
+      "hashed_bytes": 874806229,
+      "lineage_links": 0,
+      "peak_workers": 0,
+      "queued_paths": 0,
+      "reconciliations": 0,
+      "scanned_entries": 35350,
+      "watch_events": 0
+    },
+    "wall_ms": 24754
+  },
+  "samples": [
+    {
+      "apply_ms": 40453,
+      "metrics": {
+        "copied_bytes": 2150831,
+        "hashed_bytes": 12904986,
+        "lineage_links": 0,
+        "peak_workers": 1,
+        "queued_paths": 0,
+        "reconciliations": 1,
+        "scanned_entries": 5050,
+        "watch_events": 0
+      },
+      "phase_samples_ms": {
+        "Applying": 5736,
+        "Starting": 5,
+        "Transferring": 4139,
+        "Validating": 5260,
+        "Verifying": 22070
+      },
+      "preview_ms": 927,
+      "verified_files": 1000,
+      "workers": 1
+    },
+    {
+      "apply_ms": 40813,
+      "metrics": {
+        "copied_bytes": 2150831,
+        "hashed_bytes": 12904986,
+        "lineage_links": 0,
+        "peak_workers": 2,
+        "queued_paths": 0,
+        "reconciliations": 1,
+        "scanned_entries": 5050,
+        "watch_events": 0
+      },
+      "phase_samples_ms": {
+        "Applying": 22068,
+        "Starting": 5,
+        "Transferring": 226,
+        "Validating": 5744,
+        "Verifying": 9441
+      },
+      "preview_ms": 1118,
+      "verified_files": 1000,
+      "workers": 2
+    }
+  ],
+  "baseline_failure": {
+    "workers": 4,
+    "error": "database is locked (SQLite error 5)",
+    "passed": false
+  },
+  "notes": "1 then 2 then 4 then 10 raw hash order; first pass cache state not controlled. Four-transfer sample failed before completion; no 4-worker success claimed."
+}

@@ -21,6 +21,89 @@ enum Event {
     Failed(anyhow::Error),
 }
 impl Engine {
+    /// Revalidate every reviewed input before the first filesystem mutation.
+    /// Workers only read files; SQLite remains on the coordinating thread.
+    pub(crate) fn validate_inputs(
+        &self,
+        task: &Task,
+        operations: &[Operation],
+        metrics: &mut Metrics,
+    ) -> Result<()> {
+        let next = AtomicUsize::new(0);
+        let completed = AtomicUsize::new(0);
+        let failed = std::sync::atomic::AtomicBool::new(false);
+        let cancel = &self.cancel;
+        let progress = &self.progress;
+        let results = std::thread::scope(|threads| -> Result<Vec<(Metrics, Result<()>)>> {
+            let mut handles = Vec::new();
+            for _ in 0..crate::fs::comparison_workers().min(operations.len()) {
+                let next = &next;
+                let completed = &completed;
+                let failed = &failed;
+                handles.push(threads.spawn(move || -> (Metrics, Result<()>) {
+                    let mut local = Metrics::default();
+                    let result = (|| -> Result<()> {
+                        let matcher = crate::fs::Matcher::new(&task.scope)?;
+                        loop {
+                            crate::progress::check_cancel(Some(cancel))?;
+                            if failed.load(Ordering::Relaxed) {
+                                break;
+                            }
+                            let i = next.fetch_add(1, Ordering::Relaxed);
+                            let Some(operation) = operations.get(i) else {
+                                break;
+                            };
+                            for (root, expected) in
+                                [(&task.a, &operation.a), (&task.b, &operation.b)]
+                            {
+                                let result = crate::fs::read_entry_matched(
+                                    root,
+                                    &operation.path,
+                                    &matcher,
+                                    &mut local,
+                                    Some(cancel),
+                                    Some(progress),
+                                );
+                                if result.is_err() {
+                                    failed.store(true, Ordering::Relaxed);
+                                }
+                                if &result? != expected {
+                                    failed.store(true, Ordering::Relaxed);
+                                    return Err(anyhow!(
+                                        "Stale input: {}; preview again",
+                                        operation.path
+                                    ));
+                                }
+                            }
+                            let done = completed.fetch_add(1, Ordering::Relaxed) + 1;
+                            progress.update(|s| {
+                                s.completed_entries = s.completed_entries.max(done as u64)
+                            });
+                        }
+                        Ok(())
+                    })();
+                    (local, result)
+                }));
+            }
+            handles
+                .into_iter()
+                .map(|h| h.join().map_err(|_| anyhow!("Validation worker panicked")))
+                .collect()
+        })?;
+        let mut failure = None;
+        for (local, result) in results {
+            if let Err(error) = result {
+                failure.get_or_insert(error);
+            }
+            metrics.scanned_entries += local.scanned_entries;
+            metrics.hashed_bytes += local.hashed_bytes;
+        }
+        if let Some(error) = failure {
+            return Err(error);
+        }
+        Ok(())
+    }
+
     pub(crate) fn execute_operations(
         &mut self,
         id: &str,
@@ -64,9 +147,9 @@ impl Engine {
             }
         }
         let budget_limit = if task.bandwidth_kib == 0 {
-            4
+            16
         } else {
-            task.bandwidth_kib.min(4) as usize
+            task.bandwidth_kib.min(16) as usize
         };
         let count = (task.transfer_concurrency as usize)
             .min(jobs.len())

@@ -1390,13 +1390,13 @@ export default function App() {
                   </label>
                   <label>
                     {tr(
-                      "Parallel transfers (1–4)",
-                      "Parallele Übertragungen (1–4)",
+                      "Parallel transfers (1–16)",
+                      "Parallele Übertragungen (1–16)",
                     )}
                     <input
                       type="number"
                       min={1}
-                      max={4}
+                      max={16}
                       value={task.transfer_concurrency}
                       onChange={(e) =>
                         patch({ transfer_concurrency: Number(e.target.value) })
@@ -1406,8 +1406,8 @@ export default function App() {
                 </div>
                 <p className="hint">
                   {tr(
-                    "Default: one file at a time. Parallel transfers share the total bandwidth limit. Folders and removals run in order; task runs remain serialized. File progress shows one active transfer.",
-                    "Standard: eine Datei zur Zeit. Parallele Übertragungen teilen die gesamte Bandbreite. Ordner und Entfernungen laufen geordnet; Aufgabenläufe bleiben nacheinander. Der Dateifortschritt zeigt eine aktive Übertragung.",
+                    "New tasks default to 4 transfers. Content comparisons use up to 10 workers independently of this setting. Transfers share the total bandwidth limit; more workers are not always faster. Folders and removals run in order. File progress shows one active transfer.",
+                    "Neue Aufgaben starten mit 4 Übertragungen. Inhaltsvergleiche nutzen unabhängig davon bis zu 10 Prüfer. Übertragungen teilen die gesamte Bandbreite; mehr Parallelität ist nicht immer schneller. Ordner und Entfernungen laufen geordnet. Der Dateifortschritt zeigt eine aktive Übertragung.",
                   )}
                 </p>
               </section>

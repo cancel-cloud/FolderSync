@@ -335,10 +335,10 @@ test("comparison and conflict policies save and reload through the actual editor
     "RequireChoices",
   );
   await user.clear(
-    screen.getByRole("spinbutton", { name: "Parallel transfers (1–4)" }),
+    screen.getByRole("spinbutton", { name: "Parallel transfers (1–16)" }),
   );
   await user.type(
-    screen.getByRole("spinbutton", { name: "Parallel transfers (1–4)" }),
+    screen.getByRole("spinbutton", { name: "Parallel transfers (1–16)" }),
     "2",
   );
   await user.click(screen.getByRole("button", { name: "Save task" }));
@@ -346,7 +346,7 @@ test("comparison and conflict policies save and reload through the actual editor
   expect(
     (
       screen.getByRole("spinbutton", {
-        name: "Parallel transfers (1–4)",
+        name: "Parallel transfers (1–16)",
       }) as HTMLInputElement
     ).value,
   ).toBe("2");
@@ -1141,7 +1141,7 @@ test("settings exposes version information separately from local data", async ()
   expect(screen.getByRole("heading", { name: "Local data" })).toBeTruthy();
   await user.click(screen.getByRole("tab", { name: "Version" }));
   expect(
-    screen.getByRole("heading", { name: "FolderSync 0.1.7" }),
+    screen.getByRole("heading", { name: "FolderSync 0.1.8" }),
   ).toBeTruthy();
   expect(screen.queryByRole("heading", { name: "Local data" })).toBeNull();
   expect(screen.getByText(/Automatic updates are not configured/)).toBeTruthy();

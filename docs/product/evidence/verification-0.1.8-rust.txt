@@ -1,0 +1,386 @@
+    Checking foldersync-engine v0.1.8 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Checking foldersync v0.1.8 (C:\Users\Lukas\Developer\SyncFolders\src-tauri)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 7.64s
+   Compiling foldersync-engine v0.1.8 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+   Compiling foldersync v0.1.8 (C:\Users\Lukas\Developer\SyncFolders\src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 28.51s
+     Running unittests src\main.rs (target\debug\deps\foldersync-eb6f09d323f388d9.exe)
+
+running 26 tests
+test app_storage::tests::explicit_cleanup_validates_all_storage_before_deleting_either ... ok
+test app_storage::tests::migration_refuses_directory_junctions ... ok
+test app_storage::tests::migration_refuses_missing_protected_file_without_publishing_target ... ok
+test app_storage::tests::migration_rejects_unexpected_protected_catalog_path ... ok
+test app_storage::tests::completed_migration_still_rejects_a_running_legacy_process ... ok
+test lifecycle::tests::sign_in_launch_stays_in_tray_while_manual_relaunch_opens_the_window ... ok
+test notification_status::tests::system_disabled_reasons_remain_distinct_and_future_values_unknown ... ok
+test notification_tests::activation_routes_to_the_originating_task_without_an_apply_action ... ok
+test notification_tests::command_cancellation_has_a_reserved_marker_and_os_errors_keep_details ... ok
+test presentation::tests::conflict_and_failure_notices_are_distinct_in_both_languages ... ok
+test presentation::tests::language_changes_labels_without_changing_tray_action_identity ... ok
+test presentation::tests::test_notice_explains_windows_delivery_without_claiming_a_banner ... ok
+test progress_runtime::tests::sampler_emits_only_changes_and_emits_idle_after_work ... ok
+test startup::tests::current_user_registration_quotes_executable_and_disables_idempotently ... ok
+test app_storage::tests::explicit_cleanup_refuses_running_app_without_deleting_storage ... ok
+test lifecycle::tests::close_choice_defaults_to_tray_and_persists_without_changing_automation ... ok
+test app_storage::tests::migration_relocates_owned_staging_paths_but_preserves_external_paths ... ok
+test app_storage::tests::refuses_ambiguous_target_incomplete_stage_and_running_old_process ... ok
+test storage_location::tests::opens_only_owned_root_or_canonical_task_directory ... ok
+test app_storage::tests::explicit_cleanup_removes_both_storage_directories_and_preserves_sync_roots ... ok
+test app_storage::tests::explicit_cleanup_rejects_nested_junction_before_deleting_any_storage ... ok
+test app_storage::tests::migration_keeps_archived_flat_legacy_versions_restorable ... ok
+test background::tests::scheduled_queue_resumes_after_restart_before_next_occurrence ... ok
+test app_storage::tests::migration_preserves_wal_baselines_versions_and_reviewed_restore ... ok
+test app_storage::tests::migration_refuses_busy_source_before_creating_stage ... ok
+test lifecycle::tests::failed_persistence_keeps_native_close_action_and_saved_preference ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.66s
+
+     Running unittests src\lib.rs (target\debug\deps\foldersync_engine-64866169cfca4777.exe)
+
+running 7 tests
+test watch::tests::multiple_old_names_before_a_new_name_request_reconciliation_without_guessing_a_pair ... ok
+test watch::tests::split_rename_pair_is_preserved_but_internal_staging_never_becomes_a_candidate ... ok
+test watch::tests::injected_overflow_marks_uncertainty_instead_of_dropping_it_silently ... ok
+test transfer::tests::expected_destination_is_not_recaptured_after_backup ... ok
+test transfer::tests::injected_disk_full_keeps_destination_and_cleans_owned_stage ... ok
+test transfer::tests::unexpected_displaced_bytes_are_rescued_even_when_history_is_off ... ok
+test transfer::tests::interrupted_atomic_displacement_is_preserved_on_restart ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests\ambiguous_renames.rs (target\debug\deps\ambiguous_renames-169df7e354d50c75.exe)
+
+running 5 tests
+test native_opposing_rename_notifications_reach_incremental_conflict_planning ... ok
+test matching_rename_on_both_sides_and_unrelated_duplicate_are_not_ambiguous ... ok
+test coalesced_incremental_events_hold_ambiguous_creates_and_removals_even_with_delete_approval ... ok
+test identical_content_multiple_origins_never_guess_rename_pairing ... ok
+test opposing_renames_preserve_baseline_and_attention_while_independent_files_sync ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.16s
+
+     Running tests\automatic_deletion.rs (target\debug\deps\automatic_deletion-604ce38f9c950e46.exe)
+
+running 10 tests
+test automatic_baselines_do_not_substitute_for_explicit_manual_approval ... ok
+test directory_deletion_counts_descendants_against_limits ... ok
+test mirror_extras_without_a_common_baseline_remain_manual ... ok
+test enabled_policy_never_turns_an_unavailable_root_into_deletion_evidence ... ok
+test percentage_boundary_uses_known_baseline_and_whole_tree_loss_stops ... ok
+test policy_and_manual_approval_persist_but_imports_cannot_enable_deletion ... ok
+test entry_and_percentage_limits_stop_batches_before_any_mutation ... ok
+test native_both_side_deletions_are_protected_and_conflicts_still_preserve_edits ... ok
+test scope_changes_require_new_manual_review_and_move_cannot_opt_in ... ok
+test reappearing_deleted_side_during_backup_preserves_both_files ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.28s
+
+     Running tests\automation.rs (target\debug\deps\automation-99743791aaac5171.exe)
+
+running 2 tests
+test scheduled_occurrence_survives_restart_and_coalesces_missed_runs ... ok
+test durable_queue_keeps_conflict_attention_while_other_changes_sync ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
+     Running tests\automation_recovery.rs (target\debug\deps\automation_recovery-fa6efa7c3f662803.exe)
+
+running 4 tests
+test interrupted_plan_cannot_be_revised_or_reapplied ... ok
+test unchanged_automatic_reconciliation_establishes_deletion_baseline ... ok
+test destructive_background_review_remains_explicitly_applyable ... ok
+test equal_external_resolution_advances_baseline_and_clears_conflict ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.73s
+
+     Running tests\bulk_tasks.rs (target\debug\deps\bulk_tasks-56aa78ca0a70243b.exe)
+
+running 4 tests
+test bulk_selection_rejects_empty_duplicate_invalid_and_stale_ids_without_partial_changes ... ok
+test bulk_mutation_database_errors_roll_back_earlier_selected_tasks ... ok
+test bulk_disable_survives_restart_clears_automation_and_preserves_files_versions_and_baselines ... ok
+test bulk_delete_rejects_pending_recovery_before_deleting_any_task_then_retains_restorable_versions ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.94s
+
+     Running tests\crash.rs (target\debug\deps\crash-251b660993f33c25.exe)
+
+running 2 tests
+test crash_child_process ... ok
+test termination_midcopy_preserves_original_and_recovers_staging ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.82s
+
+     Running tests\deleted_task_recovery.rs (target\debug\deps\deleted_task_recovery-a66eb0a1f0a521aa.exe)
+
+running 4 tests
+test archived_task_staging_is_cleaned_at_restart_without_touching_user_files ... ok
+test archived_restore_rejects_replaced_root_but_does_not_require_other_side_online ... ok
+test legacy_orphan_catalog_is_recovered_from_recorded_run_roots ... ok
+test deleted_task_versions_remain_reviewable_and_restorable_without_reactivating_sync ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.74s
+
+     Running tests\event_regressions.rs (target\debug\deps\event_regressions-2d4248afa3f092c8.exe)
+
+running 3 tests
+test event_invalidation_detects_same_length_timestamp_preserving_edit ... ok
+test delayed_duplicate_events_use_current_bytes_and_do_not_replay_old_edits ... ok
+test rename_events_preserve_old_destination_until_exact_plan_approval ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.72s
+
+     Running tests\filesystem.rs (target\debug\deps\filesystem-4491cfe3db49a3aa.exe)
+
+running 2 tests
+test roots_reject_overlap_and_preserve_preview_files ... ok
+test scan_filters_and_hashes_even_metadata_collisions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\history.rs (target\debug\deps\history-3f707123cb673592.exe)
+
+running 1 test
+test history_is_bounded_without_pruning_interrupted_recovery_or_baselines ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.18s
+
+     Running tests\incremental.rs (target\debug\deps\incremental-f8587662228457d6.exe)
+
+running 1 test
+test one_change_only_hashes_affected_files ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.02s
+
+     Running tests\index.rs (target\debug\deps\index-8253c98df5c2dc53.exe)
+
+running 1 test
+test empty_directory_merkle_digest_is_current_after_recreation ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests\integration.rs (target\debug\deps\integration-9c444987247aa995.exe)
+
+running 5 tests
+test stale_and_offline_never_delete ... ok
+test delete_edit_preserves_survivor ... ok
+test folder_delete_edit_is_attention_instead_of_partial_directory_removal ... ok
+test modes_copy_mirror_move ... ok
+test two_way_preview_conflict_deletion_and_restart ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.02s
+
+     Running tests\management.rs (target\debug\deps\management-5777a61b485a3c9d.exe)
+
+running 5 tests
+test refuses_future_database_schema ... ok
+test import_is_atomic_and_disables_triggers ... ok
+test login_only_tasks_are_guarded_against_intersecting_pairs ... ok
+test bulk_group_assignment_is_atomic_persistent_and_invalidates_old_reviews ... ok
+test legacy_index_migration_preserves_task_configuration ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+     Running tests\no_versions.rs (target\debug\deps\no_versions-0f815e38f49ee56f.exe)
+
+running 3 tests
+test legacy_tasks_keep_history_enabled_and_disabled_setting_exports_and_imports ... ok
+test disabled_history_syncs_updates_and_deletions_without_retained_versions ... ok
+test disabling_history_preserves_existing_versions_and_survives_restart ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.72s
+
+     Running tests\operation_review.rs (target\debug\deps\operation_review-6bf281a9c6fc03de.exe)
+
+running 2 tests
+test ignore_skips_only_this_review_preserves_baseline_and_keeps_conflict_attention ... ok
+test review_exposes_creation_update_and_directory_types_through_persistence_and_paging ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+
+     Running tests\paging.rs (target\debug\deps\paging-25d4b2bf47b75240.exe)
+
+running 2 tests
+test ten_thousand_persisted_operations_have_small_headers_and_consistent_counts ... ok
+test review_pages_are_bounded_filtered_and_history_has_no_operation_payload ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.38s
+
+     Running tests\parallel_comparison.rs (target\debug\deps\parallel_comparison-04309cddfc250729.exe)
+
+running 3 tests
+test one_locked_input_rejects_the_entire_parallel_scan ... ok
+test stale_input_in_parallel_validation_prevents_all_mutations ... ok
+test full_parallel_scan_preserves_filters_digests_and_exact_metrics ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.73s
+
+     Running tests\parallel_transfers.rs (target\debug\deps\parallel_transfers-f80ecc43b4634e2c.exe)
+
+running 9 tests
+test parallel_crash_child ... ok
+test invalid_worker_counts_are_rejected_without_changing_saved_task ... ok
+test killed_parallel_process_recovers_both_stages_and_retries ... ok
+test two_real_partial_stages_cancel_cleanly_without_worker_startup_recovery ... ok
+test concurrent_replacements_keep_each_old_version_and_commit_each_baseline ... ok
+test ten_workers_verify_copies_and_new_tasks_default_to_four ... ok
+test parallel_workers_share_the_task_bandwidth_budget ... ok
+test a_parallel_destination_race_preserves_external_bytes_and_prevents_following_deletes ... ok
+test bounded_parallel_transfers_preserve_all_modes_and_directory_order ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.27s
+
+     Running tests\planner.rs (target\debug\deps\planner-9fbbcbb93e0ca491.exe)
+
+running 3 tests
+test baseline_distinguishes_deletion_from_edit ... ok
+test directional_modes ... ok
+test first_run_and_conflicts_preserve_originals ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\progress.rs (target\debug\deps\progress-88efe4a5625fc946.exe)
+
+running 4 tests
+test rejected_preview_reports_error_without_changing_any_file ... ok
+test background_validation_cancellation_is_persisted_and_keeps_durable_work ... ok
+test preview_and_apply_validation_can_cancel_inside_streaming_hashes ... ok
+test cancellation_reports_actual_run_and_preserves_destination_during_staging ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.09s
+
+     Running tests\recovery.rs (target\debug\deps\recovery-2caf6266ae3a9ecc.exe)
+
+running 1 test
+test restore_is_reviewed_and_stale_checked ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+     Running tests\rename_lineage.rs (target\debug\deps\rename_lineage-8134c5fc277bc57d.exe)
+
+running 13 tests
+test a_late_native_rename_hint_invalidates_an_older_independent_create_preview ... ok
+test rename_then_edit_vs_opposing_edit_holds_both_paths_from_target_only_event ... ok
+test native_rename_pair_survives_a_subsequent_atomic_editor_replacement ... ok
+test unrelated_history_is_not_loaded_for_a_single_file_edit ... ok
+test a_normal_atomic_editor_save_is_an_edit_without_a_phantom_backup_conflict ... ok
+test a_later_identical_copy_joins_the_unresolved_rename_group ... ok
+test excluding_all_rename_targets_clears_attention_without_touching_excluded_originals ... ok
+test old_name_events_before_targets_do_not_erase_persistent_rename_identity ... ok
+test restoring_the_old_name_allows_later_unrelated_copies_with_the_historical_content ... ok
+test split_opposing_targets_survive_restart_without_copying_either_original ... ok
+test successive_unique_automatic_renames_advance_the_common_identity_checkpoint ... ok
+test version_four_migration_retains_rename_evidence_and_invalidates_older_reviews ... ok
+test reviewed_split_rename_choices_retire_old_identity_without_future_phantom_conflicts ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.54s
+
+     Running tests\retention.rs (target\debug\deps\retention-979a5047a74cc969.exe)
+
+running 1 test
+test configured_history_cap_retains_verified_recent_versions ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+
+     Running tests\review_safety.rs (target\debug\deps\review_safety-e7bc14912631651c.exe)
+
+running 6 tests
+test filtered_hidden_files_are_not_deletion_or_absence_signals ... ok
+test basic_logs_omit_paths_and_detailed_logs_are_explicit ... ok
+test case_spelling_across_roots_is_not_stale ... ok
+test read_only_destination_fails_without_losing_either_side ... ok
+test uncertain_duplicate_events_survive_offline_root_then_reconnect_safely ... ok
+test explicit_restore_preserves_current_bytes_even_after_scope_exclusion ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s
+
+     Running tests\safety.rs (target\debug\deps\safety-32b88a936175f425.exe)
+
+running 2 tests
+test locked_move_destination_never_removes_source ... ok
+test destination_edit_during_staging_must_not_be_overwritten ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.27s
+
+     Running tests\scheduler.rs (target\debug\deps\scheduler-954b4f69b84e7967.exe)
+
+running 2 tests
+test dst_gap_advances_and_repeated_hour_runs_once ... ok
+test periodic_calendar_and_month_skips ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\scope.rs (target\debug\deps\scope-bb90950923ce379f.exe)
+
+running 3 tests
+test hidden_directory_excludes_its_entire_subtree ... ok
+test directory_events_keep_spelling_and_respect_filters ... ok
+test system_attribute_is_shared_by_full_scan_and_incremental_planning ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests\task_identifiers.rs (target\debug\deps\task_identifiers-35c793eeddbf6c93.exe)
+
+running 2 tests
+test identifiers_roundtrip_and_colliding_imports_get_new_automatic_identifiers ... ok
+test editable_identifiers_preserve_baselines_and_history_and_reject_duplicates ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+     Running tests\task_policies.rs (target\debug\deps\task_policies-34c838faae065069.exe)
+
+running 7 tests
+test strict_policy_survives_export_import_and_restart_without_enabling_automation ... ok
+test explicitly_excluded_conflict_does_not_leave_an_unreviewable_strict_hold ... ok
+test conflict_hold_overrides_approved_automatic_deletion_until_explicit_decision ... ok
+test strict_hold_carries_known_conflicts_across_batches_and_rejects_older_partial_plans ... ok
+test require_choices_holds_entire_run_without_baseline_or_file_changes_until_reviewed ... ok
+test attribute_exclusion_releases_strict_hold_without_changing_either_original ... ok
+test full_content_policy_persists_and_detects_unnotified_timestamp_preserving_edit ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.55s
+
+     Running tests\version_layout.rs (target\debug\deps\version_layout-32697830639c4926.exe)
+
+running 2 tests
+test new_protected_versions_are_grouped_by_task_and_restore ... ok
+test legacy_flat_versions_remain_restorable_and_obey_retention ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.86s
+
+     Running tests\watcher.rs (target\debug\deps\watcher-f3b87fbac33939ab.exe)
+
+running 1 test
+test native_notifications_observe_both_roots ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\windows_paths.rs (target\debug\deps\windows_paths-fdc91192949508c5.exe)
+
+running 2 tests
+test nested_move_verifies_every_file_before_source_directory_removal ... ok
+test unicode_and_long_paths_transfer_with_empty_folders ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+
+     Running tests\windows_safety.rs (target\debug\deps\windows_safety-49aabdbc92fabc19.exe)
+
+running 3 tests
+test verified_transfer_preserves_file_modification_time ... ok
+test junction_root_and_nested_loop_are_rejected_without_following_target ... ok
+test access_denied_subdirectory_never_becomes_deletion_evidence ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+
+   Doc-tests foldersync_engine
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+✓ Lockfile passes supply-chain policies (verified 3h ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+
+Done in 1.2s using pnpm v11.25.0

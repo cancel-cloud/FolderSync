@@ -311,6 +311,18 @@ pub(crate) fn read_entry_controlled(
     cancel: Option<&std::sync::atomic::AtomicBool>,
     progress: Option<&ProgressState>,
 ) -> Result<Option<Entry>> {
+    let matcher = Matcher::new(scope)?;
+    read_entry_matched(root, relative, &matcher, metrics, cancel, progress)
+}
+pub(crate) fn read_entry_matched(
+    root: &Path,
+    relative: &str,
+    matcher: &Matcher,
+    metrics: &mut Metrics,
+    cancel: Option<&std::sync::atomic::AtomicBool>,
+    progress: Option<&ProgressState>,
+) -> Result<Option<Entry>> {
+    let scope = &matcher.scope;
     crate::progress::check_cancel(cancel)?;
     let path = safe_path(root, relative)?;
     if excluded_attributes(root, relative, scope)? {
@@ -322,7 +334,7 @@ pub(crate) fn read_entry_controlled(
         Err(e) => return Err(e.into()),
     };
     ensure!(!reparse(&m), "Symlinks/junctions are unsupported");
-    if !Matcher::new(scope)?.allows(relative, m.is_dir()) {
+    if !matcher.allows(relative, m.is_dir()) {
         return Ok(None);
     }
     metrics.scanned_entries += 1;
@@ -332,7 +344,7 @@ pub(crate) fn read_entry_controlled(
             s.file_bytes = 0;
             s.file_total = 0;
             if s.phase == ProgressPhase::Discovering {
-                s.completed_entries = metrics.scanned_entries;
+                s.completed_entries = s.completed_entries.max(metrics.scanned_entries);
             }
         });
     }
@@ -374,7 +386,7 @@ pub(crate) fn scan_controlled(
     crate::progress::check_cancel(cancel)?;
     root_identity(root)?;
     let matcher = Matcher::new(scope)?;
-    let mut tree = Tree::new();
+    let mut paths = Vec::new();
     let mut it = WalkDir::new(root)
         .follow_links(false)
         .min_depth(1)
@@ -394,16 +406,91 @@ pub(crate) fn scan_controlled(
             }
             continue;
         }
-        match read_entry_controlled(root, &relative, scope, metrics, cancel, progress)? {
-            Some(e) => {
-                if tree.insert(path_key(&relative), e).is_some() {
-                    bail!("Case-insensitive path collision: {relative}")
-                }
+        if excluded_attributes(root, &relative, scope)? {
+            if item.file_type().is_dir() {
+                it.skip_current_dir();
             }
-            None if item.file_type().is_dir() => it.skip_current_dir(),
-            None => {}
+            continue;
         }
+        paths.push(relative);
+    }
+    use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+    let next = AtomicUsize::new(0);
+    let completed = AtomicUsize::new(0);
+    let failed = AtomicBool::new(false);
+    let before = metrics.scanned_entries;
+    type Chunk = (Tree, Metrics, Result<()>);
+    let results = std::thread::scope(|threads| -> Result<Vec<Chunk>> {
+        let mut handles = Vec::new();
+        for _ in 0..comparison_workers().min(paths.len()) {
+            handles.push(threads.spawn(|| -> Chunk {
+                let mut tree = Tree::new();
+                let mut local = Metrics::default();
+                let result = (|| -> Result<()> {
+                    loop {
+                        crate::progress::check_cancel(cancel)?;
+                        if failed.load(Ordering::Relaxed) {
+                            break;
+                        }
+                        let i = next.fetch_add(1, Ordering::Relaxed);
+                        let Some(relative) = paths.get(i) else {
+                            break;
+                        };
+                        let result = read_entry_matched(
+                            root, relative, &matcher, &mut local, cancel, progress,
+                        );
+                        if result.is_err() {
+                            failed.store(true, Ordering::Relaxed);
+                        }
+                        if let Some(entry) = result?
+                            && tree.insert(path_key(relative), entry).is_some()
+                        {
+                            bail!("Case-insensitive path collision: {relative}");
+                        }
+                        let done = completed.fetch_add(1, Ordering::Relaxed) + 1;
+                        if let Some(progress) = progress {
+                            progress.update(|s| {
+                                s.completed_entries = s.completed_entries.max(before + done as u64)
+                            });
+                        }
+                    }
+                    Ok(())
+                })();
+                (tree, local, result)
+            }));
+        }
+        handles
+            .into_iter()
+            .map(|h| {
+                h.join()
+                    .map_err(|_| anyhow::anyhow!("Comparison worker panicked"))
+            })
+            .collect()
+    })?;
+    let mut tree = Tree::new();
+    let mut failure = None;
+    for (entries, local, result) in results {
+        if let Err(error) = result {
+            failure.get_or_insert(error);
+        }
+        metrics.scanned_entries += local.scanned_entries;
+        metrics.hashed_bytes += local.hashed_bytes;
+        for (key, entry) in entries {
+            if tree.insert(key, entry).is_some() {
+                failure.get_or_insert_with(|| anyhow::anyhow!("Case-insensitive path collision"));
+            }
+        }
+    }
+    if let Some(error) = failure {
+        return Err(error);
     }
     root_identity(root)?;
     Ok(tree)
+}
+
+/// Bound file handles, buffers and CPU use independently of transfer settings.
+pub(crate) fn comparison_workers() -> usize {
+    std::thread::available_parallelism()
+        .map_or(1, |n| n.get())
+        .min(10)
 }
