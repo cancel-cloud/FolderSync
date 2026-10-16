@@ -1,0 +1,12 @@
+{
+  "version": "0.1.6",
+  "elevated": false,
+  "installer_bytes": 4123378,
+  "installation_did_not_launch": true,
+  "source_commit": "2981947",
+  "exit_code": 0,
+  "installer_sha256": "1C864E10F0A5E5EB7177924AFFB5150FD1484119088EF6D2B7B04ADDAEADF4D8",
+  "installed_exe_sha256": "F4FEEA7A0741CBE3249821FFFC6723B6E015E2D802D94D123BFC507F2C6BCE91",
+  "startup_preference_preserved": true,
+  "startup_enabled": true
+}
