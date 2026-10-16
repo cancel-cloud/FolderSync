@@ -1,0 +1,1398 @@
+    Checking foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Checking foldersync v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\src-tauri)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.57s
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+   Compiling foldersync v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.07s
+     Running unittests src\main.rs (target\debug\deps\foldersync-1addf11a8498db71.exe)
+
+running 6 tests
+test presentation::tests::conflict_and_failure_notices_are_distinct_in_both_languages ... ok
+test presentation::tests::language_changes_labels_without_changing_tray_action_identity ... ok
+test notification_tests::command_cancellation_has_a_reserved_marker_and_os_errors_keep_details ... ok
+test progress_runtime::tests::sampler_emits_only_changes_and_emits_idle_after_work ... ok
+test notification_tests::activation_routes_to_the_originating_task_without_an_apply_action ... ok
+test background::tests::scheduled_queue_resumes_after_restart_before_next_occurrence ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+
+     Running unittests src\lib.rs (target\debug\deps\foldersync_engine-c90337c258a980cc.exe)
+
+running 4 tests
+test watch::tests::injected_overflow_marks_uncertainty_instead_of_dropping_it_silently ... ok
+test transfer::tests::expected_destination_is_not_recaptured_after_backup ... ok
+test transfer::tests::injected_disk_full_keeps_destination_and_cleans_owned_stage ... ok
+test transfer::tests::interrupted_atomic_displacement_is_preserved_on_restart ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+     Running tests\automatic_deletion.rs (target\debug\deps\automatic_deletion-a08c9d935666c66f.exe)
+
+running 10 tests
+test automatic_baselines_do_not_substitute_for_explicit_manual_approval ... ok
+test directory_deletion_counts_descendants_against_limits ... ok
+test mirror_extras_without_a_common_baseline_remain_manual ... ok
+test enabled_policy_never_turns_an_unavailable_root_into_deletion_evidence ... ok
+test percentage_boundary_uses_known_baseline_and_whole_tree_loss_stops ... ok
+test policy_and_manual_approval_persist_but_imports_cannot_enable_deletion ... ok
+test entry_and_percentage_limits_stop_batches_before_any_mutation ... ok
+test native_both_side_deletions_are_protected_and_conflicts_still_preserve_edits ... ok
+test scope_changes_require_new_manual_review_and_move_cannot_opt_in ... ok
+test reappearing_deleted_side_during_backup_preserves_both_files ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.22s
+
+     Running tests\automation.rs (target\debug\deps\automation-7adf7bf33ac512f6.exe)
+
+running 2 tests
+test scheduled_occurrence_survives_restart_and_coalesces_missed_runs ... ok
+test durable_queue_keeps_conflict_attention_while_other_changes_sync ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+     Running tests\automation_recovery.rs (target\debug\deps\automation_recovery-33f5bc9988f5b97b.exe)
+
+running 4 tests
+test interrupted_plan_cannot_be_revised_or_reapplied ... ok
+test unchanged_automatic_reconciliation_establishes_deletion_baseline ... ok
+test destructive_background_review_remains_explicitly_applyable ... ok
+test equal_external_resolution_advances_baseline_and_clears_conflict ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
+
+     Running tests\crash.rs (target\debug\deps\crash-a20746aa87dcc4e8.exe)
+
+running 2 tests
+test crash_child_process ... ok
+test termination_midcopy_preserves_original_and_recovers_staging ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.41s
+
+     Running tests\deleted_task_recovery.rs (target\debug\deps\deleted_task_recovery-1707589b03a581eb.exe)
+
+running 4 tests
+test archived_task_staging_is_cleaned_at_restart_without_touching_user_files ... ok
+test archived_restore_rejects_replaced_root_but_does_not_require_other_side_online ... ok
+test deleted_task_versions_remain_reviewable_and_restorable_without_reactivating_sync ... ok
+test legacy_orphan_catalog_is_recovered_from_recorded_run_roots ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.00s
+
+     Running tests\event_regressions.rs (target\debug\deps\event_regressions-55bc6d87f1af1ab0.exe)
+
+running 3 tests
+test event_invalidation_detects_same_length_timestamp_preserving_edit ... ok
+test delayed_duplicate_events_use_current_bytes_and_do_not_replay_old_edits ... ok
+test rename_events_preserve_old_destination_until_exact_plan_approval ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+
+     Running tests\filesystem.rs (target\debug\deps\filesystem-822c48acb886492d.exe)
+
+running 2 tests
+test roots_reject_overlap_and_preserve_preview_files ... ok
+test scan_filters_and_hashes_even_metadata_collisions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\history.rs (target\debug\deps\history-20d961583f06e9d6.exe)
+
+running 1 test
+test history_is_bounded_without_pruning_interrupted_recovery_or_baselines ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.35s
+
+     Running tests\incremental.rs (target\debug\deps\incremental-3da01b041491f7ac.exe)
+
+running 1 test
+test one_change_only_hashes_affected_files ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.95s
+
+     Running tests\index.rs (target\debug\deps\index-fa6448666cf29f9f.exe)
+
+running 1 test
+test empty_directory_merkle_digest_is_current_after_recreation ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests\integration.rs (target\debug\deps\integration-baf5f610018e55d2.exe)
+
+running 5 tests
+test stale_and_offline_never_delete ... ok
+test delete_edit_preserves_survivor ... ok
+test folder_delete_edit_is_attention_instead_of_partial_directory_removal ... ok
+test modes_copy_mirror_move ... ok
+test two_way_preview_conflict_deletion_and_restart ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.28s
+
+     Running tests\management.rs (target\debug\deps\management-fb26522aeef33430.exe)
+
+running 5 tests
+test import_is_atomic_and_disables_triggers ... ok
+test login_only_tasks_are_guarded_against_intersecting_pairs ... ok
+test refuses_future_database_schema ... ok
+test bulk_group_assignment_is_atomic_persistent_and_invalidates_old_reviews ... ok
+test legacy_index_migration_preserves_task_configuration ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+
+     Running tests\paging.rs (target\debug\deps\paging-8eb35d60269182bf.exe)
+
+running 2 tests
+test ten_thousand_persisted_operations_have_small_headers_and_consistent_counts ... ok
+test review_pages_are_bounded_filtered_and_history_has_no_operation_payload ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 18.64s
+
+     Running tests\planner.rs (target\debug\deps\planner-79f295afa49a2cef.exe)
+
+running 3 tests
+test baseline_distinguishes_deletion_from_edit ... ok
+test directional_modes ... ok
+test first_run_and_conflicts_preserve_originals ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\progress.rs (target\debug\deps\progress-f188a4a0643cad13.exe)
+
+running 4 tests
+test rejected_preview_reports_error_without_changing_any_file ... ok
+test preview_and_apply_validation_can_cancel_inside_streaming_hashes ... ok
+test background_validation_cancellation_is_persisted_and_keeps_durable_work ... ok
+test cancellation_reports_actual_run_and_preserves_destination_during_staging ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.97s
+
+     Running tests\recovery.rs (target\debug\deps\recovery-56144acfae98e0f9.exe)
+
+running 1 test
+test restore_is_reviewed_and_stale_checked ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
+     Running tests\retention.rs (target\debug\deps\retention-77880988dcbb304e.exe)
+
+running 1 test
+test configured_history_cap_retains_verified_recent_versions ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.59s
+
+     Running tests\review_safety.rs (target\debug\deps\review_safety-13ac97489cff52f8.exe)
+
+running 6 tests
+test filtered_hidden_files_are_not_deletion_or_absence_signals ... ok
+test basic_logs_omit_paths_and_detailed_logs_are_explicit ... ok
+test case_spelling_across_roots_is_not_stale ... ok
+test read_only_destination_fails_without_losing_either_side ... ok
+test uncertain_duplicate_events_survive_offline_root_then_reconnect_safely ... ok
+test explicit_restore_preserves_current_bytes_even_after_scope_exclusion ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s
+
+     Running tests\safety.rs (target\debug\deps\safety-e5fd8f611491a584.exe)
+
+running 2 tests
+test locked_move_destination_never_removes_source ... ok
+test destination_edit_during_staging_must_not_be_overwritten ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.28s
+
+     Running tests\scheduler.rs (target\debug\deps\scheduler-266f18ebdf5d92fe.exe)
+
+running 2 tests
+test dst_gap_advances_and_repeated_hour_runs_once ... ok
+test periodic_calendar_and_month_skips ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\scope.rs (target\debug\deps\scope-d231ef5df8347a62.exe)
+
+running 3 tests
+test hidden_directory_excludes_its_entire_subtree ... ok
+test system_attribute_is_shared_by_full_scan_and_incremental_planning ... ok
+test directory_events_keep_spelling_and_respect_filters ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+     Running tests\task_identifiers.rs (target\debug\deps\task_identifiers-e569f236c943f7b7.exe)
+
+running 2 tests
+test identifiers_roundtrip_and_colliding_imports_get_new_automatic_identifiers ... ok
+test editable_identifiers_preserve_baselines_and_history_and_reject_duplicates ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+
+     Running tests\watcher.rs (target\debug\deps\watcher-1b69745daae29c1f.exe)
+
+running 1 test
+test native_notifications_observe_both_roots ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\windows_paths.rs (target\debug\deps\windows_paths-7cbb6e444df21945.exe)
+
+running 2 tests
+test nested_move_verifies_every_file_before_source_directory_removal ... ok
+test unicode_and_long_paths_transfer_with_empty_folders ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+
+     Running tests\windows_safety.rs (target\debug\deps\windows_safety-99dd8b9f39f3a54e.exe)
+
+running 3 tests
+test verified_transfer_preserves_file_modification_time ... ok
+test junction_root_and_nested_loop_are_rejected_without_following_target ... ok
+test access_denied_subdirectory_never_becomes_deletion_evidence ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+
+   Doc-tests foldersync_engine
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+$ tsc --noEmit
+$ eslint src vite.config.ts
+$ vitest run
+
+ RUN  v3.2.7 C:/Users/Lukas/Developer/SyncFolders
+
+ ✓ src/review.test.ts (2 tests) 5ms
+ ✓ src/i18n.test.ts (2 tests) 36ms
+ ❯ src/App.test.tsx (12 tests | 1 failed) 5561ms
+   × editable task identifiers save without replacing internal task identity 584ms
+     → Unable to find an accessible element with the role "textbox" and name "Task ID"
+
+Here are the accessible roles:
+
+  complementary:
+
+  Name "":
+  [36m<aside />[39m
+
+  --------------------------------------------------
+  navigation:
+
+  Name "Main navigation":
+  [36m<nav[39m
+    [33maria-label[39m=[32m"Main navigation"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Tasks1":
+  [36m<button[39m
+    [33mclass[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Settings":
+  [36m<button[39m
+    [33mclass[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Recovery":
+  [36m<button[39m
+    [33mclass[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Pause or resume automation":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Pause or resume automation"[39m
+    [33mclass[39m=[32m"button ghost"[39m
+  [36m/>[39m
+
+  Name "Stop active work":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Stop active work"[39m
+    [33mclass[39m=[32m"button ghost"[39m
+  [36m/>[39m
+
+  Name "All tasks":
+  [36m<button[39m
+    [33mclass[39m=[32m"back"[39m
+  [36m/>[39m
+
+  Name "Save task":
+  [36m<button[39m
+    [33mclass[39m=[32m"button primary"[39m
+  [36m/>[39m
+
+  Name "Browse…":
+  [36m<button[39m
+    [33mclass[39m=[32m"button outline"[39m
+  [36m/>[39m
+
+  Name "Browse…":
+  [36m<button[39m
+    [33mclass[39m=[32m"button outline"[39m
+  [36m/>[39m
+
+  Name "Test filters":
+  [36m<button[39m
+    [33mclass[39m=[32m"button outline"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"hint"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"hint"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"hint"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  banner:
+
+  Name "":
+  [36m<header />[39m
+
+  --------------------------------------------------
+  main:
+
+  Name "":
+  [36m<main[39m
+    [33maria-busy[39m=[32m"false"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "Configure folder pair":
+  [36m<h1 />[39m
+
+  Name "Task essentials":
+  [36m<h2 />[39m
+
+  Name "Scope & filters":
+  [36m<h2 />[39m
+
+  Name "Automation":
+  [36m<h2 />[39m
+
+  Name "Automatic deletion":
+  [36m<h2 />[39m
+
+  Name "Schedules & startup":
+  [36m<h2 />[39m
+
+  Name "Recovery":
+  [36m<h2 />[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "Task name":
+  [36m<input[39m
+    [33mplaceholder[39m=[32m"Engineering workspace"[39m
+    [33mvalue[39m=[32m"Engineering pair"[39m
+  [36m/>[39m
+
+  Name "Task ID Unique among active tasks. Leave blank for an automatic ID.":
+  [36m<input[39m
+    [33mmaxlength[39m=[32m"64"[39m
+    [33mplaceholder[39m=[32m"35435352-ee0f-45cf-82e6-f4edf955a4f7"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Group":
+  [36m<input[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Folder A path":
+  [36m<input[39m
+    [33maria-label[39m=[32m"Folder A path"[39m
+    [33mplaceholder[39m=[32m"C:\\workspace or \\\\server\\share\\folder"[39m
+    [33mvalue[39m=[32m"A"[39m
+  [36m/>[39m
+
+  Name "Folder B path":
+  [36m<input[39m
+    [33maria-label[39m=[32m"Folder B path"[39m
+    [33mplaceholder[39m=[32m"C:\\workspace or \\\\server\\share\\folder"[39m
+    [33mvalue[39m=[32m"B"[39m
+  [36m/>[39m
+
+  Name "Include files":
+  [36m<textarea[39m
+    [33mrows[39m=[32m"2"[39m
+  [36m/>[39m
+
+  Name "Exclude files":
+  [36m<textarea[39m
+    [33mrows[39m=[32m"2"[39m
+  [36m/>[39m
+
+  Name "Include folders":
+  [36m<textarea[39m
+    [33mrows[39m=[32m"2"[39m
+  [36m/>[39m
+
+  Name "Exclude folders":
+  [36m<textarea[39m
+    [33mrows[39m=[32m"2"[39m
+  [36m/>[39m
+
+  Name "Selected top-level folders (empty = all)":
+  [36m<textarea[39m
+    [33mrows[39m=[32m"2"[39m
+  [36m/>[39m
+
+  Name "Test relative path against these filters":
+  [36m<input[39m
+    [33mvalue[39m=[32m"project/file.txt"[39m
+  [36m/>[39m
+
+  Name "History patterns (empty = all files)":
+  [36m<textarea />[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "Synchronization modeKeep changes in both folders. Conflicts stay protected.":
+  [36m<select[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Schedule":
+  [36m<select />[39m
+
+  --------------------------------------------------
+  option:
+
+  Name "Two-way sync":
+  [36m<option[39m
+    [33mvalue[39m=[32m"TwoWay"[39m
+  [36m/>[39m
+
+  Name "Mirror A → B":
+  [36m<option[39m
+    [33mvalue[39m=[32m"Mirror"[39m
+  [36m/>[39m
+
+  Name "Copy A → B":
+  [36m<option[39m
+    [33mvalue[39m=[32m"Copy"[39m
+  [36m/>[39m
+
+  Name "Move A → B":
+  [36m<option[39m
+    [33mvalue[39m=[32m"Move"[39m
+  [36m/>[39m
+
+  Name "Disabled":
+  [36m<option[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Periodic":
+  [36m<option[39m
+    [33mvalue[39m=[32m"periodic"[39m
+  [36m/>[39m
+
+  Name "Daily":
+  [36m<option[39m
+    [33mvalue[39m=[32m"daily"[39m
+  [36m/>[39m
+
+  Name "Weekly":
+  [36m<option[39m
+    [33mvalue[39m=[32m"weekly"[39m
+  [36m/>[39m
+
+  Name "Monthly":
+  [36m<option[39m
+    [33mvalue[39m=[32m"monthly"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  checkbox:
+
+  Name "Exclude root files":
+  [36m<input[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Skip hidden":
+  [36m<input[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Skip system":
+  [36m<input[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Watch both folders":
+  [36m<input[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Allow proven baseline deletions automatically":
+  [36m<input[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Run when FolderSync starts (including login startup)":
+  [36m<input[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  status:
+
+  Name "":
+  [36m<span[39m
+    [33mrole[39m=[32m"status"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  spinbutton:
+
+  Name "Debounce (seconds)":
+  [36m<input[39m
+    [33mmax[39m=[32m"3600"[39m
+    [33mmin[39m=[32m"1"[39m
+    [33mtype[39m=[32m"number"[39m
+    [33mvalue[39m=[32m"20"[39m
+  [36m/>[39m
+
+  Name "Bandwidth limit (KiB/s; 0 = unlimited)":
+  [36m<input[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mtype[39m=[32m"number"[39m
+    [33mvalue[39m=[32m"0"[39m
+  [36m/>[39m
+
+  Name "Maximum removed entries per run":
+  [36m<input[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mmax[39m=[32m"100000"[39m
+    [33mmin[39m=[32m"1"[39m
+    [33mtype[39m=[32m"number"[39m
+    [33mvalue[39m=[32m"20"[39m
+  [36m/>[39m
+
+  Name "Maximum percentage of indexed baseline":
+  [36m<input[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mmax[39m=[32m"100"[39m
+    [33mmin[39m=[32m"1"[39m
+    [33mtype[39m=[32m"number"[39m
+    [33mvalue[39m=[32m"10"[39m
+  [36m/>[39m
+
+  Name "Retry attempts":
+  [36m<input[39m
+    [33mmax[39m=[32m"10"[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mtype[39m=[32m"number"[39m
+    [33mvalue[39m=[32m"3"[39m
+  [36m/>[39m
+
+  Name "Versions per matching file":
+  [36m<input[39m
+    [33mmax[39m=[32m"1000"[39m
+    [33mmin[39m=[32m"1"[39m
+    [33mtype[39m=[32m"number"[39m
+    [33mvalue[39m=[32m"10"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  code:
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"storage-path"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  contentinfo:
+
+  Name "":
+  [36m<footer />[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"app"[39m
+    [36m>[39m
+      [36m<aside>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"brand"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mark"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-arrow-left-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"22"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"22"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 3 4 7l4 4"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M4 7h16"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m16 21 4-4-4-4"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 17H4"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [0mFolderSync[0m
+            [36m<small>[39m
+              [0mLOCAL WORKSPACE[0m
+            [36m</small>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<nav[39m
+          [33maria-label[39m=[32m"Main navigation"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-layout-dashboard"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"9"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"5"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"9"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"12"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"5"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"16"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mTasks[0m
+            [36m<span>[39m
+              [0m1[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-settings"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"3"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mSettings[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-file-clock"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M16 22h2a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M14 2v4a2 2 0 0 0 2 2h4"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"8"[39m
+                [33mcy[39m=[32m"16"[39m
+                [33mr[39m=[32m"6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M9.5 17.5 8 16.25V14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mRecovery[0m
+          [36m</button>[39m
+        [36m</nav>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"aside-bottom"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33mclass[39m=[32m"lucide lucide-shield-check"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"18"[39m
+            [33mstroke[39m...
+   ✓ deleted-task recovery stays separate from synchronization and restore requires confirmation  407ms
+   ✓ enabling automatic deletion requires a separate policy confirmation before saving  410ms
+   ✓ group filtering clears hidden selections and bulk reassignment refreshes collapsible groups  750ms
+   ✓ saving a selected task into another group clears its hidden bulk selection  576ms
+   ✓ nested conflict choice only revises preview; Apply requires its separate confirmation  591ms
+   ✓ saved German preference localizes dashboard, conflict review and metadata 159ms
+   ✓ review requests bounded pages and resets paging when filters change  841ms
+   ✓ terminal Apply result Failed: destination locked updates the dashboard and requires a fresh preview  473ms
+   ✓ terminal Apply result Cancelled updates the dashboard and requires a fresh preview  458ms
+   ✓ latest progress is visible during background work and Cancel reaches the native stop command 134ms
+   ✓ cancelled discovery refreshes persisted status and shows a localized cancellation message 177ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/App.test.tsx > editable task identifiers save without replacing internal task identity
+TestingLibraryElementError: Unable to find an accessible element with the role "textbox" and name "Task ID"
+
+Here are the accessible roles:
+
+  complementary:
+
+  Name "":
+  <aside />
+
+  --------------------------------------------------
+  navigation:
+
+  Name "Main navigation":
+  <nav
+    aria-label="Main navigation"
+  />
+
+  --------------------------------------------------
+  button:
+
+  Name "Tasks1":
+  <button
+    class=""
+  />
+
+  Name "Settings":
+  <button
+    class=""
+  />
+
+  Name "Recovery":
+  <button
+    class=""
+  />
+
+  Name "Pause or resume automation":
+  <button
+    aria-label="Pause or resume automation"
+    class="button ghost"
+  />
+
+  Name "Stop active work":
+  <button
+    aria-label="Stop active work"
+    class="button ghost"
+  />
+
+  Name "All tasks":
+  <button
+    class="back"
+  />
+
+  Name "Save task":
+  <button
+    class="button primary"
+  />
+
+  Name "Browse…":
+  <button
+    class="button outline"
+  />
+
+  Name "Browse…":
+  <button
+    class="button outline"
+  />
+
+  Name "Test filters":
+  <button
+    class="button outline"
+  />
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  <p />
+
+  Name "":
+  <p />
+
+  Name "":
+  <p
+    class="hint"
+  />
+
+  Name "":
+  <p />
+
+  Name "":
+  <p />
+
+  Name "":
+  <p />
+
+  Name "":
+  <p
+    class="hint"
+  />
+
+  Name "":
+  <p />
+
+  Name "":
+  <p
+    class="hint"
+  />
+
+  --------------------------------------------------
+  banner:
+
+  Name "":
+  <header />
+
+  --------------------------------------------------
+  main:
+
+  Name "":
+  <main
+    aria-busy="false"
+  />
+
+  --------------------------------------------------
+  heading:
+
+  Name "Configure folder pair":
+  <h1 />
+
+  Name "Task essentials":
+  <h2 />
+
+  Name "Scope & filters":
+  <h2 />
+
+  Name "Automation":
+  <h2 />
+
+  Name "Automatic deletion":
+  <h2 />
+
+  Name "Schedules & startup":
+  <h2 />
+
+  Name "Recovery":
+  <h2 />
+
+  --------------------------------------------------
+  textbox:
+
+  Name "Task name":
+  <input
+    placeholder="Engineering workspace"
+    value="Engineering pair"
+  />
+
+  Name "Task ID Unique among active tasks. Leave blank for an automatic ID.":
+  <input
+    maxlength="64"
+    placeholder="35435352-ee0f-45cf-82e6-f4edf955a4f7"
+    value=""
+  />
+
+  Name "Group":
+  <input
+    value=""
+  />
+
+  Name "Folder A path":
+  <input
+    aria-label="Folder A path"
+    placeholder="C:\\workspace or \\\\server\\share\\folder"
+    value="A"
+  />
+
+  Name "Folder B path":
+  <input
+    aria-label="Folder B path"
+    placeholder="C:\\workspace or \\\\server\\share\\folder"
+    value="B"
+  />
+
+  Name "Include files":
+  <textarea
+    rows="2"
+  />
+
+  Name "Exclude files":
+  <textarea
+    rows="2"
+  />
+
+  Name "Include folders":
+  <textarea
+    rows="2"
+  />
+
+  Name "Exclude folders":
+  <textarea
+    rows="2"
+  />
+
+  Name "Selected top-level folders (empty = all)":
+  <textarea
+    rows="2"
+  />
+
+  Name "Test relative path against these filters":
+  <input
+    value="project/file.txt"
+  />
+
+  Name "History patterns (empty = all files)":
+  <textarea />
+
+  --------------------------------------------------
+  combobox:
+
+  Name "Synchronization modeKeep changes in both folders. Conflicts stay protected.":
+  <select
+    disabled=""
+  />
+
+  Name "Schedule":
+  <select />
+
+  --------------------------------------------------
+  option:
+
+  Name "Two-way sync":
+  <option
+    value="TwoWay"
+  />
+
+  Name "Mirror A → B":
+  <option
+    value="Mirror"
+  />
+
+  Name "Copy A → B":
+  <option
+    value="Copy"
+  />
+
+  Name "Move A → B":
+  <option
+    value="Move"
+  />
+
+  Name "Disabled":
+  <option
+    value=""
+  />
+
+  Name "Periodic":
+  <option
+    value="periodic"
+  />
+
+  Name "Daily":
+  <option
+    value="daily"
+  />
+
+  Name "Weekly":
+  <option
+    value="weekly"
+  />
+
+  Name "Monthly":
+  <option
+    value="monthly"
+  />
+
+  --------------------------------------------------
+  checkbox:
+
+  Name "Exclude root files":
+  <input
+    type="checkbox"
+  />
+
+  Name "Skip hidden":
+  <input
+    type="checkbox"
+  />
+
+  Name "Skip system":
+  <input
+    type="checkbox"
+  />
+
+  Name "Watch both folders":
+  <input
+    type="checkbox"
+  />
+
+  Name "Allow proven baseline deletions automatically":
+  <input
+    disabled=""
+    type="checkbox"
+  />
+
+  Name "Run when FolderSync starts (including login startup)":
+  <input
+    type="checkbox"
+  />
+
+  --------------------------------------------------
+  status:
+
+  Name "":
+  <span
+    role="status"
+  />
+
+  --------------------------------------------------
+  spinbutton:
+
+  Name "Debounce (seconds)":
+  <input
+    max="3600"
+    min="1"
+    type="number"
+    value="20"
+  />
+
+  Name "Bandwidth limit (KiB/s; 0 = unlimited)":
+  <input
+    min="0"
+    type="number"
+    value="0"
+  />
+
+  Name "Maximum removed entries per run":
+  <input
+    disabled=""
+    max="100000"
+    min="1"
+    type="number"
+    value="20"
+  />
+
+  Name "Maximum percentage of indexed baseline":
+  <input
+    disabled=""
+    max="100"
+    min="1"
+    type="number"
+    value="10"
+  />
+
+  Name "Retry attempts":
+  <input
+    max="10"
+    min="0"
+    type="number"
+    value="3"
+  />
+
+  Name "Versions per matching file":
+  <input
+    max="1000"
+    min="1"
+    type="number"
+    value="10"
+  />
+
+  --------------------------------------------------
+  code:
+
+  Name "":
+  <code
+    class="storage-path"
+  />
+
+  --------------------------------------------------
+  contentinfo:
+
+  Name "":
+  <footer />
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="app"
+    >
+      <aside>
+        <div
+          class="brand"
+        >
+          <div
+            class="mark"
+          >
+            <svg
+              class="lucide lucide-arrow-left-right"
+              fill="none"
+              height="22"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="22"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 3 4 7l4 4"
+              />
+              <path
+                d="M4 7h16"
+              />
+              <path
+                d="m16 21 4-4-4-4"
+              />
+              <path
+                d="M20 17H4"
+              />
+            </svg>
+          </div>
+          <div>
+            FolderSync
+            <small>
+              LOCAL WORKSPACE
+            </small>
+          </div>
+        </div>
+        <nav
+          aria-label="Main navigation"
+        >
+          <button
+            class=""
+          >
+            <svg
+              class="lucide lucide-layout-dashboard"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                height="9"
+                rx="1"
+                width="7"
+                x="3"
+                y="3"
+              />
+              <rect
+                height="5"
+                rx="1"
+                width="7"
+                x="14"
+                y="3"
+              />
+              <rect
+                height="9"
+                rx="1"
+                width="7"
+                x="14"
+                y="12"
+              />
+              <rect
+                height="5"
+                rx="1"
+                width="7"
+                x="3"
+                y="16"
+              />
+            </svg>
+            Tasks
+            <span>
+              1
+            </span>
+          </button>
+          <button
+            class=""
+          >
+            <svg
+              class="lucide lucide-settings"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+              />
+              <circle
+                cx="12"
+                cy="12"
+                r="3"
+              />
+            </svg>
+            Settings
+          </button>
+          <button
+            class=""
+          >
+            <svg
+              class="lucide lucide-file-clock"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M16 22h2a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"
+              />
+              <path
+                d="M14 2v4a2 2 0 0 0 2 2h4"
+              />
+              <circle
+                cx="8"
+                cy="16"
+                r="6"
+              />
+              <path
+                d="M9.5 17.5 8 16.25V14"
+              />
+            </svg>
+            Recovery
+          </button>
+        </nav>
+        <div
+          class="aside-bottom"
+        >
+          <svg
+            class="lucide lucide-shield-check"
+            fill="none"
+            height="18"
+            stroke...
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/App.test.tsx:83:26
+     81|   render(<App />);
+     82|   await user.click(await screen.findByRole("button", { name: "Configur…
+     83|   await user.type(screen.getByRole("textbox", { name: "Task ID" }), "C…
+       |                          ^
+     84|   await user.click(screen.getByRole("button", { name: "Save task" }));
+     85|   await waitFor(() => expect(task.identifier).toBe("CAD-01"));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 15 passed (16)
+   Start at  14:41:31
+   Duration  13.62s (transform 4.36s, setup 0ms, collect 5.09s, tests 5.60s, environment 2.11s, prepare 1.06s)
+
+[ELIFECYCLE] Test failed. See above for more details.

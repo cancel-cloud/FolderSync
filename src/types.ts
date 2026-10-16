@@ -27,6 +27,7 @@ export interface Schedule {
 }
 export interface Task {
   id: string;
+  identifier: string;
   name: string;
   a: string;
   b: string;
@@ -159,6 +160,7 @@ export interface TaskStatus {
 export function newTask(mode: Mode = "TwoWay"): Task {
   return {
     id: crypto.randomUUID(),
+    identifier: "",
     name: "",
     a: "",
     b: "",

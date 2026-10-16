@@ -13,7 +13,7 @@ Closing the window leaves the process running in the tray. Reopen with the short
 ## Implemented
 
 - Two-way, copy, mirror and verified move; baseline-aware conflicts and protected deletions.
-- Persistent tasks, groups, duplication, own versioned JSON import/export, native directory picker.
+- Persistent tasks with editable IDs, groups, duplication, own versioned JSON import/export, native directory picker.
 - Scope globs, selected folders, hidden/system filters, filter tester, Unicode/long paths.
 - Immutable Preview/Apply, conflict choices, stale-input rejection, history and reviewed restore, including deleted-task recovery.
 - Native Windows notifications for filesystem changes, persistent dirty paths and incremental ancestor hashes.

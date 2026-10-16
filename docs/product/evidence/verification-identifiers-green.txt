@@ -1,0 +1,10 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.86s
+     Running tests\task_identifiers.rs (target\debug\deps\task_identifiers-61c22f42801f10a6.exe)
+
+running 2 tests
+test identifiers_roundtrip_and_colliding_imports_get_new_automatic_identifiers ... ok
+test editable_identifiers_preserve_baselines_and_history_and_reject_duplicates ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+

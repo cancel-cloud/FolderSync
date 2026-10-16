@@ -66,6 +66,43 @@ afterEach(() => {
   vi.clearAllMocks();
   api.listeners.clear();
 });
+test("editable task identifiers save without replacing internal task identity", async () => {
+  let task = { ...newTask(), name: "Engineering pair", a: "A", b: "B" };
+  const internalId = task.id;
+  api.invoke.mockImplementation(
+    async (command: string, args?: { task: typeof task }) => {
+      if (command === "tasks") return [task];
+      if (
+        command === "statuses" ||
+        command === "history" ||
+        command === "versions"
+      )
+        return [];
+      if (command === "save_task" && args) task = args.task;
+      return null;
+    },
+  );
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "Configure" }));
+  await user.type(screen.getByRole("textbox", { name: "Task ID" }), "CAD-01");
+  await user.click(screen.getByRole("button", { name: "Save task" }));
+  await waitFor(() => expect(task.identifier).toBe("CAD-01"));
+  expect(task.id).toBe(internalId);
+  expect(await screen.findByText("ID: CAD-01")).toBeTruthy();
+  await user.click(screen.getByRole("button", { name: "Details" }));
+  await user.click(
+    screen.getByRole("button", { name: "Duplicate configuration" }),
+  );
+  const input = screen.getByRole("textbox", {
+    name: "Task ID",
+  }) as HTMLInputElement;
+  expect(input.value).toBe("");
+  await user.click(input);
+  await user.paste("🚀".repeat(64));
+  expect(input.value).toBe("🚀".repeat(64));
+});
+
 test("deleted-task recovery stays separate from synchronization and restore requires confirmation", async () => {
   const task = {
     ...newTask(),
