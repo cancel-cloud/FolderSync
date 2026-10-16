@@ -27,9 +27,11 @@ impl Engine {
             ..Metrics::default()
         };
         let mut keys = BTreeSet::new();
+        let mut display_paths = std::collections::BTreeMap::new();
         let (mut a, mut b) = (Tree::new(), Tree::new());
         for path in paths {
             let key = path_key(path);
+            display_paths.insert(key.clone(), path.clone());
             keys.insert(key.clone());
             for (side, root) in [("A", &t.a), ("B", &t.b)] {
                 let existing = self.index.entry(id, side, &key)?;
@@ -38,12 +40,32 @@ impl Engine {
                 }
                 let actual = std::fs::symlink_metadata(syncfs::safe_path(root, path)?).ok();
                 if actual.as_ref().is_some_and(|e| e.is_dir()) {
-                    let subtree = scan(&syncfs::safe_path(root, path)?, &Scope::default(), &mut m)?;
-                    for (_, mut e) in subtree {
-                        e.path = format!("{}/{}", path, e.path);
-                        if syncfs::Matcher::new(&t.scope)?.allows(&e.path, e.directory) {
-                            keys.insert(path_key(&e.path));
+                    let matcher = syncfs::Matcher::new(&t.scope)?;
+                    let mut walk = walkdir::WalkDir::new(syncfs::safe_path(root, path)?)
+                        .follow_links(false)
+                        .min_depth(1)
+                        .into_iter();
+                    while let Some(item) = walk.next() {
+                        let item = item?;
+                        let relative = item
+                            .path()
+                            .strip_prefix(root)?
+                            .to_str()
+                            .context("Non-Unicode path unsupported")?
+                            .replace('\\', "/");
+                        let directory = item.file_type().is_dir();
+                        if !matcher.allows(&relative, directory)
+                            || (directory
+                                && read_entry(root, &relative, &t.scope, &mut m)?.is_none())
+                        {
+                            if directory {
+                                walk.skip_current_dir()
+                            }
+                            continue;
                         }
+                        let key = path_key(&relative);
+                        keys.insert(key.clone());
+                        display_paths.insert(key, relative);
                     }
                 }
             }
@@ -59,7 +81,12 @@ impl Engine {
                             .iter()
                             .find(|p| path_key(p) == *key)
                             .cloned()
-                            .unwrap_or_else(|| key.clone())
+                            .unwrap_or_else(|| {
+                                display_paths
+                                    .get(key)
+                                    .cloned()
+                                    .unwrap_or_else(|| key.clone())
+                            })
                     });
                 let entry = read_entry(root, &display, &t.scope, &mut m)?;
                 self.index.put_entry(id, side, key, entry.as_ref())?;
@@ -77,6 +104,7 @@ impl Engine {
             index: Index::open(storage)?,
             cancel: Arc::new(AtomicBool::new(false)),
         };
+        engine.recover_displaced()?;
         engine.recover_stages()?;
         Ok(engine)
     }
@@ -192,6 +220,12 @@ impl Engine {
             if !matcher.allows(&path, ae.or(be).is_some_and(|e| e.directory)) {
                 continue;
             }
+            // An excluded existing object is never evidence of absence.
+            if syncfs::excluded_attributes(&t.a, &path, &t.scope)?
+                || syncfs::excluded_attributes(&t.b, &path, &t.scope)?
+            {
+                continue;
+            }
             let mut action = classify(
                 t.mode,
                 ae.map(|e| e.digest.as_str()),
@@ -210,6 +244,7 @@ impl Engine {
             operations.push(Operation {
                 path,
                 action,
+                status: "Planned".into(),
                 reason: match action {
                     Action::Conflict => {
                         "Both sides differ from a common baseline, or there is no safe baseline"
@@ -225,6 +260,39 @@ impl Engine {
                 a: ae.cloned(),
                 b: be.cloned(),
             });
+        }
+        let changed: Vec<_> = operations
+            .iter()
+            .filter(|o| {
+                !matches!(
+                    o.action,
+                    Action::DeleteA | Action::DeleteB | Action::Unchanged
+                )
+            })
+            .map(|o| path_key(&o.path))
+            .collect();
+        for operation in &mut operations {
+            if matches!(operation.action, Action::DeleteA | Action::DeleteB)
+                && operation
+                    .a
+                    .as_ref()
+                    .or(operation.b.as_ref())
+                    .is_some_and(|e| e.directory)
+            {
+                let prefix = format!("{}/", path_key(&operation.path));
+                if changed.iter().any(|p| p.starts_with(&prefix)) {
+                    operation.action = Action::Conflict;
+                    operation.reason="Directory deletion conflicts with changed descendants; originals preserved".into();
+                    self.index.db.execute(
+                        "INSERT OR REPLACE INTO conflicts VALUES(?,?,?)",
+                        params![
+                            t.id,
+                            path_key(&operation.path),
+                            serde_json::to_string(operation)?
+                        ],
+                    )?;
+                }
+            }
         }
         let p = Plan {
             id: uuid::Uuid::new_v4().to_string(),
@@ -242,7 +310,10 @@ impl Engine {
     }
     pub fn resolve(&mut self, id: &str, path: &str, choice: &str) -> Result<Plan> {
         let mut p = self.index.plan(id)?;
-        ensure!(p.status == "Preview", "Only previews can be revised");
+        ensure!(
+            matches!(p.status.as_str(), "Preview" | "Review required"),
+            "Only previews can be revised"
+        );
         let o = p
             .operations
             .iter_mut()
@@ -263,7 +334,7 @@ impl Engine {
         self.cancel.store(false, Ordering::Relaxed);
         let mut p = self.index.plan(id)?;
         ensure!(
-            p.status == "Preview",
+            matches!(p.status.as_str(), "Preview" | "Review required"),
             "Plan already applied or interrupted; create a new preview"
         );
         ensure!(
@@ -342,8 +413,13 @@ impl Engine {
             )
         });
         let result = (|| -> Result<()> {
-            for o in &p.operations {
+            for o in &mut p.operations {
                 if matches!(o.action, Action::Conflict | Action::Unchanged) {
+                    o.status = if o.action == Action::Conflict {
+                        "Conflict".into()
+                    } else {
+                        "Unchanged".into()
+                    };
                     continue;
                 }
                 ensure!(
@@ -389,12 +465,20 @@ impl Engine {
                     _ => {}
                 }
                 if o.action == Action::MoveToB && !o.a.as_ref().is_some_and(|e| e.directory) {
+                    let destination = syncfs::safe_path(&p.task.b, &o.path)?;
+                    let _destination_guard = syncfs::read_guard(&destination)?;
+                    ensure!(
+                        syncfs::hash_file(&destination, &mut p.metrics)?.0
+                            == o.a.as_ref().unwrap().digest,
+                        "Move destination changed; source preserved"
+                    );
                     self.remove(&p.task, &o.path, "A", o.a.as_ref().unwrap(), &mut p.metrics)?;
                 }
                 self.index.db.execute(
                     "UPDATE journal SET status='Complete' WHERE run=? AND path=?",
                     params![id, o.path],
                 )?;
+                o.status = "Applied".into();
                 let (a, b) = (
                     read_entry(&p.task.a, &o.path, &p.task.scope, &mut p.metrics)?,
                     read_entry(&p.task.b, &o.path, &p.task.scope, &mut p.metrics)?,
@@ -442,6 +526,11 @@ impl Engine {
             }
             Ok(())
         })();
+        let cleanup_error = if result.is_ok() {
+            self.cleanup_versions(&p.task).err()
+        } else {
+            None
+        };
         p.status = match &result {
             Ok(_) => {
                 if p.operations.iter().any(|o| o.action == Action::Conflict) {
@@ -452,6 +541,10 @@ impl Engine {
             }
             Err(e) => format!("Failed: {e:#}"),
         };
+        if let Some(error) = cleanup_error {
+            p.status
+                .push_str(&format!("; retention cleanup pending: {error}"));
+        }
         self.index.db.execute(
             "UPDATE tasks SET generation=generation+1 WHERE id=?",
             [&p.task.id],
@@ -463,6 +556,7 @@ impl Engine {
         let keys = p.operations.iter().map(|o| path_key(&o.path)).collect();
         self.index.update_ancestors(&p.task.id, "A", &keys)?;
         self.index.update_ancestors(&p.task.id, "B", &keys)?;
+        self.write_log(&p)?;
         result?;
         Ok(p)
     }
@@ -481,7 +575,7 @@ impl Engine {
         let source = syncfs::safe_path(root, path)?;
         let id = uuid::Uuid::new_v4().to_string();
         let stored = self.storage().join("versions").join(&id);
-        self.transfer(&source, &stored, &entry.digest, t, m)?;
+        self.transfer(&source, &stored, &entry.digest, None, t, m)?;
         let v = Version {
             id,
             task_id: t.id.clone(),
@@ -529,7 +623,14 @@ impl Engine {
             self.backup(t, path, if to_b { "B" } else { "A" }, old, m)?;
         }
         fs::create_dir_all(target.parent().context("Missing parent")?)?;
-        self.transfer(&source, &target, &expected.digest, t, m)?;
+        self.transfer(
+            &source,
+            &target,
+            &expected.digest,
+            dest.map(|e| e.digest.as_str()),
+            t,
+            m,
+        )?;
         Ok(())
     }
     fn remove(
@@ -550,11 +651,44 @@ impl Engine {
         if expected.directory {
             fs::remove_dir(target)?;
         } else {
+            #[cfg(windows)]
+            let delete_guard = {
+                use std::os::windows::fs::OpenOptionsExt;
+                fs::OpenOptions::new()
+                    .access_mode(0x80010000)
+                    .share_mode(1)
+                    .open(&target)?
+            };
+            ensure!(
+                read_entry(root, path, &Scope::default(), m)?.as_ref() == Some(expected),
+                "Delete input changed before guard"
+            );
             self.backup(t, path, side, expected, m)?;
             ensure!(
                 read_entry(root, path, &t.scope, m)?.as_ref() == Some(expected),
                 "Delete input changed during backup"
             );
+            #[cfg(windows)]
+            {
+                use std::os::windows::io::AsRawHandle;
+                use windows_sys::Win32::Storage::FileSystem::{
+                    FILE_DISPOSITION_INFO, FileDispositionInfo, SetFileInformationByHandle,
+                };
+                let info = FILE_DISPOSITION_INFO { DeleteFile: true };
+                ensure!(
+                    unsafe {
+                        SetFileInformationByHandle(
+                            delete_guard.as_raw_handle(),
+                            FileDispositionInfo,
+                            (&info as *const FILE_DISPOSITION_INFO).cast(),
+                            std::mem::size_of_val(&info) as u32,
+                        )
+                    } != 0,
+                    "Protected deletion failed: {}",
+                    std::io::Error::last_os_error()
+                );
+            }
+            #[cfg(not(windows))]
             fs::remove_file(target)?;
         }
         Ok(())
@@ -566,6 +700,16 @@ impl Engine {
         self.index.versions(task)
     }
     pub fn delete_task(&mut self, id: &str) -> Result<()> {
+        let pending: i64 =
+            self.index
+                .db
+                .query_row("SELECT COUNT(*) FROM displaced WHERE task=?", [id], |r| {
+                    r.get(0)
+                })?;
+        ensure!(
+            pending == 0,
+            "Protected recovery is pending; reconnect roots and restart before deleting this task"
+        );
         self.index
             .db
             .execute("DELETE FROM tasks WHERE id=?", [id])?;
@@ -589,9 +733,16 @@ impl Engine {
             validate_roots(t, self.storage())?;
             syncfs::Matcher::new(&t.scope)?;
         }
+        self.index.db.execute_batch("SAVEPOINT import_batch")?;
         for t in &tasks {
-            self.save_task(t)?;
+            if let Err(error) = self.save_task(t) {
+                self.index
+                    .db
+                    .execute_batch("ROLLBACK TO import_batch; RELEASE import_batch")?;
+                return Err(error);
+            }
         }
+        self.index.db.execute_batch("RELEASE import_batch")?;
         Ok(tasks.len())
     }
     pub fn setting(&self, key: &str) -> Result<Option<String>> {

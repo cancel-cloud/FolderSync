@@ -13,8 +13,13 @@ impl Index {
     pub fn open(storage: &Path) -> Result<Self> {
         std::fs::create_dir_all(storage.join("versions"))?;
         let db = Connection::open(storage.join("foldersync.sqlite3"))?;
+        let version: i64 = db.query_row("PRAGMA user_version", [], |r| r.get(0))?;
+        anyhow::ensure!(
+            version <= 2,
+            "Database schema is newer than this application; refusing downgrade"
+        );
         db.busy_timeout(std::time::Duration::from_secs(5))?;
-        db.execute_batch("PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL;
+        db.execute_batch("PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; BEGIN IMMEDIATE;
  CREATE TABLE IF NOT EXISTS tasks(id TEXT PRIMARY KEY,json TEXT NOT NULL,root_a TEXT NOT NULL,root_b TEXT NOT NULL,generation INTEGER NOT NULL DEFAULT 0);
  CREATE TABLE IF NOT EXISTS entries(task TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,side TEXT NOT NULL,path TEXT NOT NULL,parent TEXT NOT NULL,json TEXT NOT NULL,digest TEXT NOT NULL,PRIMARY KEY(task,side,path));
  CREATE INDEX IF NOT EXISTS entries_parent ON entries(task,side,parent);
@@ -27,9 +32,13 @@ impl Index {
  CREATE TABLE IF NOT EXISTS dirty(task TEXT NOT NULL,side TEXT NOT NULL,path TEXT NOT NULL,PRIMARY KEY(task,side,path));
  CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY,json TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS staging(path TEXT PRIMARY KEY,task TEXT NOT NULL);
+ CREATE TABLE IF NOT EXISTS displaced(path TEXT PRIMARY KEY,task TEXT NOT NULL,relative TEXT NOT NULL,side TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS conflicts(task TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,path TEXT NOT NULL,json TEXT NOT NULL,PRIMARY KEY(task,path));
- PRAGMA user_version=1;
- UPDATE runs SET status='Interrupted' WHERE status='Applying';")?;
+ ")?;
+        if version < 2 {
+            db.execute_batch("ALTER TABLE entries ADD COLUMN index_generation INTEGER NOT NULL DEFAULT 0; ALTER TABLE entries ADD COLUMN file_id TEXT;")?;
+        }
+        db.execute_batch("PRAGMA user_version=2; COMMIT; UPDATE runs SET status='Interrupted' WHERE status='Applying';")?;
         Ok(Self {
             db,
             storage: storage.to_path_buf(),
@@ -92,8 +101,8 @@ impl Index {
         if let Some(e) = entry {
             let parent = key.rsplit_once('/').map(|p| p.0).unwrap_or("");
             self.db.execute(
-                "INSERT OR REPLACE INTO entries VALUES(?,?,?,?,?,?)",
-                params![task, side, key, parent, serde_json::to_string(e)?, e.digest],
+                "INSERT OR REPLACE INTO entries VALUES(?,?,?,?,?,?,(SELECT generation FROM tasks WHERE id=?),?)",
+                params![task, side, key, parent, serde_json::to_string(e)?, e.digest,task,e.file_id],
             )?;
         } else {
             self.db.execute(
@@ -110,7 +119,7 @@ impl Index {
             params![task, side],
         )?;
         {
-            let mut s = tx.prepare("INSERT INTO entries VALUES(?,?,?,?,?,?)")?;
+            let mut s = tx.prepare("INSERT INTO entries VALUES(?,?,?,?,?,?,(SELECT generation FROM tasks WHERE id=?),?)")?;
             for (k, e) in tree {
                 s.execute(params![
                     task,
@@ -118,7 +127,9 @@ impl Index {
                     k,
                     k.rsplit_once('/').map(|p| p.0).unwrap_or(""),
                     serde_json::to_string(e)?,
-                    e.digest
+                    e.digest,
+                    task,
+                    e.file_id
                 ])?;
             }
         }
@@ -129,6 +140,14 @@ impl Index {
     pub fn update_ancestors(&self, task: &str, side: &str, keys: &BTreeSet<String>) -> Result<()> {
         let mut parents = BTreeSet::from([String::new()]);
         for key in keys {
+            if self.entry(task, side, key)?.is_some_and(|e| e.directory) {
+                parents.insert(key.clone());
+            } else {
+                self.db.execute(
+                    "DELETE FROM merkle WHERE task=? AND side=? AND path=?",
+                    params![task, side, key],
+                )?;
+            }
             let mut p = key.as_str();
             while let Some((parent, _)) = p.rsplit_once('/') {
                 parents.insert(parent.to_string());
@@ -186,11 +205,14 @@ impl Index {
         Ok(rows.collect::<rusqlite::Result<_>>()?)
     }
     pub fn plan(&self, id: &str) -> Result<Plan> {
-        Ok(serde_json::from_str(&self.db.query_row(
-            "SELECT json FROM runs WHERE id=?",
-            [id],
-            |r| r.get::<_, String>(0),
-        )?)?)
+        let (json, status): (String, String) =
+            self.db
+                .query_row("SELECT json,status FROM runs WHERE id=?", [id], |r| {
+                    Ok((r.get(0)?, r.get(1)?))
+                })?;
+        let mut plan: Plan = serde_json::from_str(&json)?;
+        plan.status = status;
+        Ok(plan)
     }
     pub fn put_plan(&self, p: &Plan) -> Result<()> {
         self.db.execute(

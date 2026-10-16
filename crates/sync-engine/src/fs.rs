@@ -27,6 +27,32 @@ fn reparse(m: &fs::Metadata) -> bool {
         m.is_symlink()
     }
 }
+pub fn native_file_id(root: &Path) -> Result<String> {
+    #[cfg(windows)]
+    {
+        use std::os::windows::{fs::OpenOptionsExt, io::AsRawHandle};
+        use windows_sys::Win32::Storage::FileSystem::{
+            BY_HANDLE_FILE_INFORMATION, FILE_FLAG_BACKUP_SEMANTICS, GetFileInformationByHandle,
+        };
+        let f = fs::OpenOptions::new()
+            .read(true)
+            .custom_flags(FILE_FLAG_BACKUP_SEMANTICS)
+            .open(root)?;
+        let mut info: BY_HANDLE_FILE_INFORMATION = unsafe { std::mem::zeroed() };
+        ensure!(
+            unsafe { GetFileInformationByHandle(f.as_raw_handle(), &mut info) } != 0,
+            "File identity unavailable"
+        );
+        Ok(format!(
+            "{}:{}:{}",
+            info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow
+        ))
+    }
+    #[cfg(not(windows))]
+    {
+        Ok(fs::canonicalize(root)?.to_string_lossy().into_owned())
+    }
+}
 pub fn root_identity(root: &Path) -> Result<String> {
     let m = fs::symlink_metadata(root)
         .with_context(|| format!("Root unavailable: {}", root.display()))?;
@@ -68,6 +94,23 @@ pub fn validate_roots(task: &Task, storage: &Path) -> Result<(String, String)> {
     let identities = (root_identity(&task.a)?, root_identity(&task.b)?);
     let a = fs::canonicalize(&task.a)?;
     let b = fs::canonicalize(&task.b)?;
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::OpenOptionsExt;
+        use windows_sys::Win32::Storage::FileSystem::FILE_FLAG_BACKUP_SEMANTICS;
+        let check = |root: &Path| -> Result<()> {
+            let _handle = fs::OpenOptions::new()
+                .access_mode(7)
+                .custom_flags(FILE_FLAG_BACKUP_SEMANTICS)
+                .open(root)
+                .with_context(|| format!("Folder write access unavailable: {}", root.display()))?;
+            Ok(())
+        };
+        check(&task.b)?;
+        if matches!(task.mode, Mode::TwoWay | Mode::Move) {
+            check(&task.a)?;
+        }
+    }
     ensure!(
         !overlap(&a, &b),
         "Folders must be distinct and cannot overlap"
@@ -138,7 +181,10 @@ impl Matcher {
         })
     }
     pub fn allows(&self, path: &str, directory: bool) -> bool {
-        if path.split('/').any(|p| p.starts_with(".foldersync-stage-")) {
+        if path
+            .split('/')
+            .any(|p| p.starts_with(".foldersync-stage-") || p.starts_with(".foldersync-displaced-"))
+        {
             return false;
         }
         let parts: Vec<_> = path.split('/').collect();
@@ -178,6 +224,16 @@ impl Matcher {
                     || self.inc.is_match(parts.last().unwrap())))
     }
 }
+pub fn read_guard(path: &Path) -> Result<File> {
+    let mut options = fs::OpenOptions::new();
+    options.read(true);
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::OpenOptionsExt;
+        options.share_mode(1);
+    }
+    Ok(options.open(path)?)
+}
 pub fn hash_file(path: &Path, metrics: &mut Metrics) -> Result<(String, u64)> {
     let mut f = File::open(path)?;
     let mut h = blake3::Hasher::new();
@@ -194,6 +250,29 @@ pub fn hash_file(path: &Path, metrics: &mut Metrics) -> Result<(String, u64)> {
     metrics.hashed_bytes += size;
     Ok((h.finalize().to_hex().to_string(), size))
 }
+pub fn excluded_attributes(root: &Path, relative: &str, scope: &Scope) -> Result<bool> {
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::MetadataExt;
+        if scope.skip_hidden || scope.skip_system {
+            let mut ancestor = root.to_path_buf();
+            for component in Path::new(relative).components() {
+                ancestor.push(component);
+                let attrs = match fs::symlink_metadata(&ancestor) {
+                    Ok(m) => m.file_attributes(),
+                    Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+                    Err(e) => return Err(e.into()),
+                };
+                if (scope.skip_hidden && attrs & 2 != 0) || (scope.skip_system && attrs & 4 != 0) {
+                    return Ok(true);
+                }
+            }
+        }
+    }
+    #[cfg(not(windows))]
+    let _ = (root, relative, scope);
+    Ok(false)
+}
 pub fn read_entry(
     root: &Path,
     relative: &str,
@@ -201,25 +280,21 @@ pub fn read_entry(
     metrics: &mut Metrics,
 ) -> Result<Option<Entry>> {
     let path = safe_path(root, relative)?;
+    if excluded_attributes(root, relative, scope)? {
+        return Ok(None);
+    }
     let m = match fs::symlink_metadata(&path) {
         Ok(m) => m,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(None),
         Err(e) => return Err(e.into()),
     };
     ensure!(!reparse(&m), "Symlinks/junctions are unsupported");
-    #[cfg(windows)]
-    {
-        use std::os::windows::fs::MetadataExt;
-        let attrs = m.file_attributes();
-        if (scope.skip_hidden && attrs & 2 != 0) || (scope.skip_system && attrs & 4 != 0) {
-            return Ok(None);
-        }
-    }
     if !Matcher::new(scope)?.allows(relative, m.is_dir()) {
         return Ok(None);
     }
     metrics.scanned_entries += 1;
     let modified = m.modified()?;
+    let file_id = native_file_id(&path).ok();
     let (digest, size) = if m.is_dir() {
         ("directory".into(), 0)
     } else {
@@ -240,6 +315,7 @@ pub fn read_entry(
             .duration_since(std::time::UNIX_EPOCH)?
             .as_nanos()
             .to_string(),
+        file_id,
     }))
 }
 pub fn scan(root: &Path, scope: &Scope, metrics: &mut Metrics) -> Result<Tree> {
@@ -264,10 +340,14 @@ pub fn scan(root: &Path, scope: &Scope, metrics: &mut Metrics) -> Result<Tree> {
             }
             continue;
         }
-        if let Some(e) = read_entry(root, &relative, scope, metrics)?
-            && tree.insert(path_key(&relative), e).is_some()
-        {
-            bail!("Case-insensitive path collision: {relative}")
+        match read_entry(root, &relative, scope, metrics)? {
+            Some(e) => {
+                if tree.insert(path_key(&relative), e).is_some() {
+                    bail!("Case-insensitive path collision: {relative}")
+                }
+            }
+            None if item.file_type().is_dir() => it.skip_current_dir(),
+            None => {}
         }
     }
     root_identity(root)?;

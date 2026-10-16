@@ -98,3 +98,16 @@ fn delete_edit_preserves_survivor() {
     assert_eq!(fs::read(t.b.join("f")).unwrap(), b"edited");
     assert!(!t.a.join("f").exists());
 }
+#[test]
+fn folder_delete_edit_is_attention_instead_of_partial_directory_removal() {
+    let (_d, mut e, t) = setup(Mode::TwoWay);
+    fs::create_dir(t.a.join("folder")).unwrap();
+    fs::write(t.a.join("folder/f"), "base").unwrap();
+    run(&mut e, &t);
+    fs::remove_dir_all(t.a.join("folder")).unwrap();
+    fs::write(t.b.join("folder/f"), "edited").unwrap();
+    let p = e.preview(&t.id).unwrap();
+    let result = e.apply(&p.id, true).unwrap();
+    assert_eq!(result.status, "Attention");
+    assert_eq!(fs::read(t.b.join("folder/f")).unwrap(), b"edited");
+}

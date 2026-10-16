@@ -65,7 +65,10 @@ impl WatchService {
                                     batch.uncertain = true;
                                 } else {
                                     let p = rel.to_string_lossy().replace('\\', "/");
-                                    if !p.split('/').any(|p| p.starts_with(".foldersync-stage-")) {
+                                    if !p.split('/').any(|p| {
+                                        p.starts_with(".foldersync-stage-")
+                                            || p.starts_with(".foldersync-displaced-")
+                                    }) {
                                         paths.insert(p);
                                     }
                                 }
