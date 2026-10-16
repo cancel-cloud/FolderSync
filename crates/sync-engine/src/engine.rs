@@ -691,7 +691,7 @@ impl Engine {
         entry: &Entry,
         m: &mut Metrics,
     ) -> Result<()> {
-        if entry.directory {
+        if entry.directory || !t.history_enabled {
             return Ok(());
         }
         let root = if side == "A" { &t.a } else { &t.b };

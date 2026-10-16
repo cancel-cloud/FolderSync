@@ -51,6 +51,7 @@ export interface Task {
   transfer_concurrency: number;
   comparison: "Incremental" | "FullContent";
   conflict_policy: "ContinueIndependent" | "RequireChoices";
+  history_enabled: boolean;
   history_patterns: string[];
   history_cap: number;
   schedule: Schedule;
@@ -202,6 +203,7 @@ export function newTask(mode: Mode = "TwoWay"): Task {
     transfer_concurrency: 1,
     comparison: "Incremental",
     conflict_policy: "ContinueIndependent",
+    history_enabled: true,
     history_patterns: [],
     history_cap: 10,
     schedule: {
