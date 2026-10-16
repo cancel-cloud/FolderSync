@@ -97,7 +97,7 @@ export default function App() {
     [logLevel, setLogLevel] = useState("off"),
     [closeBehavior, setCloseBehavior] = useState("tray"),
     [logText, setLogText] = useState<string | null>(null),
-    [samplePath, setSamplePath] = useState("project/file.txt"),
+    [samplePath, setSamplePath] = useState(""),
     [sampleResult, setSampleResult] = useState(""),
     [operationPage, setOperationPage] = useState(0),
     [sort, setSort] = useState("path");
@@ -1381,6 +1381,7 @@ export default function App() {
                       "Relativen Pfad mit diesen Filtern prüfen",
                     )}
                     <input
+                      placeholder="project/file.txt"
                       value={samplePath}
                       onChange={(e) => setSamplePath(e.target.value)}
                     />
