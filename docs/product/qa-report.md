@@ -1,5 +1,9 @@
 # QA report — 2026-10-16
 
+## Latest bug-fix release: 0.1.2
+
+Final verification: **144 Rust / 29 frontend tests**; formatting, Clippy -D warnings, TypeScript, ESLint, web build and optimized installer build all pass. Runtime commits **14d58a9**, **28019d5**. Actual non-admin installation exited 0, preserved the user's enabled startup preference and did not launch synchronization. Computer Use verified Tiles/List at maximized size, header selection actions, Disable, Delete/Cancel, filter help, stable preference saves, Local data and Version. Quit/relaunch retained saved List and tasks. Migration and final read-only checks preserved all disposable originals and five backups; two task configurations were identical on migration, with only the intentional Disable schedule reset during GUI QA. Test toast request succeeded; refreshed native status Activated, OS banner/sound unverified. See [0.1.2 release report](release-0.1.2.md) for exact hashes, instructions, evidence and remaining limits. Older sections below describe historical checkpoints and do not supersede this release.
+
 This is a working, tested engineering release, not a claim that every acceptance criterion or production hardening item is complete. The authoritative specification is CODEX_GOAL.md. All filesystem experiments used generated `FolderSync-*` temp fixtures or `.tools/FolderSync-GUI`. No company files or production shares were accessed.
 
 ## Environment and executed checks

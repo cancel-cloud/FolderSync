@@ -10,7 +10,7 @@ The Tauri adapter runs blocking engine work on its blocking pool behind a shared
 
 ## Persistent state
 
-State lives in the current user's Tauri app-data directory (`%APPDATA%\dev.foldersync.desktop`), outside all synchronization roots. SQLite uses WAL, synchronous FULL, foreign keys, busy timeout, keyed lookup/parent indexes and transactions. Schema version 2 migrated entries to include index generation/native file ID; version 3 adds baseline_reviews for manually approved reconciliation identity/scope; version 4 adds recovery_tasks containing original root identities and disabled configuration for deleted-task recovery. A future schema is rejected rather than downgraded.
+State lives in the current user's Tauri app-data directory (`%APPDATA%\FolderSync`), outside all synchronization roots. SQLite uses WAL, synchronous FULL, foreign keys, busy timeout, keyed lookup/parent indexes and transactions. Schema version 2 migrated entries to include index generation/native file ID; version 3 adds baseline_reviews for manually approved reconciliation identity/scope; version 4 adds recovery_tasks containing original root identities and disabled configuration for deleted-task recovery. A future schema is rejected rather than downgraded.
 
 Tables contain tasks and generations, per-side JSON entries/digests/parents, common baselines (NULL tombstones), cached Merkle digests, immutable plan revisions/run outcomes, operation journal, protected versions, dirty paths, settings/calendar checkpoints, owned staging and displaced-file recovery records. Run status comes from the authoritative status column, including Interrupted. Each successful path commits its own baseline; unresolved conflicts keep their prior baseline in a persistent conflicts table.
 
