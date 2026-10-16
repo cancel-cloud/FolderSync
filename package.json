@@ -1,0 +1,6 @@
+{
+  "name":"foldersync", "private":true, "version":"0.1.0", "type":"module",
+  "scripts":{"dev":"vite --port 1420 --strictPort", "build":"tsc --noEmit && vite build", "typecheck":"tsc --noEmit", "test":"vitest run", "tauri":"tauri"},
+  "dependencies":{"@tauri-apps/api":"^2", "@tauri-apps/plugin-dialog":"^2", "@tauri-apps/plugin-autostart":"^2", "react":"^19", "react-dom":"^19", "lucide-react":"^0.468", "@radix-ui/react-slot":"^1.2", "class-variance-authority":"^0.7", "clsx":"^2", "tailwind-merge":"^3"},
+  "devDependencies":{"@tauri-apps/cli":"^2", "@types/react":"^19", "@types/react-dom":"^19", "@vitejs/plugin-react":"^5", "vite":"^7", "typescript":"^5.9", "tailwindcss":"^4", "@tailwindcss/vite":"^4", "vitest":"^3"}
+}

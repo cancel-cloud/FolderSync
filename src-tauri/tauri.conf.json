@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "FolderSync",
+  "version": "0.1.0",
+  "identifier": "dev.foldersync.desktop",
+  "build": { "frontendDist": "../dist", "devUrl": "http://localhost:1420" },
+  "app": {
+    "windows": [{"title":"FolderSync", "width":1100, "height":780, "minWidth":760, "minHeight":560}],
+    "security": { "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: data:; connect-src ipc: http://ipc.localhost" }
+  },
+  "bundle": { "active":true, "targets":["nsis"], "windows":{"nsis":{"installMode":"currentUser"}} }
+}
