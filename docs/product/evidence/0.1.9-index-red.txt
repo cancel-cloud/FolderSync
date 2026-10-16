@@ -1,0 +1,23 @@
+   Compiling notify v8.2.0 (C:\Users\Lukas\Developer\SyncFolders\vendor\notify)
+   Compiling foldersync-engine v0.1.9 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.30s
+     Running unittests src\lib.rs (target\debug\deps\foldersync_engine-116ee70a1ec6ca6c.exe)
+
+running 1 test
+test index::performance_tests::ordered_children_query_work_scales_with_children_instead_of_the_entire_tree ... FAILED
+
+failures:
+
+---- index::performance_tests::ordered_children_query_work_scales_with_children_instead_of_the_entire_tree stdout ----
+
+thread 'index::performance_tests::ordered_children_query_work_scales_with_children_instead_of_the_entire_tree' (8784) panicked at crates\sync-engine\src\index.rs:33:9:
+Reading 100 ordered children must not inspect 10,000 siblings; executed 50413 SQL VM steps
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    index::performance_tests::ordered_children_query_work_scales_with_children_instead_of_the_entire_tree
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 17 filtered out; finished in 0.44s
+
+error: test failed, to rerun pass `-p foldersync-engine --lib`

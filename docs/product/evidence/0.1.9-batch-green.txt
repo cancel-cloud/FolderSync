@@ -1,0 +1,9 @@
+   Compiling foldersync-engine v0.1.9 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.75s
+     Running unittests src\lib.rs (target\debug\deps\foldersync_engine-116ee70a1ec6ca6c.exe)
+
+running 1 test
+test automation::observation_tests::failed_incremental_discovery_does_not_commit_partial_observations ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 18 filtered out; finished in 0.11s
+
