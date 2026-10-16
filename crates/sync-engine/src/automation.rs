@@ -2,6 +2,23 @@ use crate::*;
 use anyhow::Result;
 use rusqlite::params;
 impl Engine {
+    pub fn record_watch_events(&self, id: &str, count: u64) -> Result<()> {
+        let key = format!("watch-events/{id}");
+        let before = self
+            .setting(&key)?
+            .and_then(|s| s.parse::<u64>().ok())
+            .unwrap_or(0);
+        self.set_setting(&key, &before.saturating_add(count).to_string())
+    }
+    pub fn pending_conflicts(&self, id: &str) -> Result<u64> {
+        let count: i64 =
+            self.index
+                .db
+                .query_row("SELECT COUNT(*) FROM conflicts WHERE task=?", [id], |r| {
+                    r.get(0)
+                })?;
+        Ok(count as u64)
+    }
     pub fn schedule_tick(&self, at: i64) -> Result<Vec<String>> {
         use chrono::TimeZone;
         let time = chrono::Local
@@ -61,6 +78,15 @@ impl Engine {
         } else {
             self.preview_paths(id, &paths)?
         };
+        plan.metrics.watch_events = self
+            .setting(&format!("watch-events/{id}"))?
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0);
+        plan.metrics.queued_paths = paths.len() as u64;
+        self.index.db.execute(
+            "UPDATE runs SET json=? WHERE id=?",
+            params![serde_json::to_string(&plan)?, plan.id],
+        )?;
         // Background writes never imply approval for a newly destructive plan.
         if plan.operations.iter().any(|o| {
             matches!(
@@ -73,16 +99,18 @@ impl Engine {
                 [&plan.id],
             )?;
             plan.status = "Review required".into();
-        } else if plan
-            .operations
-            .iter()
-            .any(|o| o.action != Action::Unchanged)
-        {
+        } else {
+            // Equal observations establish/advance the common baseline and
+            // clear conflicts resolved externally, even without a transfer.
             plan = self.apply(&plan.id, false)?;
         }
         self.index
             .db
             .execute("DELETE FROM dirty WHERE task=?", [id])?;
+        self.index.db.execute(
+            "DELETE FROM settings WHERE key=?",
+            [format!("watch-events/{id}")],
+        )?;
         Ok(Some(plan))
     }
 }

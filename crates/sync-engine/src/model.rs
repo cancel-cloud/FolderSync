@@ -79,13 +79,25 @@ pub struct Schedule {
     pub weekdays: Vec<u32>,
     pub month_day: u32,
 }
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Serialize, Deserialize, Eq)]
 pub struct Entry {
     pub path: String,
     pub digest: String,
     pub directory: bool,
     pub size: u64,
     pub mtime_ns: String,
+    #[serde(default)]
+    pub file_id: Option<String>,
+}
+impl PartialEq for Entry {
+    fn eq(&self, other: &Self) -> bool {
+        crate::fs::path_key(&self.path) == crate::fs::path_key(&other.path)
+            && self.digest == other.digest
+            && self.directory == other.directory
+            && self.size == other.size
+            && self.mtime_ns == other.mtime_ns
+            && self.file_id == other.file_id
+    }
 }
 pub type Tree = BTreeMap<String, Entry>;
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -102,6 +114,8 @@ pub struct Operation {
     pub path: String,
     pub action: Action,
     pub reason: String,
+    #[serde(default)]
+    pub status: String,
     pub a: Option<Entry>,
     pub b: Option<Entry>,
 }

@@ -3,6 +3,7 @@ mod automation;
 mod engine;
 pub mod fs;
 mod index;
+mod logging;
 mod model;
 mod recovery;
 pub mod scheduler;
