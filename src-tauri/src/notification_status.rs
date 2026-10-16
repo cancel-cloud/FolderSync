@@ -18,17 +18,14 @@ pub struct NotificationStatus {
 }
 
 #[tauri::command]
-pub fn notification_status(
+pub async fn notification_status(
     app: tauri::AppHandle,
     r: State<'_, Runtime>,
 ) -> Result<NotificationStatus, String> {
-    let engine = r.engine.lock().map_err(|_| "Engine lock failed")?;
-    let app_enabled = engine
-        .setting("notifications")
-        .map_err(|e| e.to_string())?
-        .as_deref()
-        != Some("off");
-    drop(engine);
+    let app_enabled = crate::work(r.inner().clone(), |engine| {
+        Ok(engine.setting("notifications")?.as_deref() != Some("off"))
+    })
+    .await?;
     let app_id = notification_app_id(&app)?;
     let (windows_setting, windows_error) = system_setting(&app_id);
     let banners = configured_banners(&app_id);
@@ -131,22 +128,20 @@ fn system_setting(_app_id: &str) -> (String, Option<String>) {
 }
 
 #[tauri::command]
-pub fn send_test_notification(app: tauri::AppHandle, r: State<'_, Runtime>) -> Result<(), String> {
-    let engine = r.engine.lock().map_err(|_| "Engine lock failed")?;
-    if engine
-        .setting("notifications")
-        .map_err(|e| e.to_string())?
-        .as_deref()
-        == Some("off")
-    {
+pub async fn send_test_notification(
+    app: tauri::AppHandle,
+    r: State<'_, Runtime>,
+) -> Result<(), String> {
+    let (enabled, de) = crate::work(r.inner().clone(), |engine| {
+        Ok((
+            engine.setting("notifications")?.as_deref() != Some("off"),
+            engine.setting("language")?.as_deref() == Some("de"),
+        ))
+    })
+    .await?;
+    if !enabled {
         return Err("[FolderSync:NotificationsDisabled]".into());
     }
-    let de = engine
-        .setting("language")
-        .map_err(|e| e.to_string())?
-        .as_deref()
-        == Some("de");
-    drop(engine);
     let (title, body) = crate::presentation::test_notice(de);
     app.notification()
         .builder()
