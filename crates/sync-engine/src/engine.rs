@@ -171,6 +171,8 @@ impl Engine {
         );
         ensure!(
             t.debounce_secs <= 3600
+                && (1..=4).contains(&t.transfer_concurrency)
+                && t.bandwidth_kib.checked_mul(1024).is_some()
                 && t.retries <= 10
                 && t.history_cap > 0
                 && t.history_cap <= 1000,
@@ -592,127 +594,7 @@ impl Engine {
             operation.status = "Not run".into();
         }
         let result = (|| -> Result<()> {
-            for (completed, o) in p.operations.iter_mut().enumerate() {
-                self.progress.update(|s| {
-                    s.phase = ProgressPhase::Applying;
-                    s.completed_entries = completed as u64;
-                    s.path = Some(o.path.clone());
-                    s.file_bytes = 0;
-                    s.file_total = 0;
-                });
-                if matches!(
-                    o.action,
-                    Action::Conflict | Action::Ignore | Action::Unchanged
-                ) {
-                    o.status = if o.action == Action::Ignore {
-                        "Ignored".into()
-                    } else if o.action == Action::Conflict {
-                        "Conflict".into()
-                    } else {
-                        "Unchanged".into()
-                    };
-                    continue;
-                }
-                o.status = "Applying".into();
-                crate::progress::check_cancel(Some(&self.cancel))?;
-                self.validate(&p.task)?;
-                self.index.db.execute(
-                    "INSERT OR REPLACE INTO journal(run,path,json,status) VALUES(?,?,?,'Pending')",
-                    params![id, o.path, serde_json::to_string(o)?],
-                )?;
-                match o.action {
-                    Action::CopyToB | Action::MoveToB => self.copy(
-                        &p.task,
-                        &o.path,
-                        true,
-                        o.a.as_ref().context("Source missing")?,
-                        o.b.as_ref(),
-                        &mut p.metrics,
-                    )?,
-                    Action::CopyToA => self.copy(
-                        &p.task,
-                        &o.path,
-                        false,
-                        o.b.as_ref().context("Source missing")?,
-                        o.a.as_ref(),
-                        &mut p.metrics,
-                    )?,
-                    Action::DeleteA => self.remove(
-                        &p.task,
-                        &o.path,
-                        "A",
-                        o.a.as_ref().context("Missing delete input")?,
-                        true,
-                        &mut p.metrics,
-                    )?,
-                    Action::DeleteB => self.remove(
-                        &p.task,
-                        &o.path,
-                        "B",
-                        o.b.as_ref().context("Missing delete input")?,
-                        true,
-                        &mut p.metrics,
-                    )?,
-                    _ => {}
-                }
-                if o.action == Action::MoveToB && !o.a.as_ref().is_some_and(|e| e.directory) {
-                    let destination = syncfs::safe_path(&p.task.b, &o.path)?;
-                    let _destination_guard = syncfs::read_guard(&destination)?;
-                    ensure!(
-                        syncfs::hash_file_controlled(
-                            &destination,
-                            &mut p.metrics,
-                            Some(&self.cancel),
-                            Some(&self.progress)
-                        )?
-                        .0 == o.a.as_ref().unwrap().digest,
-                        "Move destination changed; source preserved"
-                    );
-                    self.remove(
-                        &p.task,
-                        &o.path,
-                        "A",
-                        o.a.as_ref().unwrap(),
-                        false,
-                        &mut p.metrics,
-                    )?;
-                }
-                self.index.db.execute(
-                    "UPDATE journal SET status='Complete' WHERE run=? AND path=?",
-                    params![id, o.path],
-                )?;
-                o.status = "Applied".into();
-                let (a, b) = (
-                    self.read_entry(&p.task.a, &o.path, &p.task.scope, &mut p.metrics)?,
-                    self.read_entry(&p.task.b, &o.path, &p.task.scope, &mut p.metrics)?,
-                );
-                let digest = if p.task.mode == Mode::TwoWay {
-                    if a.as_ref().map(|e| &e.digest) != b.as_ref().map(|e| &e.digest) {
-                        continue;
-                    }
-                    a.as_ref().map(|e| e.digest.clone())
-                } else if p.task.mode == Mode::Move {
-                    None
-                } else {
-                    a.as_ref()
-                        .filter(|x| b.as_ref().is_some_and(|y| x.digest == y.digest))
-                        .map(|e| e.digest.clone())
-                };
-                let tx = self.index.db.transaction()?;
-                tx.execute(
-                    "INSERT OR REPLACE INTO baseline VALUES(?,?,?)",
-                    params![p.task.id, path_key(&o.path), digest],
-                )?;
-                tx.execute(
-                    "DELETE FROM conflicts WHERE task=? AND path=?",
-                    params![p.task.id, path_key(&o.path)],
-                )?;
-                tx.commit()?;
-                self.index
-                    .put_entry(&p.task.id, "A", &path_key(&o.path), a.as_ref())?;
-                self.index
-                    .put_entry(&p.task.id, "B", &path_key(&o.path), b.as_ref())?;
-            }
+            self.execute_operations(id, &p.task, &mut p.operations, &mut p.metrics)?;
             let mut dirs: Vec<_> = p
                 .operations
                 .iter()
@@ -982,6 +864,129 @@ impl Engine {
         }
         transaction.execute("DELETE FROM tasks WHERE id=?", [id])?;
         transaction.commit()?;
+        Ok(())
+    }
+    pub(crate) fn apply_operation(
+        &mut self,
+        id: &str,
+        task: &Task,
+        o: &mut Operation,
+        metrics: &mut Metrics,
+        completed: usize,
+    ) -> Result<()> {
+        self.progress.update(|s| {
+            s.phase = ProgressPhase::Applying;
+            s.completed_entries = completed as u64;
+            s.path = Some(o.path.clone());
+            s.file_bytes = 0;
+            s.file_total = 0;
+        });
+        if matches!(
+            o.action,
+            Action::Conflict | Action::Ignore | Action::Unchanged
+        ) {
+            o.status = if o.action == Action::Ignore {
+                "Ignored".into()
+            } else if o.action == Action::Conflict {
+                "Conflict".into()
+            } else {
+                "Unchanged".into()
+            };
+            return Ok(());
+        }
+        o.status = "Applying".into();
+        metrics.peak_workers = metrics.peak_workers.max(1);
+        crate::progress::check_cancel(Some(&self.cancel))?;
+        self.validate(task)?;
+        self.index.db.execute(
+            "INSERT OR REPLACE INTO journal(run,path,json,status) VALUES(?,?,?,'Pending')",
+            params![id, o.path, serde_json::to_string(o)?],
+        )?;
+        match o.action {
+            Action::CopyToB | Action::MoveToB => self.copy(
+                task,
+                &o.path,
+                true,
+                o.a.as_ref().context("Source missing")?,
+                o.b.as_ref(),
+                metrics,
+            )?,
+            Action::CopyToA => self.copy(
+                task,
+                &o.path,
+                false,
+                o.b.as_ref().context("Source missing")?,
+                o.a.as_ref(),
+                metrics,
+            )?,
+            Action::DeleteA => self.remove(
+                task,
+                &o.path,
+                "A",
+                o.a.as_ref().context("Missing delete input")?,
+                true,
+                metrics,
+            )?,
+            Action::DeleteB => self.remove(
+                task,
+                &o.path,
+                "B",
+                o.b.as_ref().context("Missing delete input")?,
+                true,
+                metrics,
+            )?,
+            _ => {}
+        }
+        if o.action == Action::MoveToB && !o.a.as_ref().is_some_and(|e| e.directory) {
+            let destination = syncfs::safe_path(&task.b, &o.path)?;
+            let _destination_guard = syncfs::read_guard(&destination)?;
+            ensure!(
+                syncfs::hash_file_controlled(
+                    &destination,
+                    metrics,
+                    Some(&self.cancel),
+                    Some(&self.progress)
+                )?
+                .0 == o.a.as_ref().unwrap().digest,
+                "Move destination changed; source preserved"
+            );
+            self.remove(task, &o.path, "A", o.a.as_ref().unwrap(), false, metrics)?;
+        }
+        self.index.db.execute(
+            "UPDATE journal SET status='Complete' WHERE run=? AND path=?",
+            params![id, o.path],
+        )?;
+        o.status = "Applied".into();
+        let (a, b) = (
+            self.read_entry(&task.a, &o.path, &task.scope, metrics)?,
+            self.read_entry(&task.b, &o.path, &task.scope, metrics)?,
+        );
+        let digest = if task.mode == Mode::TwoWay {
+            if a.as_ref().map(|e| &e.digest) != b.as_ref().map(|e| &e.digest) {
+                return Ok(());
+            }
+            a.as_ref().map(|e| e.digest.clone())
+        } else if task.mode == Mode::Move {
+            None
+        } else {
+            a.as_ref()
+                .filter(|x| b.as_ref().is_some_and(|y| x.digest == y.digest))
+                .map(|e| e.digest.clone())
+        };
+        let tx = self.index.db.transaction()?;
+        tx.execute(
+            "INSERT OR REPLACE INTO baseline VALUES(?,?,?)",
+            params![task.id, path_key(&o.path), digest],
+        )?;
+        tx.execute(
+            "DELETE FROM conflicts WHERE task=? AND path=?",
+            params![task.id, path_key(&o.path)],
+        )?;
+        tx.commit()?;
+        self.index
+            .put_entry(&task.id, "A", &path_key(&o.path), a.as_ref())?;
+        self.index
+            .put_entry(&task.id, "B", &path_key(&o.path), b.as_ref())?;
         Ok(())
     }
     pub fn export(&self) -> Result<String> {

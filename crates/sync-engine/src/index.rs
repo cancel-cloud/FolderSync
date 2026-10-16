@@ -10,6 +10,24 @@ pub struct Index {
     pub storage: PathBuf,
 }
 impl Index {
+    /// Existing database only: never migrate, mark runs interrupted, or clean
+    /// another worker's live staging/displacement journal.
+    pub(crate) fn worker(storage: &Path) -> Result<Self> {
+        let db = Connection::open_with_flags(
+            storage.join("foldersync.sqlite3"),
+            rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE,
+        )?;
+        db.busy_timeout(std::time::Duration::from_secs(5))?;
+        db.execute_batch("PRAGMA foreign_keys=ON; PRAGMA synchronous=FULL;")?;
+        anyhow::ensure!(
+            db.query_row("PRAGMA user_version", [], |r| r.get::<_, u32>(0))? == 4,
+            "Transfer worker requires initialized schema"
+        );
+        Ok(Self {
+            db,
+            storage: storage.to_path_buf(),
+        })
+    }
     pub fn open(storage: &Path) -> Result<Self> {
         std::fs::create_dir_all(storage.join("versions"))?;
         let db = Connection::open(storage.join("foldersync.sqlite3"))?;

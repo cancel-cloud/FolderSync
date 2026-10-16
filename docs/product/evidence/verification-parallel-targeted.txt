@@ -1,0 +1,21 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+warning: unused import: `Arc`
+ --> crates\sync-engine\src\parallel.rs:4:5
+  |
+4 |     Arc,
+  |     ^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `foldersync-engine` (lib) generated 1 warning (run `cargo fix --lib -p foldersync-engine` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.95s
+     Running tests\parallel_transfers.rs (target\debug\deps\parallel_transfers-678d1d9ec2bae039.exe)
+
+running 4 tests
+test invalid_worker_counts_are_rejected_without_changing_saved_task ... ok
+test two_real_partial_stages_cancel_cleanly_without_worker_startup_recovery ... ok
+test parallel_workers_share_the_task_bandwidth_budget ... ok
+test bounded_parallel_transfers_preserve_all_modes_and_directory_order ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.69s
+

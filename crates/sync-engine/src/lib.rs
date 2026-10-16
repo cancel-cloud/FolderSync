@@ -6,6 +6,7 @@ pub mod fs;
 mod index;
 mod logging;
 mod model;
+mod parallel;
 mod progress;
 mod recovery;
 mod renames;

@@ -25,6 +25,10 @@ pub struct RunProgress {
     pub path: Option<String>,
     pub file_bytes: u64,
     pub file_total: u64,
+    #[serde(default)]
+    pub active_transfers: u32,
+    #[serde(default)]
+    pub max_transfers: u32,
 }
 /// A single replaceable snapshot, independent of the engine/database mutex.
 #[derive(Clone, Default)]
@@ -50,6 +54,8 @@ impl ProgressState {
                 path: None,
                 file_bytes: 0,
                 file_total: 0,
+                active_transfers: 0,
+                max_transfers: 1,
             });
         }
         ProgressGuard(self.clone())

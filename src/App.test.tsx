@@ -307,8 +307,22 @@ test("comparison and conflict policies save and reload through the actual editor
     screen.getByRole("combobox", { name: "Conflict handling" }),
     "RequireChoices",
   );
+  await user.clear(
+    screen.getByRole("spinbutton", { name: "Parallel transfers (1–4)" }),
+  );
+  await user.type(
+    screen.getByRole("spinbutton", { name: "Parallel transfers (1–4)" }),
+    "2",
+  );
   await user.click(screen.getByRole("button", { name: "Save task" }));
   await user.click(await screen.findByRole("button", { name: "Configure" }));
+  expect(
+    (
+      screen.getByRole("spinbutton", {
+        name: "Parallel transfers (1–4)",
+      }) as HTMLInputElement
+    ).value,
+  ).toBe("2");
   expect(
     (
       screen.getByRole("combobox", {
@@ -969,10 +983,13 @@ test("latest progress is visible during background work and Cancel reaches the n
         path: "large.bin",
         file_bytes: 1048576,
         file_total: 4194304,
+        active_transfers: 2,
+        max_transfers: 2,
       },
     });
   });
   expect(await screen.findByText("large.bin")).toBeTruthy();
+  expect(screen.getByText("2 / 2 active transfers")).toBeTruthy();
   const bar = screen.getByRole("progressbar", {
     name: "Current file progress",
   }) as HTMLProgressElement;

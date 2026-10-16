@@ -40,6 +40,8 @@ mod tests {
             path: Some("f".into()),
             file_bytes: 256,
             file_total: 1024,
+            active_transfers: 1,
+            max_transfers: 1,
         };
         assert_eq!(
             changed(&mut last, Some(value.clone())),

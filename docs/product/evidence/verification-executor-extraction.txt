@@ -1,0 +1,119 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+error[E0308]: mismatched types
+   --> crates\sync-engine\src\engine.rs:940:49
+    |
+940 |             let destination = syncfs::safe_path(task.b, &o.path)?;
+    |                               ----------------- ^^^^^^ expected `&Path`, found `PathBuf`
+    |                               |
+    |                               arguments to this function are incorrect
+    |
+note: function defined here
+   --> crates\sync-engine\src\fs.rs:129:8
+    |
+129 | pub fn safe_path(root: &Path, relative: &str) -> Result<std::path::PathBuf> {
+    |        ^^^^^^^^^ -----------
+help: consider borrowing here
+    |
+940 |             let destination = syncfs::safe_path(&task.b, &o.path)?;
+    |                                                 +
+
+error[E0308]: arguments to this method are incorrect
+   --> crates\sync-engine\src\engine.rs:960:18
+    |
+960 |             self.read_entry(task.a, &o.path, task.scope, metrics)?,
+    |                  ^^^^^^^^^^ ------           ---------- expected `&Scope`, found `Scope`
+    |                             |
+    |                             expected `&Path`, found `PathBuf`
+    |
+note: method defined here
+   --> crates\sync-engine\src\progress.rs:163:19
+    |
+163 |     pub(crate) fn read_entry(
+    |                   ^^^^^^^^^^
+164 |         &self,
+165 |         root: &std::path::Path,
+    |         ----------------------
+166 |         relative: &str,
+167 |         scope: &Scope,
+    |         -------------
+help: consider borrowing here
+    |
+960 |             self.read_entry(&task.a, &o.path, task.scope, metrics)?,
+    |                             +
+help: consider borrowing here
+    |
+960 |             self.read_entry(task.a, &o.path, &task.scope, metrics)?,
+    |                                              +
+
+error[E0308]: arguments to this method are incorrect
+   --> crates\sync-engine\src\engine.rs:961:18
+    |
+961 |             self.read_entry(task.b, &o.path, task.scope, metrics)?,
+    |                  ^^^^^^^^^^ ------           ---------- expected `&Scope`, found `Scope`
+    |                             |
+    |                             expected `&Path`, found `PathBuf`
+    |
+note: method defined here
+   --> crates\sync-engine\src\progress.rs:163:19
+    |
+163 |     pub(crate) fn read_entry(
+    |                   ^^^^^^^^^^
+164 |         &self,
+165 |         root: &std::path::Path,
+    |         ----------------------
+166 |         relative: &str,
+167 |         scope: &Scope,
+    |         -------------
+help: consider borrowing here
+    |
+961 |             self.read_entry(&task.b, &o.path, task.scope, metrics)?,
+    |                             +
+help: consider borrowing here
+    |
+961 |             self.read_entry(task.b, &o.path, &task.scope, metrics)?,
+    |                                              +
+
+error[E0308]: mismatched types
+   --> crates\sync-engine\src\engine.rs:986:24
+    |
+986 |             .put_entry(task.id, "A", &path_key(&o.path), a.as_ref())?;
+    |              --------- ^^^^^^^ expected `&str`, found `String`
+    |              |
+    |              arguments to this method are incorrect
+    |
+note: method defined here
+   --> crates\sync-engine\src\index.rs:108:12
+    |
+108 |     pub fn put_entry(
+    |            ^^^^^^^^^
+109 |         &self,
+110 |         task: &str,
+    |         ----------
+help: consider borrowing here
+    |
+986 |             .put_entry(&task.id, "A", &path_key(&o.path), a.as_ref())?;
+    |                        +
+
+error[E0308]: mismatched types
+   --> crates\sync-engine\src\engine.rs:988:24
+    |
+988 |             .put_entry(task.id, "B", &path_key(&o.path), b.as_ref())?;
+    |              --------- ^^^^^^^ expected `&str`, found `String`
+    |              |
+    |              arguments to this method are incorrect
+    |
+note: method defined here
+   --> crates\sync-engine\src\index.rs:108:12
+    |
+108 |     pub fn put_entry(
+    |            ^^^^^^^^^
+109 |         &self,
+110 |         task: &str,
+    |         ----------
+help: consider borrowing here
+    |
+988 |             .put_entry(&task.id, "B", &path_key(&o.path), b.as_ref())?;
+    |                        +
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `foldersync-engine` (lib) due to 5 previous errors

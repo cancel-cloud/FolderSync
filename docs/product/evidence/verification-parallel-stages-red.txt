@@ -1,0 +1,24 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.98s
+     Running tests\parallel_transfers.rs (target\debug\deps\parallel_transfers-678d1d9ec2bae039.exe)
+
+running 1 test
+test two_real_partial_stages_cancel_cleanly_without_worker_startup_recovery ... FAILED
+
+failures:
+
+---- two_real_partial_stages_cancel_cleanly_without_worker_startup_recovery stdout ----
+
+thread 'two_real_partial_stages_cancel_cleanly_without_worker_startup_recovery' (32828) panicked at crates\sync-engine\tests\parallel_transfers.rs:30:5:
+assertion `left == right` failed: two actual destination stages must overlap
+  left: 1
+ right: 2
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    two_real_partial_stages_cancel_cleanly_without_worker_startup_recovery
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 3.18s
+
+error: test failed, to rerun pass `-p foldersync-engine --test parallel_transfers`
