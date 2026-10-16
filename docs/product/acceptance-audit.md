@@ -19,7 +19,7 @@ Checkpoint: 2026-10-16, after source `88c18c2` and the subsequent progress/cance
 | Immutable Preview/Apply and stale inputs | filesystem tests, frontend confirmation tests, installed 300-file Preview proof | Verified principal boundary |
 | Distinct typed operations and reasons/directions | Action enum, PlanSummary, paged operation table and per-side totals | Create/update/mkdir share copy action with entry metadata; explicit Ignore UI choice missing |
 | Destructive review and mass-delete protection | Manual exact-plan approval; opt-in automatic common-baseline deletion with entry/percentage limits and root/scope-bound manual proof | Verified automated baseline/limits/race/native events and installed opt-in, hidden-window debounce deletion, protected bytes and exceeded-limit review in 2575c0f |
-| Protected replacement/deletion, restore, selective retention | transfer/recovery/retention tests; actual GUI restore | Verified local file-byte recovery; deleted-task recovery catalog and root-bound restore implemented; fresh installed GUI verification pending |
+| Protected replacement/deletion, restore, selective retention | transfer/recovery/retention tests; actual GUI restore | Verified local file-byte recovery; deleted-task recovery catalog, root-bound restore, Preview safety and inactive persistence verified in installed 5a8d0d8 |
 | Stage/verify/atomic Windows replacement and crash recovery | real killed subprocess, disk-full injection, displaced recovery, expected-destination race tests | Verified covered boundaries; exhaustive crash/power-loss/AV/adversarial junction testing pending |
 | Inaccessible/partial/offline roots cannot infer deletion | missing/offline/reconnect tests and actual nested ACL denial test | Local/fault paths verified; real SMB outage/partial listing pending |
 | Shared filters/scope/attributes | shared Matcher; scope/review_safety tests; GUI pattern tester | Principal filters and actual Windows SYSTEM full/incremental scope verified; selected-folder GUI matrix needs coverage |
@@ -42,7 +42,7 @@ Checkpoint: 2026-10-16, after source `88c18c2` and the subsequent progress/cance
 
 - Complete ambiguous/concurrent rename detection and regressions beyond the verified simple rename, delayed queued notifications and timestamp-preserving edit cases. Actual Windows SYSTEM matching is verified.
 - Exercise additional installed failure modes beyond the verified progress/Stop/cancel and successful retry workflow.
-- Verify every required task-management control and recovery after task deletion; do not equate internal UUIDs or group labels with completed management features.
+- Verify every remaining required task-management control; deleted-task recovery is now verified; do not equate internal UUIDs or group labels with completed management features.
 - Extend approved automatic deletion testing to specifically authorized disposable SMB/physical USB roots when available; local baseline, threshold and hidden-window workflows pass.
 - Verify startup registration and schedule dispatch through the real app. Actual sign-in/sleep and toast activation need an available OS session/interface; do not simulate these as OS passes.
 - Real SMB testing requires a specifically authorized disposable share. No production share or company path is authorized.
