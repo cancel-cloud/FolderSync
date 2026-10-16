@@ -63,3 +63,8 @@ Global close_behavior persists tray (default) or quit in SQLite. A native CloseB
 ## Path presentation
 
 Dashboard, preview and archived recovery roots share accessible path rows. Collapsed rows use ellipsis; Full path expands a read-only selectable field. Copy writes the exact displayed side's path on a user click, without normalization or filesystem access. Clipboard rejection exposes the selectable path and reports failure. Browser clipboard access follows [MDN writeText](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/writeText); actual installed WebView2 behavior is verified separately from jsdom tests. Clipboard contents are never read by application code.
+
+
+## Comparison and conflict policy boundary
+
+Typed Comparison/ConflictPolicy enums belong to durable Rust Task configuration and are mirrored at the TypeScript boundary. FullContent delegates narrow discovery to full verified discovery before opening a nested progress session. RequireChoices expands dirty inputs with persisted conflict paths and re-reads them through the shared matcher; it does not trust cached conflict metadata as current input. Both automation dispatch and manual executor enforce the hold. A second executor guard checks that no stored conflict was omitted by an older partial plan. Frontend summary conflict-minus-ignored counts disable Apply and explain the required choice, while Rust remains authoritative. Explicitly excluded conflicts lose attention without losing their baseline. No schema migration or dependency was required; unknown enum values reject deserialization.

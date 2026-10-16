@@ -218,6 +218,13 @@ impl Index {
         let rows = s.query_map([task], |r| Ok((r.get(0)?, r.get(1)?)))?;
         Ok(rows.collect::<rusqlite::Result<_>>()?)
     }
+    pub fn conflict_paths(&self, task: &str) -> Result<Vec<String>> {
+        let mut statement = self
+            .db
+            .prepare("SELECT path FROM conflicts WHERE task=? ORDER BY path")?;
+        let rows = statement.query_map([task], |row| row.get(0))?;
+        Ok(rows.collect::<rusqlite::Result<_>>()?)
+    }
     pub fn plan(&self, id: &str) -> Result<Plan> {
         let (json, status): (String, String) =
             self.db

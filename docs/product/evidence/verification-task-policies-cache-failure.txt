@@ -1,0 +1,9 @@
+    Checking foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Checking foldersync v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\src-tauri)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.69s
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+   Compiling foldersync v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\src-tauri)
+error: failed to create work product index at `\\?\C:\Users\Lukas\Developer\SyncFolders\target\debug\incremental\recovery-1xu2ohd3l16wo\s-hn9mk3od4p-1iq7mxb-working\work-products.bin`: Access is denied. (os error 5)
+
+error: could not compile `foldersync-engine` (test "recovery") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

@@ -1,0 +1,22 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.10s
+     Running tests\task_policies.rs (target\debug\deps\task_policies-f8b5d75bf73084a9.exe)
+
+running 1 test
+test strict_hold_carries_known_conflicts_across_batches_and_rejects_older_partial_plans ... FAILED
+
+failures:
+
+---- strict_hold_carries_known_conflicts_across_batches_and_rejects_older_partial_plans stdout ----
+
+thread 'strict_hold_carries_known_conflicts_across_batches_and_rejects_older_partial_plans' (11224) panicked at crates\sync-engine\tests\task_policies.rs:167:5:
+assertion failed: e.apply(&older.id, true).is_err()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    strict_hold_carries_known_conflicts_across_batches_and_rejects_older_partial_plans
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.18s
+
+error: test failed, to rerun pass `-p foldersync-engine --test task_policies`

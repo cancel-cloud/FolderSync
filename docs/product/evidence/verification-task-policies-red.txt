@@ -1,0 +1,42 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.82s
+     Running tests\task_policies.rs (target\debug\deps\task_policies-f8b5d75bf73084a9.exe)
+
+running 3 tests
+test strict_policy_survives_export_import_and_restart_without_enabling_automation ... FAILED
+test require_choices_holds_entire_run_without_baseline_or_file_changes_until_reviewed ... FAILED
+test full_content_policy_persists_and_detects_unnotified_timestamp_preserving_edit ... FAILED
+
+failures:
+
+---- strict_policy_survives_export_import_and_restart_without_enabling_automation stdout ----
+
+thread 'strict_policy_survives_export_import_and_restart_without_enabling_automation' (7804) panicked at crates\sync-engine\tests\task_policies.rs:67:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- require_choices_holds_entire_run_without_baseline_or_file_changes_until_reviewed stdout ----
+
+thread 'require_choices_holds_entire_run_without_baseline_or_file_changes_until_reviewed' (7688) panicked at crates\sync-engine\tests\task_policies.rs:46:5:
+assertion `left == right` failed
+  left: "Attention"
+ right: "Review required"
+
+---- full_content_policy_persists_and_detects_unnotified_timestamp_preserving_edit stdout ----
+
+thread 'full_content_policy_persists_and_detects_unnotified_timestamp_preserving_edit' (32340) panicked at crates\sync-engine\tests\task_policies.rs:30:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+
+failures:
+    full_content_policy_persists_and_detects_unnotified_timestamp_preserving_edit
+    require_choices_holds_entire_run_without_baseline_or_file_changes_until_reviewed
+    strict_policy_survives_export_import_and_restart_without_enabling_automation
+
+test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.16s
+
+error: test failed, to rerun pass `-p foldersync-engine --test task_policies`

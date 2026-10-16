@@ -481,6 +481,10 @@ export default function App() {
     if (task) setTask({ ...task, ...p });
   }
   const summary = plan?.summary;
+  const needsConflictChoices =
+    plan?.task.conflict_policy === "RequireChoices" &&
+    !!summary &&
+    summary.conflicts > (summary.ignored || 0);
   const archivedPlan = !!plan && !tasks.some((t) => t.id === plan.task.id);
   const direction = plan?.summary;
   return (
@@ -1294,6 +1298,72 @@ export default function App() {
                 </div>
               </section>
               <section className="panel">
+                <h2>{tr("Comparison & conflicts", "Vergleich & Konflikte")}</h2>
+                <div className="form-grid">
+                  <label>
+                    {tr("Content comparison", "Inhaltsvergleich")}
+                    <select
+                      value={task.comparison}
+                      onChange={(e) =>
+                        patch({
+                          comparison: e.target.value as Task["comparison"],
+                        })
+                      }
+                    >
+                      <option value="Incremental">
+                        {tr(
+                          "Incremental content verification",
+                          "Inhalte inkrementell prüfen",
+                        )}
+                      </option>
+                      <option value="FullContent">
+                        {tr(
+                          "Full content verification on every trigger",
+                          "Alle Inhalte bei jedem Auslöser prüfen",
+                        )}
+                      </option>
+                    </select>
+                  </label>
+                  <label>
+                    {tr("Conflict handling", "Konfliktbehandlung")}
+                    <select
+                      value={task.conflict_policy}
+                      onChange={(e) =>
+                        patch({
+                          conflict_policy: e.target
+                            .value as Task["conflict_policy"],
+                        })
+                      }
+                    >
+                      <option value="ContinueIndependent">
+                        {tr(
+                          "Preserve conflicts; continue independent transfers",
+                          "Konflikte erhalten; unabhängige Übertragungen fortsetzen",
+                        )}
+                      </option>
+                      <option value="RequireChoices">
+                        {tr(
+                          "Hold transfers until every conflict has a choice",
+                          "Übertragungen bis zur Entscheidung für jeden Konflikt anhalten",
+                        )}
+                      </option>
+                    </select>
+                  </label>
+                </div>
+                <p>
+                  {tr(
+                    "Both comparison modes verify file contents. Incremental uses change notifications with recovery scans; Full verifies both entire trees on every trigger and may be slower. Manual Preview always verifies both trees.",
+                    "Beide Vergleichsarten prüfen Dateiinhalte. Inkrementell nutzt Änderungsmeldungen mit Wiederherstellungsabgleichen; vollständig prüft beide Ordner bei jedem Auslöser und kann langsamer sein. Manuelle Vorschau prüft immer beide Ordner.",
+                  )}
+                </p>
+                <p>
+                  {tr(
+                    "Holding transfers changes no files until each conflict has an explicit copy or Ignore choice. Ignore keeps originals and conflict attention; it is not a resolution. Keep originals leaves the run held.",
+                    "Angehaltene Übertragungen ändern keine Dateien, bis jeder Konflikt eine ausdrückliche Kopier- oder Überspringen-Auswahl hat. Überspringen erhält Originale und Konflikthinweis; es löst den Konflikt nicht. Originale behalten hält den Lauf weiter an.",
+                  )}
+                </p>
+              </section>
+              <section className="panel">
                 <h2>{tr("Automatic deletion", "Automatische Entfernung")}</h2>
                 <p>
                   {tr(
@@ -1592,6 +1662,7 @@ export default function App() {
                     <Button
                       disabled={
                         busy ||
+                        needsConflictChoices ||
                         failedPlanId === plan.id ||
                         (summary.deletes > 0 && !approved)
                       }
@@ -1637,6 +1708,14 @@ export default function App() {
                     </Button>
                   )}
               </div>
+              {needsConflictChoices && (
+                <p className="alert warning" role="status">
+                  {tr(
+                    "This task holds all transfers. Choose a copy direction or Ignore for every conflict before applying.",
+                    "Diese Aufgabe hält alle Übertragungen an. Vor dem Anwenden für jeden Konflikt eine Kopierrichtung oder Überspringen wählen.",
+                  )}
+                </p>
+              )}
               {(summary.ignored || 0) > 0 && (
                 <p className="alert warning">
                   {tr(

@@ -180,8 +180,13 @@ test("close behavior persists and failed preference saves do not change the sele
   ).toBe("quit");
 });
 
-test("Ignore revises preview only and leaves conflict attention visible after confirmed Apply", async () => {
-  const task = { ...newTask(), name: "Ignore acceptance", a: "A", b: "B" };
+test("required conflict decisions block Apply until Ignore and leave attention after confirmed Apply", async () => {
+  const task = Object.assign(newTask(), {
+    name: "Ignore acceptance",
+    a: "A",
+    b: "B",
+    conflict_policy: "RequireChoices" as const,
+  });
   const entry = {
     path: "conflict",
     digest: "a",
@@ -249,11 +254,25 @@ test("Ignore revises preview only and leaves conflict attention visible after co
   await user.click(
     await screen.findByRole("button", { name: "Preview / Run" }),
   );
+  expect(
+    (
+      screen.getByRole("button", {
+        name: "Apply reviewed plan",
+      }) as HTMLButtonElement
+    ).disabled,
+  ).toBe(true);
   await user.selectOptions(
     await screen.findByRole("combobox", { name: "Resolve conflict" }),
     "ignore",
   );
   expect(applied).toBe(false);
+  expect(
+    (
+      screen.getByRole("button", {
+        name: "Apply reviewed plan",
+      }) as HTMLButtonElement
+    ).disabled,
+  ).toBe(false);
   expect(
     await screen.findByText(
       "Ignored this run: 1. Conflicts remain unresolved.",
@@ -264,6 +283,46 @@ test("Ignore revises preview only and leaves conflict attention visible after co
   await user.click(screen.getByRole("button", { name: "Confirm" }));
   expect(await screen.findByText("Attention")).toBeTruthy();
   expect(screen.getByText("Ignored")).toBeTruthy();
+});
+
+test("comparison and conflict policies save and reload through the actual editor", async () => {
+  let task = newTask();
+  task = { ...task, name: "Policy acceptance", a: "A", b: "B" };
+  api.invoke.mockImplementation(
+    async (command: string, args?: { task: typeof task }) => {
+      if (command === "tasks") return [task];
+      if (command === "statuses") return [];
+      if (command === "save_task" && args) task = args.task;
+      return null;
+    },
+  );
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "Configure" }));
+  await user.selectOptions(
+    screen.getByRole("combobox", { name: "Content comparison" }),
+    "FullContent",
+  );
+  await user.selectOptions(
+    screen.getByRole("combobox", { name: "Conflict handling" }),
+    "RequireChoices",
+  );
+  await user.click(screen.getByRole("button", { name: "Save task" }));
+  await user.click(await screen.findByRole("button", { name: "Configure" }));
+  expect(
+    (
+      screen.getByRole("combobox", {
+        name: "Content comparison",
+      }) as HTMLSelectElement
+    ).value,
+  ).toBe("FullContent");
+  expect(
+    (
+      screen.getByRole("combobox", {
+        name: "Conflict handling",
+      }) as HTMLSelectElement
+    ).value,
+  ).toBe("RequireChoices");
 });
 
 test("editable task identifiers save without replacing internal task identity", async () => {
