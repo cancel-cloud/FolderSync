@@ -134,3 +134,124 @@ impl Engine {
         Ok(Some(plan))
     }
 }
+
+#[cfg(test)]
+mod observation_tests {
+    use super::*;
+    use std::fs;
+
+    fn fixture() -> (tempfile::TempDir, Engine, Task) {
+        let dir = tempfile::tempdir().unwrap();
+        let task = Task {
+            a: dir.path().join("A"),
+            b: dir.path().join("B"),
+            ..Task::default()
+        };
+        fs::create_dir(&task.a).unwrap();
+        fs::create_dir(&task.b).unwrap();
+        let mut engine = Engine::open(&dir.path().join("state")).unwrap();
+        engine.save_task(&task).unwrap();
+        fs::write(task.a.join("equal"), "observed common content").unwrap();
+        fs::write(task.b.join("equal"), "observed common content").unwrap();
+        (dir, engine, task)
+    }
+
+    #[test]
+    fn edit_after_equal_observation_is_not_overwritten_and_next_event_propagates_it() {
+        let (_dir, mut engine, task) = fixture();
+        let plan = engine.preview(&task.id).unwrap();
+        fs::write(task.a.join("equal"), "edit after observation").unwrap();
+        engine.apply_internal(&plan.id, false, false).unwrap();
+        assert_eq!(
+            fs::read(task.a.join("equal")).unwrap(),
+            b"edit after observation"
+        );
+        assert_eq!(
+            fs::read(task.b.join("equal")).unwrap(),
+            b"observed common content"
+        );
+        engine
+            .queue_paths(&task.id, &["equal".into()], false)
+            .unwrap();
+        let applied = engine.process_queue(&task.id).unwrap().unwrap();
+        assert_eq!(applied.operations[0].action, Action::CopyToB);
+        assert_eq!(applied.metrics.reconciliations, 0);
+        assert_eq!(
+            fs::read(task.b.join("equal")).unwrap(),
+            b"edit after observation"
+        );
+    }
+
+    #[test]
+    fn manual_equal_plan_still_rejects_a_stale_observation() {
+        let (_dir, mut engine, task) = fixture();
+        let plan = engine.preview(&task.id).unwrap();
+        fs::write(task.a.join("equal"), "new content").unwrap();
+        assert!(
+            engine
+                .apply(&plan.id, false)
+                .unwrap_err()
+                .to_string()
+                .contains("Stale input")
+        );
+        assert_eq!(
+            fs::read(task.b.join("equal")).unwrap(),
+            b"observed common content"
+        );
+    }
+
+    #[test]
+    fn automatic_mutating_plan_keeps_global_stale_input_barrier() {
+        let (_dir, mut engine, task) = fixture();
+        fs::write(task.a.join("new"), "must not be copied from stale plan").unwrap();
+        let plan = engine.preview(&task.id).unwrap();
+        fs::write(task.a.join("equal"), "changed unrelated reviewed input").unwrap();
+        assert!(
+            engine
+                .apply_internal(&plan.id, false, false)
+                .unwrap_err()
+                .to_string()
+                .contains("Stale input")
+        );
+        assert!(!task.b.join("new").exists());
+    }
+
+    #[test]
+    fn automatic_equal_plan_still_rejects_changed_root_identity() {
+        let (dir, mut engine, task) = fixture();
+        let plan = engine.preview(&task.id).unwrap();
+        fs::rename(&task.a, dir.path().join("old-A")).unwrap();
+        fs::create_dir(&task.a).unwrap();
+        assert!(engine.apply_internal(&plan.id, false, false).is_err());
+        assert_eq!(
+            fs::read(task.b.join("equal")).unwrap(),
+            b"observed common content"
+        );
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn failed_incremental_discovery_does_not_commit_partial_observations() {
+        use std::os::windows::fs::OpenOptionsExt;
+        let (_dir, mut engine, task) = fixture();
+        fs::write(task.a.join("z-locked"), "readable before lock").unwrap();
+        engine.preview(&task.id).unwrap();
+        let before = engine.index.entry(&task.id, "A", "equal").unwrap();
+        fs::write(task.a.join("equal"), "new observation before later failure").unwrap();
+        let _lock = fs::OpenOptions::new()
+            .read(true)
+            .share_mode(0)
+            .open(task.a.join("z-locked"))
+            .unwrap();
+        assert!(
+            engine
+                .preview_paths(&task.id, &["equal".into(), "z-locked".into()])
+                .is_err()
+        );
+        assert_eq!(
+            engine.index.entry(&task.id, "A", "equal").unwrap(),
+            before,
+            "Failed discovery must retain the previous coherent observations"
+        );
+    }
+}
