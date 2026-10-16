@@ -17,6 +17,7 @@ pub enum Action {
     DeleteB,
     MoveToB,
     Conflict,
+    Ignore,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(default)]
@@ -149,7 +150,7 @@ pub struct Metrics {
     pub reconciliations: u64,
     pub watch_events: u64,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Operation {
     pub path: String,
     pub action: Action,
@@ -158,6 +159,56 @@ pub struct Operation {
     pub status: String,
     pub a: Option<Entry>,
     pub b: Option<Entry>,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum OperationKind {
+    Unchanged,
+    Create,
+    Update,
+    Mkdir,
+    DeleteToTrash,
+    Move,
+    Conflict,
+    Ignore,
+}
+impl Operation {
+    pub fn kind(&self) -> OperationKind {
+        match self.action {
+            Action::CopyToA | Action::CopyToB => {
+                let (source, target) = if self.action == Action::CopyToA {
+                    (&self.b, &self.a)
+                } else {
+                    (&self.a, &self.b)
+                };
+                if source.as_ref().is_some_and(|e| e.directory) {
+                    OperationKind::Mkdir
+                } else if target.is_some() {
+                    OperationKind::Update
+                } else {
+                    OperationKind::Create
+                }
+            }
+            Action::DeleteA | Action::DeleteB => OperationKind::DeleteToTrash,
+            Action::MoveToB => OperationKind::Move,
+            Action::Conflict => OperationKind::Conflict,
+            Action::Ignore => OperationKind::Ignore,
+            Action::Unchanged => OperationKind::Unchanged,
+        }
+    }
+}
+impl Serialize for Operation {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeStruct;
+        let mut record = serializer.serialize_struct("Operation", 7)?;
+        record.serialize_field("path", &self.path)?;
+        record.serialize_field("action", &self.action)?;
+        record.serialize_field("kind", &self.kind())?;
+        record.serialize_field("reason", &self.reason)?;
+        record.serialize_field("status", &self.status)?;
+        record.serialize_field("a", &self.a)?;
+        record.serialize_field("b", &self.b)?;
+        record.end()
+    }
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Plan {
@@ -234,6 +285,8 @@ pub struct PlanSummary {
     pub copies: u64,
     pub deletes: u64,
     pub conflicts: u64,
+    #[serde(default)]
+    pub ignored: u64,
     pub unchanged: u64,
     pub to_a: u64,
     pub to_b: u64,

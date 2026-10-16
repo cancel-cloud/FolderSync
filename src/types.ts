@@ -6,7 +6,17 @@ export type Action =
   | "DeleteA"
   | "DeleteB"
   | "MoveToB"
-  | "Conflict";
+  | "Conflict"
+  | "Ignore";
+export type OperationKind =
+  | "Unchanged"
+  | "Create"
+  | "Update"
+  | "Mkdir"
+  | "DeleteToTrash"
+  | "Move"
+  | "Conflict"
+  | "Ignore";
 export interface Scope {
   include: string[];
   exclude: string[];
@@ -58,6 +68,7 @@ export interface Entry {
 export interface Operation {
   path: string;
   action: Action;
+  kind?: OperationKind;
   reason: string;
   status?: string;
   a: Entry | null;
@@ -79,6 +90,7 @@ export interface Plan {
     copies: number;
     deletes: number;
     conflicts: number;
+    ignored?: number;
     unchanged: number;
     to_a: number;
     to_b: number;

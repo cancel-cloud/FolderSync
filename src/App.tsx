@@ -37,6 +37,7 @@ import type {
 import { newTask } from "./types";
 import {
   actionLabel,
+  operationLabel,
   statusLabel,
   reasonLabel,
   entryLabel,
@@ -1608,6 +1609,14 @@ export default function App() {
                     </Button>
                   )}
               </div>
+              {(summary.ignored || 0) > 0 && (
+                <p className="alert warning">
+                  {tr(
+                    `Ignored this run: ${summary.ignored}. Conflicts remain unresolved.`,
+                    `In diesem Lauf übersprungen: ${summary.ignored}. Konflikte bleiben offen.`,
+                  )}
+                </p>
+              )}
               <div className="stats">
                 <div>
                   <b>{summary.copies}</b>
@@ -1768,8 +1777,18 @@ export default function App() {
                         </td>
                         <td>
                           <span className={`op ${o.action}`}>
-                            {actionLabel(o.action, lang)}
+                            {operationLabel(o, lang)}
                           </span>
+                          {o.kind &&
+                            [
+                              "CopyToA",
+                              "CopyToB",
+                              "MoveToB",
+                              "DeleteA",
+                              "DeleteB",
+                            ].includes(o.action) && (
+                              <small>{actionLabel(o.action, lang)}</small>
+                            )}
                           {!["Preview", "Review required"].includes(
                             plan.status,
                           ) && (
@@ -1778,7 +1797,8 @@ export default function App() {
                             </small>
                           )}
                           {!archivedPlan &&
-                            o.action === "Conflict" &&
+                            (o.action === "Conflict" ||
+                              o.action === "Ignore") &&
                             ["Preview", "Review required"].includes(
                               plan.status,
                             ) && (
@@ -1787,7 +1807,7 @@ export default function App() {
                                   `Resolve ${o.path}`,
                                   `${o.path} auflösen`,
                                 )}
-                                value=""
+                                value={o.action === "Ignore" ? "ignore" : ""}
                                 onChange={(e) =>
                                   void perform(async () => {
                                     setPlan(
@@ -1802,8 +1822,20 @@ export default function App() {
                               >
                                 <option value="">
                                   {tr(
+                                    "Choose an action (keep originals)",
+                                    "Aktion wählen (Originale behalten)",
+                                  )}
+                                </option>
+                                <option value="keep">
+                                  {tr(
                                     "Keep both / unresolved",
                                     "Beide behalten / offen",
+                                  )}
+                                </option>
+                                <option value="ignore">
+                                  {tr(
+                                    "Ignore for this run (keep conflict)",
+                                    "Diesen Lauf überspringen (Konflikt behalten)",
                                   )}
                                 </option>
                                 {o.a && (

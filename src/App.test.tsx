@@ -66,6 +66,92 @@ afterEach(() => {
   vi.clearAllMocks();
   api.listeners.clear();
 });
+test("Ignore revises preview only and leaves conflict attention visible after confirmed Apply", async () => {
+  const task = { ...newTask(), name: "Ignore acceptance", a: "A", b: "B" };
+  const entry = {
+    path: "conflict",
+    digest: "a",
+    directory: false,
+    size: 1,
+    mtime_ns: "1",
+  };
+  let current: FixturePlan = {
+    id: "preview",
+    task,
+    created_at: 1,
+    status: "Preview",
+    metrics: {
+      scanned_entries: 2,
+      hashed_bytes: 2,
+      copied_bytes: 0,
+      queued_paths: 0,
+      reconciliations: 1,
+      watch_events: 0,
+    },
+    operations: [
+      {
+        path: "conflict",
+        action: "Conflict",
+        reason: "Both differ",
+        a: entry,
+        b: { ...entry, digest: "b" },
+      },
+    ],
+  };
+  let applied = false;
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks") return [task];
+    if (command === "statuses") return [];
+    if (command === "preview") return header(current);
+    if (command === "operation_page")
+      return { operations: current.operations, total: 1 };
+    if (command === "resolve") {
+      current = {
+        ...current,
+        id: "ignored",
+        operations: [
+          {
+            ...current.operations[0],
+            action: "Ignore" as Operation["action"],
+            reason: "Explicit ignore for this run; conflict remains unresolved",
+          },
+        ],
+      };
+      return header(current);
+    }
+    if (command === "apply") {
+      applied = true;
+      current = {
+        ...current,
+        status: "Attention",
+        operations: [{ ...current.operations[0], status: "Ignored" }],
+      };
+      return { plan: header(current), error: null };
+    }
+    return null;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(
+    await screen.findByRole("button", { name: "Preview / Run" }),
+  );
+  await user.selectOptions(
+    await screen.findByRole("combobox", { name: "Resolve conflict" }),
+    "ignore",
+  );
+  expect(applied).toBe(false);
+  expect(
+    await screen.findByText(
+      "Ignored this run: 1. Conflicts remain unresolved.",
+    ),
+  ).toBeTruthy();
+  await user.click(screen.getByRole("button", { name: "Apply reviewed plan" }));
+  expect(applied).toBe(false);
+  await user.click(screen.getByRole("button", { name: "Confirm" }));
+  expect(await screen.findByText("Attention")).toBeTruthy();
+  expect(screen.getByText("Ignored")).toBeTruthy();
+});
+
 test("editable task identifiers save without replacing internal task identity", async () => {
   let task = { ...newTask(), name: "Engineering pair", a: "A", b: "B" };
   const internalId = task.id;

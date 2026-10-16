@@ -31,6 +31,10 @@ impl From<&Plan> for PlanHeader {
                     summary.remove_b += 1;
                 }
                 Action::Conflict => summary.conflicts += 1,
+                Action::Ignore => {
+                    summary.conflicts += 1;
+                    summary.ignored += 1;
+                }
                 Action::Unchanged => summary.unchanged += 1,
             }
             summary.explicit |= o.reason.starts_with("Explicit");
@@ -57,7 +61,7 @@ impl Engine {
         let mut header: PlanHeader = serde_json::from_str(&json)?;
         header.status = status;
         header.summary = self.index.db.query_row(
-            "SELECT coalesce(sum(a IN ('CopyToA','CopyToB','MoveToB')),0),coalesce(sum(a IN ('DeleteA','DeleteB','MoveToB')),0),coalesce(sum(a='Conflict'),0),coalesce(sum(a='Unchanged'),0),coalesce(sum(a='CopyToA'),0),coalesce(sum(a IN ('CopyToB','MoveToB')),0),coalesce(sum(a IN ('DeleteA','MoveToB')),0),coalesce(sum(a='DeleteB'),0),coalesce(max(reason LIKE 'Explicit%'),0),count(*) FROM (SELECT json_extract(value,'$.action') a,json_extract(value,'$.reason') reason FROM runs,json_each(runs.json,'$.operations') WHERE runs.id=?)", [id], |r| Ok(PlanSummary { copies:r.get::<_,i64>(0)? as u64, deletes:r.get::<_,i64>(1)? as u64, conflicts:r.get::<_,i64>(2)? as u64, unchanged:r.get::<_,i64>(3)? as u64, to_a:r.get::<_,i64>(4)? as u64, to_b:r.get::<_,i64>(5)? as u64, remove_a:r.get::<_,i64>(6)? as u64, remove_b:r.get::<_,i64>(7)? as u64, explicit:r.get(8)?, entries:r.get::<_,i64>(9)? as u64 }))?;
+            "SELECT coalesce(sum(a IN ('CopyToA','CopyToB','MoveToB')),0),coalesce(sum(a IN ('DeleteA','DeleteB','MoveToB')),0),coalesce(sum(a IN ('Conflict','Ignore')),0),coalesce(sum(a='Unchanged'),0),coalesce(sum(a='CopyToA'),0),coalesce(sum(a IN ('CopyToB','MoveToB')),0),coalesce(sum(a IN ('DeleteA','MoveToB')),0),coalesce(sum(a='DeleteB'),0),coalesce(max(reason LIKE 'Explicit%'),0),count(*),coalesce(sum(a='Ignore'),0) FROM (SELECT json_extract(value,'$.action') a,json_extract(value,'$.reason') reason FROM runs,json_each(runs.json,'$.operations') WHERE runs.id=?)", [id], |r| Ok(PlanSummary { copies:r.get::<_,i64>(0)? as u64, deletes:r.get::<_,i64>(1)? as u64, conflicts:r.get::<_,i64>(2)? as u64, unchanged:r.get::<_,i64>(3)? as u64, to_a:r.get::<_,i64>(4)? as u64, to_b:r.get::<_,i64>(5)? as u64, remove_a:r.get::<_,i64>(6)? as u64, remove_b:r.get::<_,i64>(7)? as u64, explicit:r.get(8)?, entries:r.get::<_,i64>(9)? as u64, ignored:r.get::<_,i64>(10)? as u64 }))?;
         Ok(header)
     }
     pub fn history_headers(&self, task: &str) -> Result<Vec<PlanHeader>> {

@@ -1,0 +1,93 @@
+$ vitest run
+
+ RUN  v3.2.7 C:/Users/Lukas/Developer/SyncFolders
+
+ ✓ src/review.test.ts (2 tests) 4ms
+ ✓ src/i18n.test.ts (2 tests) 35ms
+ ❯ src/App.test.tsx (13 tests | 1 failed) 5658ms
+   × Ignore revises preview only and leaves conflict attention visible after confirmed Apply 446ms
+     → Value "ignore" not found in options
+
+Ignored nodes: comments, script, style
+[36m<select[39m
+  [33maria-label[39m=[32m"Resolve conflict"[39m
+[36m>[39m
+  [36m<option[39m
+    [33mvalue[39m=[32m""[39m
+  [36m>[39m
+    [0mKeep both / unresolved[0m
+  [36m</option>[39m
+  [36m<option[39m
+    [33mvalue[39m=[32m"a"[39m
+  [36m>[39m
+    [0mChoose A → B (preview)[0m
+  [36m</option>[39m
+  [36m<option[39m
+    [33mvalue[39m=[32m"b"[39m
+  [36m>[39m
+    [0mChoose B → A (preview)[0m
+  [36m</option>[39m
+[36m</select>[39m
+   ✓ editable task identifiers save without replacing internal task identity  680ms
+   ✓ deleted-task recovery stays separate from synchronization and restore requires confirmation  427ms
+   ✓ enabling automatic deletion requires a separate policy confirmation before saving  373ms
+   ✓ group filtering clears hidden selections and bulk reassignment refreshes collapsible groups  657ms
+   ✓ saving a selected task into another group clears its hidden bulk selection  575ms
+   ✓ nested conflict choice only revises preview; Apply requires its separate confirmation  575ms
+   ✓ saved German preference localizes dashboard, conflict review and metadata 162ms
+   ✓ review requests bounded pages and resets paging when filters change  810ms
+   ✓ terminal Apply result Failed: destination locked updates the dashboard and requires a fresh preview  350ms
+   ✓ terminal Apply result Cancelled updates the dashboard and requires a fresh preview  343ms
+   ✓ latest progress is visible during background work and Cancel reaches the native stop command 132ms
+   ✓ cancelled discovery refreshes persisted status and shows a localized cancellation message 125ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/App.test.tsx > Ignore revises preview only and leaves conflict attention visible after confirmed Apply
+TestingLibraryElementError: Value "ignore" not found in options
+
+Ignored nodes: comments, script, style
+<select
+  aria-label="Resolve conflict"
+>
+  <option
+    value=""
+  >
+    Keep both / unresolved
+  </option>
+  <option
+    value="a"
+  >
+    Choose A → B (preview)
+  </option>
+  <option
+    value="b"
+  >
+    Choose B → A (preview)
+  </option>
+</select>
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+user-event_aea6012367c281fb0dc3c23f015b1380/node_modules/@testing-library/user-event/dist/esm/utility/selectOptions.js:37:35
+ ❯ Object.selectOptionsBase node_modules/.pnpm/@testing-library+user-event_aea6012367c281fb0dc3c23f015b1380/node_modules/@testing-library/user-event/dist/esm/utility/selectOptions.js:29:38
+ ❯ Object.selectOptions node_modules/.pnpm/@testing-library+user-event_aea6012367c281fb0dc3c23f015b1380/node_modules/@testing-library/user-event/dist/esm/utility/selectOptions.js:16:30
+ ❯ node_modules/.pnpm/@testing-library+user-event_aea6012367c281fb0dc3c23f015b1380/node_modules/@testing-library/user-event/dist/esm/setup/setup.js:83:35
+ ❯ Object.asyncWrapper node_modules/.pnpm/@testing-library+react@16.3_caf0c89dcd807677af52e2a43e70eff8/node_modules/@testing-library/react/dist/pure.js:88:28
+ ❯ wrapAsync node_modules/.pnpm/@testing-library+user-event_aea6012367c281fb0dc3c23f015b1380/node_modules/@testing-library/user-event/dist/esm/setup/wrapAsync.js:6:24
+ ❯ Object.method [as selectOptions] node_modules/.pnpm/@testing-library+user-event_aea6012367c281fb0dc3c23f015b1380/node_modules/@testing-library/user-event/dist/esm/setup/setup.js:83:16
+ ❯ src/App.test.tsx:85:14
+     83|   const user=userEvent.setup();render(<App/>);
+     84|   await user.click(await screen.findByRole("button",{name:"Preview / R…
+     85|   await user.selectOptions(await screen.findByRole("combobox",{name:"R…
+       |              ^
+     86|   expect(applied).toBe(false);
+     87|   expect(await screen.findByText("Ignored this run: 1. Conflicts remai…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 16 passed (17)
+   Start at  14:51:46
+   Duration  13.59s (transform 4.47s, setup 0ms, collect 5.19s, tests 5.70s, environment 1.93s, prepare 939ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
