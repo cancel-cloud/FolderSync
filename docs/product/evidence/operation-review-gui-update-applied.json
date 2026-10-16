@@ -1,0 +1,10 @@
+{
+  "source_commit": "205f4c8",
+  "run_id": "3a2fe549-3440-4a4b-bbb2-fa63d1a3912f",
+  "status": "Attention",
+  "update_applied": true,
+  "a_b_updated_bytes_equal": true,
+  "old_destination_protected": true,
+  "conflict_bytes_unchanged": true,
+  "pending_conflicts": 1
+}

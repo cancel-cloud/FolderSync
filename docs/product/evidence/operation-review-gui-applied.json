@@ -1,0 +1,10 @@
+{
+  "source_commit": "205f4c8",
+  "run_id": "6f06429f-df99-4707-89ab-b2ab1a09c2ef",
+  "status": "Attention",
+  "ignored_operation_status": "Ignored",
+  "created_file_matches": true,
+  "created_empty_directory": true,
+  "conflict_bytes_unchanged": true,
+  "pending_conflicts": 1
+}
