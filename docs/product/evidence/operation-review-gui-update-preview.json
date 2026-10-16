@@ -1,0 +1,28 @@
+{
+  "run_id": "3a2fe549-3440-4a4b-bbb2-fa63d1a3912f",
+  "update_operation": {
+    "path": "review-created.txt",
+    "action": "CopyToB",
+    "kind": "Update",
+    "reason": "One-sided creation or change",
+    "status": "Planned",
+    "a": {
+      "path": "review-created.txt",
+      "digest": "0d6698292beb959b0e5fc1c089db42f5511bc70e7d5b4ead84c495df64e1180e",
+      "directory": false,
+      "size": 46,
+      "mtime_ns": "1792155611002126700",
+      "file_id": "4241541576:1245184:2858609"
+    },
+    "b": {
+      "path": "review-created.txt",
+      "digest": "3be3a601ec695f6e5eb4011bb8997a733b24168adf3988d3202f19bf9febb361",
+      "directory": false,
+      "size": 43,
+      "mtime_ns": "1792155406297828000",
+      "file_id": "4241541576:1179648:2858903"
+    }
+  },
+  "previous_ignore_is_now_conflict": true,
+  "destination_still_old_bytes": true
+}

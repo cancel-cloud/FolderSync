@@ -1,0 +1,28 @@
+{
+  "run_id": "6f06429f-df99-4707-89ab-b2ab1a09c2ef",
+  "ignored_conflict": {
+    "path": "from-a.txt",
+    "action": "Ignore",
+    "kind": "Ignore",
+    "reason": "Explicit ignore for this run; conflict remains unresolved",
+    "status": "Planned",
+    "a": {
+      "path": "from-a.txt",
+      "digest": "4a86984ee4e8b69c4c514b6d54187f74262cc8ffaa0dfe63f96d8e2c92447118",
+      "directory": false,
+      "size": 26,
+      "mtime_ns": "1792143174629695000",
+      "file_id": "4241541576:393216:2784149"
+    },
+    "b": {
+      "path": "from-a.txt",
+      "digest": "b67532c9c042722755413f1dbf5d9258c1c68f2903e6e30ec7d0c832434b6bdf",
+      "directory": false,
+      "size": 35,
+      "mtime_ns": "1792143174631696300",
+      "file_id": "4241541576:65536:2772226"
+    }
+  },
+  "destination_entries_still_absent": true,
+  "conflict_bytes_unchanged": true
+}
