@@ -118,3 +118,24 @@ fn read_only_destination_fails_without_losing_either_side() {
     assert_eq!(fs::read(&target).unwrap(), b"base");
     assert_eq!(fs::read(t.a.join("f")).unwrap(), b"new");
 }
+#[test]
+fn uncertain_duplicate_events_survive_offline_root_then_reconnect_safely() {
+    let (d, mut e, t) = fixture();
+    fs::write(t.a.join("f"), "base").unwrap();
+    let p = e.preview(&t.id).unwrap();
+    e.apply(&p.id, true).unwrap();
+    e.queue_paths(&t.id, &["f".into(), "f".into()], true)
+        .unwrap();
+    assert_eq!(e.queued(&t.id).unwrap().len(), 2);
+    let away = d.path().join("A-unavailable");
+    fs::rename(&t.a, &away).unwrap();
+    assert!(e.process_queue(&t.id).is_err());
+    assert_eq!(fs::read(t.b.join("f")).unwrap(), b"base");
+    assert!(!e.queued(&t.id).unwrap().is_empty());
+    fs::rename(&away, &t.a).unwrap();
+    fs::write(t.a.join("f"), "reconnected edit").unwrap();
+    let p = e.process_queue(&t.id).unwrap().unwrap();
+    assert_eq!(p.metrics.reconciliations, 1);
+    assert_eq!(fs::read(t.b.join("f")).unwrap(), b"reconnected edit");
+    assert!(e.queued(&t.id).unwrap().is_empty());
+}

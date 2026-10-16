@@ -82,3 +82,25 @@ impl WatchService {
         batch
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn injected_overflow_marks_uncertainty_instead_of_dropping_it_silently() {
+        let d = tempfile::tempdir().unwrap();
+        let a = d.path().join("A");
+        let b = d.path().join("B");
+        std::fs::create_dir(&a).unwrap();
+        std::fs::create_dir(&b).unwrap();
+        let t = Task {
+            a,
+            b,
+            ..Task::default()
+        };
+        let watch = WatchService::new(&t).unwrap();
+        watch.overflow.store(true, Ordering::Relaxed);
+        assert!(watch.poll().uncertain);
+        assert!(!watch.poll().uncertain);
+    }
+}
