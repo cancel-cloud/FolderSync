@@ -1,0 +1,33 @@
+   Compiling foldersync v0.1.3 (C:\Users\Lukas\Developer\SyncFolders\src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.16s
+     Running unittests src\main.rs (target\debug\deps\foldersync-bb95cff13205a6d0.exe)
+
+running 26 tests
+test app_storage::tests::explicit_cleanup_validates_all_storage_before_deleting_either ... ok
+test app_storage::tests::migration_refuses_directory_junctions ... ok
+test app_storage::tests::migration_refuses_missing_protected_file_without_publishing_target ... ok
+test app_storage::tests::migration_rejects_unexpected_protected_catalog_path ... ok
+test app_storage::tests::completed_migration_still_rejects_a_running_legacy_process ... ok
+test app_storage::tests::explicit_cleanup_removes_both_storage_directories_and_preserves_sync_roots ... ok
+test lifecycle::tests::sign_in_launch_stays_in_tray_while_manual_relaunch_opens_the_window ... ok
+test notification_status::tests::system_disabled_reasons_remain_distinct_and_future_values_unknown ... ok
+test notification_tests::command_cancellation_has_a_reserved_marker_and_os_errors_keep_details ... ok
+test notification_tests::activation_routes_to_the_originating_task_without_an_apply_action ... ok
+test presentation::tests::conflict_and_failure_notices_are_distinct_in_both_languages ... ok
+test presentation::tests::language_changes_labels_without_changing_tray_action_identity ... ok
+test presentation::tests::test_notice_explains_windows_delivery_without_claiming_a_banner ... ok
+test progress_runtime::tests::sampler_emits_only_changes_and_emits_idle_after_work ... ok
+test startup::tests::current_user_registration_quotes_executable_and_disables_idempotently ... ok
+test storage_location::tests::opens_only_owned_root_or_canonical_task_directory ... ok
+test lifecycle::tests::close_choice_defaults_to_tray_and_persists_without_changing_automation ... ok
+test app_storage::tests::refuses_ambiguous_target_incomplete_stage_and_running_old_process ... ok
+test app_storage::tests::explicit_cleanup_refuses_running_app_without_deleting_storage ... ok
+test app_storage::tests::migration_relocates_owned_staging_paths_but_preserves_external_paths ... ok
+test app_storage::tests::explicit_cleanup_rejects_nested_junction_before_deleting_any_storage ... ok
+test app_storage::tests::migration_keeps_archived_flat_legacy_versions_restorable ... ok
+test background::tests::scheduled_queue_resumes_after_restart_before_next_occurrence ... ok
+test app_storage::tests::migration_preserves_wal_baselines_versions_and_reviewed_restore ... ok
+test app_storage::tests::migration_refuses_busy_source_before_creating_stage ... ok
+test lifecycle::tests::failed_persistence_keeps_native_close_action_and_saved_preference ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.01s

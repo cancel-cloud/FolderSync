@@ -1,5 +1,9 @@
 # QA report — 2026-10-16
 
+## Latest UI-fix release: 0.1.3
+
+145 Rust / 31 frontend tests and full verification passed; after a Computer Use-discovered MSIX Explorer-path issue, the corrected native resolver passed all 26 native tests and Clippy. Final rebuilt installer from **32ad5a1** installed without elevation, exit 0. Both Open buttons now reach their actual directories in Explorer. UI checks confirm corrected text/spacing/placeholders, absent sidebar slogan and no test-notification message on Tasks. Exact task JSON, five backup payloads and disposable originals remained unchanged. Windows Settings directly exposed **Do not disturb ON**, explaining center-only notifications; FolderSync sender was enabled for Banners/Sounds. No OS setting was changed. See [0.1.3 release report](release-0.1.3.md) for exact installer hash, evidence and limits. Earlier sections are historical.
+
 ## Latest bug-fix release: 0.1.2
 
 Final verification: **144 Rust / 29 frontend tests**; formatting, Clippy -D warnings, TypeScript, ESLint, web build and optimized installer build all pass. Runtime commits **14d58a9**, **28019d5**. Actual non-admin installation exited 0, preserved the user's enabled startup preference and did not launch synchronization. Computer Use verified Tiles/List at maximized size, header selection actions, Disable, Delete/Cancel, filter help, stable preference saves, Local data and Version. Quit/relaunch retained saved List and tasks. Migration and final read-only checks preserved all disposable originals and five backups; two task configurations were identical on migration, with only the intentional Disable schedule reset during GUI QA. Test toast request succeeded; refreshed native status Activated, OS banner/sound unverified. See [0.1.2 release report](release-0.1.2.md) for exact hashes, instructions, evidence and remaining limits. Older sections below describe historical checkpoints and do not supersede this release.
