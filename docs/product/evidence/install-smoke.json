@@ -1,0 +1,7 @@
+{
+  "installer_sha256": "8B5F6C7E3DF6E4AD3779E194B2F79E1D33AE29512608E7225F72A1DAD14660E9",
+  "executable_present": true,
+  "installer_bytes": 3787235,
+  "install_exit_code": 0,
+  "source_commit": "0b515c2"
+}

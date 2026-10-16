@@ -1,0 +1,6 @@
+{
+  "AToB": true,
+  "BToA": true,
+  "ConflictA": "Closed-window conflict A\r\n",
+  "ConflictB": "Closed-window conflict B distinct\r\n"
+}

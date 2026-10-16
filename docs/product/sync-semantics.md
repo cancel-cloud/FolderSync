@@ -1,6 +1,6 @@
 # Synchronization semantics
 
-Design contract; not implemented or tested as of 2026-10-16.
+Implemented rules as of 2026-10-16; concrete validation and remaining gaps are listed in qa-report.md.
 
 ## State and identity
 
@@ -33,7 +33,7 @@ For each relative file, A and B have either a verified content digest or an expl
 
 Unresolved conflicts never advance the common baseline. Independent nonconflicting operations may succeed. A task may finish transfers with pending conflicts; that is distinct from transfer failure.
 
-Renames initially remain an explicitly reported create plus protected deletion. Ambiguous identity matches never authorize a destructive rename. Directory/file type conflicts block that subtree. Deleting a folder requires reviewing its descendants and rechecking that no unplanned content has appeared.
+Renames initially remain an explicitly reported create plus protected deletion. Ambiguous identity matches never authorize a destructive rename. Directory/file type conflicts preserve both objects; incompatible descendant operations fail safely rather than replacing the type. Deleting a folder requires reviewing its descendants and rechecking that no unplanned content has appeared.
 
 ## Directional modes
 
@@ -43,11 +43,11 @@ Renames initially remain an explicitly reported create plus protected deletion. 
 | Identical A/B | No operation | No operation | Remove A only after explicit Move review and fresh verification |
 | Different A/B, first run | Preserve and report conflict | Preserve and report conflict | Preserve and report conflict |
 | A changed from a successful pair baseline, B unchanged | Protected replacement | Protected replacement | Verified transfer before source removal |
-| B changed unexpectedly | Conflict | Explicit review to replace B | Conflict |
+| B changed unexpectedly | Conflict | Conflict; explicit direction choice required | Conflict |
 | B-only file | Retain | Propose protected deletion with explicit review | Retain |
 | A deleted after baseline | Retain B | Propose protected deletion | Retain B |
 
-Mirror deletion on first run always requires explicit review. Move always requires destructive confirmation. Automatic jobs cannot silently approve a first-run conflict, new destructive plan, or mass-deletion threshold. Threshold confirmation binds to the exact plan and root identities.
+Mirror deletion on first run always requires explicit review. Move always requires destructive confirmation. Automatic jobs cannot silently approve a first-run conflict, new destructive plan, or mass-deletion threshold. Every removal requires the checkbox and separate confirmation bound to the exact plan and root identities; no additional numeric mass-delete threshold is implemented. Background plans with any removal wait for review.
 
 ## Preview and Apply
 
@@ -61,9 +61,9 @@ A plan records its run ID, task revision, root identities, scope revision, basel
 2. Reject unexpected reparse points and changed roots/parents.
 3. Preserve any overwritten/deleted bytes in protected storage outside both roots. Verify and flush the recovery copy before relying on it.
 4. Stream into a uniquely created staging file on the destination filesystem, using bounded buffers; hash while copying and honor cancellation.
-5. Flush, verify length/content and verify that the source snapshot stayed stable. Recheck destination expectations immediately before replacement. Use Windows atomic replacement where supported; report unsupported cases rather than promising atomicity.
+5. Flush, verify length/content and verify that the source snapshot stayed stable. Recheck the expected destination digest. On Windows, creation never replaces an object which appeared after discovery. ReplaceFileW captures the actual displaced object in a journaled same-volume backup, then preserves it in protected storage even on partial failure. A racing replacement reports failure and retains recovery bytes.
 6. Persist completed journal state. Advance only the corresponding successful baseline entries transactionally. A crash after replacement and before baseline commit must be replayed by comparing actual digests, never by blindly repeating destructive steps.
-7. Move source removal occurs only after a verified, durable destination and a fresh source match. Cancellation or transfer failure cannot remove the source.
+7. Move source removal occurs only after a verified destination, held under a read guard denying writes/deletes through source backup/removal, and a fresh source match. File removal uses a guarded Windows handle, not a separately re-resolved pathname. Cancellation or transfer failure cannot remove the source.
 
 Unfinished staging files are never treated as user content. Startup recovery reads the journal, validates ownership and paths, and reconciles uncertain operations. A successful copy is not a guarantee of cross-filesystem atomicity or power-loss durability on an arbitrary SMB server.
 
@@ -73,4 +73,8 @@ Exclusions win over includes. Folder exclusion prunes descendants. Selected top-
 
 Protected storage is outside synchronized namespaces and cannot be selected as a task root. Preserve replaced/deleted files for recovery; selective history controls additional version retention, with a configurable cap. Cleanup never follows links or removes active journal references. Restore is itself a reviewed, stale-checked operation with protection for the current destination.
 
-Reset operations are separate: clear display/run history without changing baselines, or discard the common baseline with explicit warning that the next run uses first-run rules. Neither operation mutates user files. Unattended operation pauses after baseline reset until a new plan is reviewed.
+There is no reset control. Deleting a task configuration requires confirmation and discards its baseline while leaving user files and protected bytes. Recreating it uses conservative first-run rules. A task with pending displaced-file recovery cannot be deleted. No bulk filesystem deletion or baseline reset is exposed.
+
+Root/mode edits require a fresh task. Included/excluded presence is distinguished before planning: hidden/system objects or ancestors on either side suppress operations for that path, rather than masquerading as deletion. Explicit restore inspects current contents independently of sync filters and protects them before restoring.
+
+Directory case spelling is preserved for display, while comparison uses normalized lookup keys. Unicode lowercasing is conservative rather than a complete Windows ordinal case-fold implementation; ambiguous collisions fail. Renames are create plus delete, not an atomic cross-root rename. Mtime is preserved for copied file content; ACL/alternate-stream/directory-time parity is not guaranteed.
