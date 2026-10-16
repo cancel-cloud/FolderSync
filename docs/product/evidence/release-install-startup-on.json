@@ -1,0 +1,17 @@
+{
+  "exit_code": 0,
+  "installer_bytes": 4043349,
+  "elevated": false,
+  "product_version": "0.1.1",
+  "startup": "\"C:\\Users\\Lukas\\AppData\\Local\\FolderSync\\foldersync.exe\" --background",
+  "source_commit": "f13b9bc423432427729671d2d709ffb416877d73",
+  "startup_requested": "1",
+  "machine_startup_unchanged": true,
+  "installed_exe_sha256": "C88E17D982B9FB9E342164902F0BA838B2B8DD02EE438A83FC7CA1138D4CF90E",
+  "file_version": "0.1.1",
+  "installer_sha256": "83F93D17502B1995890B72E825AA7B40357D8555F38001F909DE5318CC2B657C",
+  "signature": "NotSigned",
+  "installation_did_not_launch_app": true,
+  "uninstall_display_version": "0.1.1",
+  "exe": "C:\\Users\\Lukas\\AppData\\Local\\FolderSync\\foldersync.exe"
+}

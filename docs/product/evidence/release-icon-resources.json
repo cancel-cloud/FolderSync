@@ -1,0 +1,20 @@
+[
+  {
+    "path": "C:\\Users\\Lukas\\Developer\\SyncFolders\\target\\release\\bundle\\nsis\\FolderSync_0.1.1_x64-setup.exe",
+    "icon_groups": 1,
+    "matching_original_icon_images": 6,
+    "expected_icon_images": 6
+  },
+  {
+    "path": "C:\\Users\\Lukas\\AppData\\Local\\FolderSync\\foldersync.exe",
+    "icon_groups": 1,
+    "matching_original_icon_images": 6,
+    "expected_icon_images": 6
+  },
+  {
+    "path": "C:\\Users\\Lukas\\AppData\\Local\\FolderSync\\uninstall.exe",
+    "icon_groups": 1,
+    "matching_original_icon_images": 6,
+    "expected_icon_images": 6
+  }
+]

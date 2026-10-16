@@ -1,0 +1,57 @@
+$ tauri "build"
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `pnpm build`
+$ tsc --noEmit && vite build
+vite v7.3.7 building client environment for production...
+transforming...
+✓ 1593 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.35 kB │ gzip:  0.26 kB
+dist/assets/index-DyZIbv4d.css   18.08 kB │ gzip:  5.20 kB
+dist/assets/index-BRZeGtjR.js   319.12 kB │ gzip: 99.82 kB
+✓ built in 10.27s
+   Compiling windows-sys v0.61.2
+   Compiling windows-result v0.4.1
+   Compiling foldersync v0.1.1 (C:\Users\Lukas\Developer\SyncFolders\src-tauri)
+   Compiling windows-core v0.62.2
+   Compiling windows-registry v0.6.1
+   Compiling windows-numerics v0.3.1
+   Compiling windows-collections v0.3.2
+   Compiling windows-future v0.3.2
+   Compiling windows v0.62.2
+   Compiling winapi-util v0.1.11
+   Compiling socket2 v0.6.5
+   Compiling mio v1.2.4
+   Compiling dirs-sys v0.5.0
+   Compiling muda v0.20.0
+   Compiling softbuffer v0.4.8
+   Compiling window-vibrancy v0.8.1
+   Compiling dirs v7.0.0
+   Compiling same-file v1.0.6
+   Compiling walkdir v2.5.0
+   Compiling tokio v1.53.3
+   Compiling tauri-utils v2.10.2
+   Compiling notify v8.2.0
+   Compiling foldersync-engine v0.1.1 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+   Compiling tray-icon v0.25.1
+   Compiling webview2-com-sys v0.39.1
+   Compiling tao v0.37.1
+   Compiling tauri-winrt-notification v0.8.1
+   Compiling notify-rust v4.18.2
+   Compiling webview2-com v0.39.1
+   Compiling tauri-runtime v2.12.2
+   Compiling wry v0.57.0
+   Compiling tauri-runtime-wry v2.12.2
+   Compiling tauri v2.12.4
+   Compiling tauri-plugin-fs v2.7.1
+   Compiling tauri-plugin-single-instance v2.5.4
+   Compiling tauri-plugin-notification v2.7.0
+   Compiling tauri-plugin-dialog v2.8.3
+    Finished `release` profile [optimized] target(s) in 2m 43s
+       Built application at: C:\Users\Lukas\Developer\SyncFolders\target\release\foldersync.exe
+        Info Patching C:\Users\Lukas\Developer\SyncFolders\target\release\foldersync.exe with bundle type information: nsis
+        Info Target: x64
+     Running makensis to produce C:\Users\Lukas\Developer\SyncFolders\target\release\bundle\nsis\FolderSync_0.1.1_x64-setup.exe
+    Finished 1 bundle at:
+        C:\Users\Lukas\Developer\SyncFolders\target\release\bundle\nsis\FolderSync_0.1.1_x64-setup.exe (3.86 MiB)
