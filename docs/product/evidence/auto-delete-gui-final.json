@@ -1,0 +1,10 @@
+{
+  "source_commit": "2575c0f",
+  "tasks": 3,
+  "all_automatic_triggers_and_deletion_policies_off": true,
+  "a_files": 7,
+  "b_files": 9,
+  "blocked_b_files_unchanged": true,
+  "blocked_plan_was_not_applied": true,
+  "legacy_missing_policy_fields_use_disabled_default": true
+}

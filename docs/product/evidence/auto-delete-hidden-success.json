@@ -1,0 +1,18 @@
+{
+  "source_commit": "2575c0f",
+  "task_id": "d849e90f-ec00-4b67-93b5-c09bfc8dca1f",
+  "run_id": "bb69e17f-fb1a-4efa-a818-b11e30a7be20",
+  "status": "Applied",
+  "deletion_review": {
+    "reason": "Approved",
+    "entries": 1,
+    "baseline_entries": 10,
+    "max_entries": 20,
+    "max_percent": 10,
+    "baseline_run": "0d40a139-cb7b-4119-8fbb-79a1812442c5"
+  },
+  "wall_through_deletion_ms": 1109,
+  "configured_debounce_secs": 1,
+  "protected_version_sha256": "81cd295a78578734286b8e84932a0b155bbfa4491dcf175e2f4f68dfeca6c936",
+  "remaining_b_files": 9
+}
