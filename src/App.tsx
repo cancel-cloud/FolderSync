@@ -1179,6 +1179,7 @@ export default function App() {
                                 destructive: approved || summary.explicit,
                               }),
                             );
+                            await refresh();
                             setMessage(
                               "Run finished. See the actual result and protected versions.",
                             );
@@ -1294,6 +1295,12 @@ export default function App() {
               )}
               <div className="table-wrap">
                 <table>
+                  <caption>
+                    {tr(
+                      "Metadata describes the reviewed inputs. Operation status records execution. Use Fresh preview to read current files.",
+                      "Metadaten beschreiben die geprüften Eingaben. Der Aktionsstatus zeigt die Ausführung. Neue Vorschau liest die aktuellen Dateien erneut.",
+                    )}
+                  </caption>
                   <thead>
                     <tr>
                       <th>{tr("Relative path", "Relativer Pfad")}</th>

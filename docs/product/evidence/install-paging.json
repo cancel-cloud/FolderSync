@@ -1,0 +1,8 @@
+{
+  "install_exit_code": 0,
+  "installer_bytes": 3812861,
+  "installed_binary_changed": true,
+  "source_commit": "35416ea",
+  "installer_sha256": "94BA9F9E9AC7DB1972720C9194EA0D10A3EF22E4BF2B2FF86F7BA428446DEE66",
+  "executable_present": true
+}
