@@ -19,6 +19,7 @@ Closing the window leaves the process running in the tray by default. Settings c
 - Native Windows notifications for filesystem changes, persistent dirty paths and incremental ancestor hashes.
 - Calendar/periodic schedules, bounded retries/debounce/bandwidth, pause/cancel, close-to-tray.
 - Incremental or full content verification; preserve-and-continue or hold-until-reviewed conflict policy.
+- Configurable 1–4 verified file transfers sharing a total bandwidth cap, with cancellation and crash recovery; default one transfer.
 - English/German principal screens, expandable/copyable full folder paths, local optional operation logs, no telemetry/account/cloud service.
 
 Automatic deletion defaults off. After a successful full manual reconciliation, two-way/mirror tasks can explicitly opt into proven baseline deletion within both per-run entry and percentage limits. Unknown deletions and Move still stop for review; see [policy details](docs/product/automatic-deletion.md). Roots and mode of an established task require a new task; this prevents carrying a baseline into a different folder pair. Recovery copies are ordinary file content, not an ACL/alternate-stream backup system. Real SMB, notification activation/deep links, high-DPI and comprehensive fault coverage remain pending; see QA for the full list.

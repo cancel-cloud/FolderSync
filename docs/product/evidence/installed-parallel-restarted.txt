@@ -1,0 +1,257 @@
+Window: "FolderSync", App: foldersync.exe.
+	0 window FolderSync Secondary Actions: Raise
+		1 pane
+			2 pane FolderSync
+				3 pane (disabled)
+				4 region FolderSync - Web content
+					5 region
+						6 region
+							7 region
+								8 region
+								9 region
+									10 region
+										11 region
+											12 region
+												13 region
+												14 document FolderSync Value: http://tauri.localhost/ ID: RootWebArea
+													15 group ID: root
+														16 complementary
+															17 graphic
+															18 text FolderSync
+															19 text LOKALER ARBEITSBEREICH
+															20 navigation Hauptnavigation
+																21 button Aufgaben 2
+																	22 graphic
+																23 button Einstellungen
+																	24 graphic
+																25 button Wiederherstellung
+																	26 graphic
+															27 graphic
+															28 text Ihre Dateien bleiben auf Ihrem Computer.
+															29 text Kein Konto. Keine Telemetrie.
+														30 header
+															31 text Arbeitsbereich
+															32 text /
+															33 text Aufgabenkonfiguration
+															34 text Engine bereit
+															35 button Automatik pausieren oder fortsetzen
+																36 graphic
+															37 button Aktiven Lauf stoppen
+																38 graphic
+														39 main
+															147 button Alle Aufgaben
+																148 graphic
+															149 heading Ordnerpaar konfigurieren
+															150 text Speichern und Ausführen sind getrennte Schritte.
+															151 button Aufgabe speichern
+															152 heading Aufgabe
+															153 text Aufgabenname
+															154 edit (settable, string) Aufgabenname Description: Entwicklungsarbeitsplatz Value: FolderSync GUI acceptance
+															155 text Aufgaben-ID
+															156 edit (settable, string) Aufgaben-ID Description: 9b2d06d2-3805-4f2a-ba90-8498035bbb58 Value: GUI-CAD-東京-01
+															157 text Eindeutig unter aktiven Aufgaben. Leer lassen für eine automatische ID.
+															158 text Gruppe
+															159 edit (settable, string) Gruppe Value: GUI-Einzeln
+															160 text Synchronisationsmodus
+															161 combo box (disabled) Synchronisationsmodus Änderungen in beiden Ordnern abgleichen. Konflikte bleiben geschützt. Value: Zwei-Wege-Synchronisation
+															162 text Änderungen in beiden Ordnern abgleichen. Konflikte bleiben geschützt.
+															163 text A
+															164 text Ordner
+															165 text 
+															166 text A
+															167 edit (settable, string) Pfad von Ordner A Description: C:\workspace or \\server\share\folder Value: C:\Users\Lukas\Developer\SyncFolders\.tools\FolderSync-GUI\A
+															168 button Durchsuchen…
+																169 graphic
+															170 text B
+															171 text Ordner
+															172 text 
+															173 text B
+															174 edit (settable, string) Pfad von Ordner B Description: C:\workspace or \\server\share\folder Value: C:\Users\Lukas\Developer\SyncFolders\.tools\FolderSync-GUI\B
+															175 button Durchsuchen…
+																176 graphic
+															177 graphic
+															178 text Gleiche und verschachtelte Ordner werden abgelehnt. Speichern ändert keine Dateien.
+															179 heading Umfang & Filter
+															180 text Ein Glob pro Zeile. Ausschlüsse haben Vorrang. Pfade relativ zum Stammordner.
+															181 text Dateien einschließen
+															182 edit (settable, string) Dateien einschließen
+															183 text Dateien ausschließen
+															184 edit (settable, string) Dateien ausschließen
+															185 text Ordner einschließen
+															186 edit (settable, string) Ordner einschließen
+															187 text Ordner ausschließen
+															188 edit (settable, string) Ordner ausschließen
+															189 text Ausgewählte Hauptordner (leer = alle)
+															190 edit (settable, string) Ausgewählte Hauptordner (leer = alle)
+															191 check box (settable, string) Dateien im Stammordner ausschließen
+															192 check box (settable, string) Versteckte überspringen
+															193 check box (settable, string) Systemdateien überspringen
+															194 heading Automatik
+															195 text Relativen Pfad mit diesen Filtern prüfen
+															196 edit (settable, string) Relativen Pfad mit diesen Filtern prüfen Value: project/file.txt
+															197 button Filter prüfen
+															198 status
+															199 text Überwachung erst nach geprüftem Erstlauf aktivieren. Entfernungen erfordern manuelle Prüfung, sofern nachgewiesene Ausgangszustands-Entfernung unten nicht ausdrücklich freigegeben ist.
+															200 check box (settable, string) Beide Ordner überwachen
+															201 text Wartezeit (Sekunden)
+															202 spin button (settable, float) Wartezeit (Sekunden) Value: 20
+															203 text Bandbreite (KiB/s; 0 = unbegrenzt)
+															204 spin button (settable, float) Bandbreite (KiB/s; 0 = unbegrenzt) Value: 0
+															205 text Parallele Übertragungen (1–4)
+															206 spin button (settable, float) Parallele Übertragungen (1–4) Value: 2
+															207 text Standard: eine Datei zur Zeit. Parallele Übertragungen teilen die gesamte Bandbreite. Ordner und Entfernungen laufen geordnet; Aufgabenläufe bleiben nacheinander. Der Dateifortschritt zeigt eine aktive Übertragung.
+															208 heading Vergleich & Konflikte
+															209 text Inhaltsvergleich
+															210 combo box (settable, string) Inhaltsvergleich Value: Alle Inhalte bei jedem Auslöser prüfen
+															211 text Konfliktbehandlung
+															212 combo box (settable, string) Konfliktbehandlung Value: Übertragungen bis zur Entscheidung für jeden Konflikt anhalten
+															213 text Beide Vergleichsarten prüfen Dateiinhalte. Inkrementell nutzt Änderungsmeldungen mit Wiederherstellungsabgleichen; vollständig prüft beide Ordner bei jedem Auslöser und kann langsamer sein. Manuelle Vorschau prüft immer beide Ordner.
+															214 text Angehaltene Übertragungen ändern keine Dateien, bis jeder Konflikt eine ausdrückliche Kopier- oder Überspringen-Auswahl hat. Überspringen erhält Originale und Konflikthinweis; es löst den Konflikt nicht. Originale behalten hält den Lauf weiter an.
+															215 heading Automatische Entfernung
+															216 text Standardmäßig aus. Zuerst eine erfolgreiche vollständige manuelle Vorschau anwenden. Nach Umfangsänderungen erneut manuell abgleichen. Beide Grenzen gelten je Lauf; Einträge umfassen Dateien und Ordner. Grenzen werden nicht über Läufe aufsummiert.
+															217 check box (disabled) Nachgewiesene Ausgangszustands-Entfernungen automatisch erlauben
+															218 text Maximal entfernte Einträge je Lauf
+															219 spin button (disabled) Maximal entfernte Einträge je Lauf Value: 20
+															220 text Maximaler Anteil am indizierten Ausgangszustand
+															221 spin button (disabled) Maximaler Anteil am indizierten Ausgangszustand Value: 10
+															222 text Geschützte Wiederherstellungskopien bleiben außerhalb beider Ordner. Unbelegte Entfernungen, Verschieben und überschrittene Grenzen warten auf Prüfung. Diese Freigabe aktiviert weder Überwachung noch Zeitpläne.
+															223 heading Zeitplan & Start
+															224 check box (settable, string) Beim Start von FolderSync ausführen (auch bei Anmeldung)
+															225 text Zeitplan
+															226 combo box (settable, string) Zeitplan Value: Aus
+															227 text Wiederholungsversuche
+															228 spin button (settable, float) Wiederholungsversuche Value: 3
+															229 text Nach Ruhezustand wird ein verpasster Lauf nachgeholt. Doppelte Zeitumstellungen laufen einmal; fehlende Zeiten werden vorgerückt.
+															230 heading Wiederherstellung
+															231 text Ersetzte und gelöschte Dateien werden außerhalb beider Ordner geschützt.
+															232 text C:\Users\Lukas\AppData\Roaming\dev.foldersync.desktop
+															233 text \versions
+															234 text Verlaufsmuster (leer = alle Dateien)
+															235 edit (settable, string) Verlaufsmuster (leer = alle Dateien)
+															236 text Versionen je passender Datei
+															237 spin button (settable, float) Versionen je passender Datei Value: 10
+															238 text Nach erfolgreichen Läufen gilt diese Anzahl für passende Dateien. Andere Dateien behalten eine Wiederherstellungsversion.
+														134 footer
+															135 graphic
+															136 text Geprüfte Übertragungen · geschützte Originale
+															137 text FolderSync 0.1.0
+								138 region
+						139 region
+						140 region
+		141 title bar (settable, string) Value: FolderSync
+			142 menu bar System ID: MenuBar
+				143 menu item System
+			144 button Minimize
+			145 button Maximize
+			146 button Close
+
+Document text: ```
+FolderSync
+LOKALER ARBEITSBEREICH
+￼
+Aufgaben
+2
+￼
+Einstellungen
+￼
+Wiederherstellung
+￼
+Ihre Dateien bleiben auf Ihrem Computer.
+Kein Konto. Keine Telemetrie.
+Arbeitsbereich
+/
+Aufgabenkonfiguration
+Engine bereit
+￼
+￼
+￼
+Alle Aufgaben
+Ordnerpaar konfigurieren
+Speichern und Ausführen sind getrennte Schritte.
+Aufgabe speichern
+Aufgabe
+Aufgabenname
+FolderSync GUI acceptance
+Aufgaben-ID
+GUI-CAD-東京-01
+Eindeutig unter aktiven Aufgaben. Leer lassen für eine automatische ID.
+Gruppe
+GUI-Einzeln
+Synchronisationsmodus
+￼
+Änderungen in beiden Ordnern abgleichen. Konflikte bleiben geschützt.
+A
+Ordner A
+C:\Users\Lukas\Developer\SyncFolders\.tools\FolderSync-GUI\A
+￼
+Durchsuchen…
+B
+Ordner B
+C:\Users\Lukas\Developer\SyncFolders\.tools\FolderSync-GUI\B
+￼
+Durchsuchen…
+￼
+Gleiche und verschachtelte Ordner werden abgelehnt. Speichern ändert keine Dateien.
+Umfang & Filter
+Ein Glob pro Zeile. Ausschlüsse haben Vorrang. Pfade relativ zum Stammordner.
+Dateien einschließen
+￼
+Dateien ausschließen
+￼
+Ordner einschließen
+￼
+Ordner ausschließen
+￼
+Ausgewählte Hauptordner (leer = alle)
+￼
+￼
+￼
+￼
+Automatik
+Relativen Pfad mit diesen Filtern prüfen
+project/file.txt
+Filter prüfen
+￼
+Überwachung erst nach geprüftem Erstlauf aktivieren. Entfernungen erfordern manuelle Prüfung, sofern nachgewiesene Ausgangszustands-Entfernung unten nicht ausdrücklich freigegeben ist.
+￼
+Wartezeit (Sekunden)
+20
+Bandbreite (KiB/s; 0 = unbegrenzt)
+0
+Parallele Übertragungen (1–4)
+2
+Standard: eine Datei zur Zeit. Parallele Übertragungen teilen die gesamte Bandbreite. Ordner und Entfernungen laufen geordnet; Aufgabenläufe bleiben nacheinander. Der Dateifortschritt zeigt eine aktive Übertragung.
+Vergleich & Konflikte
+Inhaltsvergleich
+￼
+Konfliktbehandlung
+￼
+Beide Vergleichsarten prüfen Dateiinhalte. Inkrementell nutzt Änderungsmeldungen mit Wiederherstellungsabgleichen; vollständig prüft beide Ordner bei jedem Auslöser und kann langsamer sein. Manuelle Vorschau prüft immer beide Ordner.
+Angehaltene Übertragungen ändern keine Dateien, bis jeder Konflikt eine ausdrückliche Kopier- oder Überspringen-Auswahl hat. Überspringen erhält Originale und Konflikthinweis; es löst den Konflikt nicht. Originale behalten hält den Lauf weiter an.
+Automatische Entfernung
+Standardmäßig aus. Zuerst eine erfolgreiche vollständige manuelle Vorschau anwenden. Nach Umfangsänderungen erneut manuell abgleichen. Beide Grenzen gelten je Lauf; Einträge umfassen Dateien und Ordner. Grenzen werden nicht über Läufe aufsummiert.
+￼
+Maximal entfernte Einträge je Lauf
+20
+Maximaler Anteil am indizierten Ausgangszustand
+10
+Geschützte Wiederherstellungskopien bleiben außerhalb beider Ordner. Unbelegte Entfernungen, Verschieben und überschrittene Grenzen warten auf Prüfung. Diese Freigabe aktiviert weder Überwachung noch Zeitpläne.
+Zeitplan & Start
+￼
+Zeitplan
+￼
+Wiederholungsversuche
+3
+Nach Ruhezustand wird ein verpasster Lauf nachgeholt. Doppelte Zeitumstellungen laufen einmal; fehlende Zeiten werden vorgerückt.
+Wiederherstellung
+Ersetzte und gelöschte Dateien werden außerhalb beider Ordner geschützt.
+C:\Users\Lukas\AppData\Roaming\dev.foldersync.desktop\versions
+Verlaufsmuster (leer = alle Dateien)
+￼
+Versionen je passender Datei
+10
+Nach erfolgreichen Läufen gilt diese Anzahl für passende Dateien. Andere Dateien behalten eine Wiederherstellungsversion.
+￼
+Geprüfte Übertragungen · geschützte Originale
+FolderSync 0.1.0
+```
