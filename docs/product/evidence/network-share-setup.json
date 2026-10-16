@@ -1,0 +1,8 @@
+{
+  "error": "Access is denied. ",
+  "path": "C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-SMB-ReleaseQA",
+  "elevation_requested": false,
+  "category": "PermissionDenied",
+  "name": "FolderSyncReleaseQA",
+  "operation": "New-SmbShare"
+}

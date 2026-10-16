@@ -12,7 +12,7 @@ anyhow = "1"
 tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-dialog = "2"
 tauri-plugin-notification = "2"
-tauri-plugin-autostart = "2"
+windows-registry = "0.6.1"
 tauri-plugin-single-instance = "2"
 foldersync-engine = { path = "../crates/sync-engine" }
 serde = { version = "1", features = ["derive"] }

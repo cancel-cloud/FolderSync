@@ -1,0 +1,3 @@
+   Compiling foldersync-engine v0.1.1 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.16s
+     Running `target\debug\examples\release_unc_probe.exe \\GINGER\FolderSyncReleaseQA\pair`

@@ -1,0 +1,8 @@
+{
+  "error": "Root unavailable: \\\\GINGER\\FolderSyncReleaseQA\\pair: The network name cannot be found. (os error 67)",
+  "local_source_preserved": true,
+  "real_smb_transfer_and_reconnection": "not verified: standard-user share creation denied",
+  "result": "unavailable UNC rejected",
+  "tasks_persisted": 0,
+  "unc": "\\\\GINGER\\FolderSyncReleaseQA\\pair"
+}

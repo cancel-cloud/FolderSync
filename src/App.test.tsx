@@ -48,11 +48,6 @@ vi.mock("@tauri-apps/api/event", () => ({
   },
 }));
 vi.mock("@tauri-apps/plugin-dialog", () => ({ open: vi.fn(), save: vi.fn() }));
-vi.mock("@tauri-apps/plugin-autostart", () => ({
-  isEnabled: async () => false,
-  enable: vi.fn(),
-  disable: vi.fn(),
-}));
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal = function () {
     this.open = true;
@@ -66,6 +61,28 @@ afterEach(() => {
   vi.clearAllMocks();
   api.listeners.clear();
 });
+test("startup uses native current-user registration without changing tasks", async () => {
+  let enabled = false;
+  api.invoke.mockImplementation(async (command: string, args?: { enabled: boolean }) => {
+    if (command === "tasks" || command === "statuses") return [];
+    if (command === "startup_enabled") return enabled;
+    if (command === "set_startup") enabled = Boolean(args?.enabled);
+    return null;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "Settings" }));
+  const checkbox = screen.getByRole("checkbox", { name: "Start FolderSync when I sign in" });
+  expect((checkbox as HTMLInputElement).checked).toBe(false);
+  await user.click(checkbox);
+  await waitFor(() => expect((checkbox as HTMLInputElement).checked).toBe(true));
+  await user.click(checkbox);
+  await waitFor(() => expect((checkbox as HTMLInputElement).checked).toBe(false));
+  expect(api.invoke).toHaveBeenCalledWith("set_startup", { enabled: true });
+  expect(api.invoke).toHaveBeenCalledWith("set_startup", { enabled: false });
+  expect(api.invoke.mock.calls.some(([command]) => command === "save_task")).toBe(false);
+});
+
 test("quit-on-close immediately requests safe quit when there is no draft", async () => {
   let quit = false;
   api.invoke.mockImplementation(async (command: string) => {

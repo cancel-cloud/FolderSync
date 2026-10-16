@@ -1,0 +1,21 @@
+   Compiling foldersync v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\src-tauri)
+error[E0425]: cannot find function `should_open_window` in module `super`
+  --> src-tauri\src\lifecycle.rs:35:25
+   |
+35 |         assert!(!super::should_open_window(&["FolderSync.exe".into(),"--background".into()]));
+   |                         ^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `should_open_window` in module `super`
+  --> src-tauri\src\lifecycle.rs:36:24
+   |
+36 |         assert!(super::should_open_window(&["FolderSync.exe".into()]));
+   |                        ^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `should_open_window` in module `super`
+  --> src-tauri\src\lifecycle.rs:37:24
+   |
+37 |         assert!(super::should_open_window(&["C:/--background/FolderSync.exe".into(),"--background-extra".into()]));
+   |                        ^^^^^^^^^^^^^^^^^^ not found in `super`
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `foldersync` (bin "foldersync" test) due to 3 previous errors

@@ -13,6 +13,7 @@ mod background;
 mod lifecycle;
 mod presentation;
 mod progress_runtime;
+mod startup;
 fn command_error(error: &anyhow::Error) -> String {
     if error.is::<foldersync_engine::Cancelled>() {
         "[FolderSync:Cancelled]".into()
@@ -258,7 +259,10 @@ fn tray_menu(app: &tauri::AppHandle, de: bool) -> tauri::Result<tauri::menu::Men
 }
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            if !lifecycle::should_open_window(&args) {
+                return;
+            }
             if let Some(w) = app.get_webview_window("main") {
                 let _ = w.show();
                 let _ = w.unminimize();
@@ -267,7 +271,6 @@ fn main() {
         }))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
-        .plugin(tauri_plugin_autostart::Builder::new().build())
         .setup(|app| {
             let engine = Engine::open(&app.path().app_data_dir()?)?;
             let de = engine.setting("language")?.as_deref() == Some("de");
@@ -327,6 +330,11 @@ fn main() {
                 }
             })
             .build(app)?;
+            if lifecycle::should_open_window(&std::env::args().collect::<Vec<_>>())
+                && let Some(w) = app.get_webview_window("main")
+            {
+                w.show()?;
+            }
             Ok(())
         })
         .on_window_event(|w, event| {
@@ -347,6 +355,8 @@ fn main() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            startup::startup_enabled,
+            startup::set_startup,
             tasks,
             statuses,
             save_task,
