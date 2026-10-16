@@ -103,8 +103,7 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
                 }
                 if batch.uncertain || !batch.paths.is_empty() {
                     if let Ok(e) = r.engine.lock() {
-                        let _ = e.queue_paths(&t.id, &batch.paths, batch.uncertain);
-                        let _ = e.record_watch_events(&t.id, batch.events);
+                        let _ = e.queue_watch_batch(&t.id, &batch);
                     }
                     w.last = Some(Instant::now());
                     w.events += batch.events;

@@ -162,6 +162,8 @@ pub type Tree = BTreeMap<String, Entry>;
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Metrics {
     #[serde(default)]
+    pub lineage_links: u64,
+    #[serde(default)]
     pub peak_workers: u32,
     pub scanned_entries: u64,
     pub hashed_bytes: u64,

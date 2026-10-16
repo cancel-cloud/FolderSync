@@ -4,6 +4,7 @@ mod deletion;
 mod engine;
 pub mod fs;
 mod index;
+mod lineage;
 mod logging;
 mod model;
 mod parallel;

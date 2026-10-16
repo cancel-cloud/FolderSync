@@ -1,0 +1,12 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.98s
+     Running tests\rename_lineage.rs (target\debug\deps\rename_lineage-90b89404742c632a.exe)
+
+running 4 tests
+test rename_then_edit_vs_opposing_edit_holds_both_paths_from_target_only_event ... ok
+test a_later_identical_copy_joins_the_unresolved_rename_group ... ok
+test old_name_events_before_targets_do_not_erase_persistent_rename_identity ... ok
+test split_opposing_targets_survive_restart_without_copying_either_original ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.77s
+

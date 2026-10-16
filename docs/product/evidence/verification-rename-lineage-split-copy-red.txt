@@ -1,0 +1,25 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.00s
+     Running tests\rename_lineage.rs (target\debug\deps\rename_lineage-90b89404742c632a.exe)
+
+running 4 tests
+test rename_then_edit_vs_opposing_edit_holds_both_paths_from_target_only_event ... ok
+test a_later_identical_copy_joins_the_unresolved_rename_group ... FAILED
+test old_name_events_before_targets_do_not_erase_persistent_rename_identity ... ok
+test split_opposing_targets_survive_restart_without_copying_either_original ... ok
+
+failures:
+
+---- a_later_identical_copy_joins_the_unresolved_rename_group stdout ----
+
+thread 'a_later_identical_copy_joins_the_unresolved_rename_group' (32104) panicked at crates\sync-engine\tests\rename_lineage.rs:26:54:
+called `Option::unwrap()` on a `None` value
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    a_later_identical_copy_joins_the_unresolved_rename_group
+
+test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.98s
+
+error: test failed, to rerun pass `-p foldersync-engine --test rename_lineage`

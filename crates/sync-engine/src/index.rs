@@ -20,7 +20,7 @@ impl Index {
         db.busy_timeout(std::time::Duration::from_secs(5))?;
         db.execute_batch("PRAGMA foreign_keys=ON; PRAGMA synchronous=FULL;")?;
         anyhow::ensure!(
-            db.query_row("PRAGMA user_version", [], |r| r.get::<_, u32>(0))? == 4,
+            db.query_row("PRAGMA user_version", [], |r| r.get::<_, u32>(0))? == 5,
             "Transfer worker requires initialized schema"
         );
         Ok(Self {
@@ -40,7 +40,7 @@ impl Index {
         )?;
         let version: i64 = db.query_row("PRAGMA user_version", [], |r| r.get(0))?;
         anyhow::ensure!(
-            version <= 4,
+            version <= 5,
             "Database schema is newer than this application; refusing downgrade"
         );
         db.busy_timeout(std::time::Duration::from_secs(5))?;
@@ -61,11 +61,22 @@ impl Index {
  CREATE TABLE IF NOT EXISTS conflicts(task TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,path TEXT NOT NULL,json TEXT NOT NULL,PRIMARY KEY(task,path));
  CREATE TABLE IF NOT EXISTS baseline_reviews(task TEXT PRIMARY KEY REFERENCES tasks(id) ON DELETE CASCADE,json TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS recovery_tasks(id TEXT PRIMARY KEY,json TEXT NOT NULL,root_a TEXT NOT NULL,root_b TEXT NOT NULL,generation INTEGER NOT NULL,archived_at INTEGER NOT NULL);
+ CREATE TABLE IF NOT EXISTS baseline_identity(task TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,side TEXT NOT NULL,path TEXT NOT NULL,file_id TEXT NOT NULL,json TEXT NOT NULL,PRIMARY KEY(task,side,path));
+ CREATE INDEX IF NOT EXISTS baseline_identity_id ON baseline_identity(task,side,file_id);
+ CREATE TABLE IF NOT EXISTS rename_links(task TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,origin TEXT NOT NULL,target TEXT NOT NULL,digest TEXT NOT NULL DEFAULT '',PRIMARY KEY(task,origin,target));
+ CREATE INDEX IF NOT EXISTS rename_links_target ON rename_links(task,target);
+ CREATE INDEX IF NOT EXISTS rename_links_digest ON rename_links(task,digest,origin);
  ")?;
         if version < 2 {
             db.execute_batch("ALTER TABLE entries ADD COLUMN index_generation INTEGER NOT NULL DEFAULT 0; ALTER TABLE entries ADD COLUMN file_id TEXT;")?;
         }
-        db.execute_batch("PRAGMA user_version=4; COMMIT; UPDATE runs SET status='Interrupted' WHERE status='Applying';")?;
+        db.execute_batch(
+            "CREATE INDEX IF NOT EXISTS entries_identity ON entries(task,side,file_id);",
+        )?;
+        if version < 5 {
+            db.execute_batch("INSERT OR IGNORE INTO baseline_identity SELECT e.task,e.side,e.path,COALESCE(e.file_id,''),e.json FROM entries e JOIN baseline b ON b.task=e.task AND b.path=e.path WHERE e.digest=b.digest AND e.digest!='directory'; UPDATE tasks SET generation=generation+1;")?;
+        }
+        db.execute_batch("PRAGMA user_version=5; COMMIT; UPDATE runs SET status='Interrupted' WHERE status='Applying';")?;
         Ok(Self {
             db,
             storage: storage.to_path_buf(),

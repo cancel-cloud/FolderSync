@@ -1,0 +1,52 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.08s
+     Running tests\ambiguous_renames.rs (target\debug\deps\ambiguous_renames-bbefb23ddc6b80f7.exe)
+
+running 5 tests
+test native_opposing_rename_notifications_reach_incremental_conflict_planning ... ok
+test coalesced_incremental_events_hold_ambiguous_creates_and_removals_even_with_delete_approval ... ok
+test matching_rename_on_both_sides_and_unrelated_duplicate_are_not_ambiguous ... ok
+test identical_content_multiple_origins_never_guess_rename_pairing ... ok
+test opposing_renames_preserve_baseline_and_attention_while_independent_files_sync ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.95s
+
+     Running tests\event_regressions.rs (target\debug\deps\event_regressions-a23e74fc4a72168b.exe)
+
+running 3 tests
+test event_invalidation_detects_same_length_timestamp_preserving_edit ... ok
+test delayed_duplicate_events_use_current_bytes_and_do_not_replay_old_edits ... ok
+test rename_events_preserve_old_destination_until_exact_plan_approval ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s
+
+     Running tests\incremental.rs (target\debug\deps\incremental-8c39424b8b1468af.exe)
+
+running 1 test
+test one_change_only_hashes_affected_files ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.58s
+
+     Running tests\parallel_transfers.rs (target\debug\deps\parallel_transfers-678d1d9ec2bae039.exe)
+
+running 8 tests
+test parallel_crash_child ... ok
+test invalid_worker_counts_are_rejected_without_changing_saved_task ... ok
+test killed_parallel_process_recovers_both_stages_and_retries ... ok
+test two_real_partial_stages_cancel_cleanly_without_worker_startup_recovery ... ok
+test concurrent_replacements_keep_each_old_version_and_commit_each_baseline ... ok
+test parallel_workers_share_the_task_bandwidth_budget ... ok
+test a_parallel_destination_race_preserves_external_bytes_and_prevents_following_deletes ... ok
+test bounded_parallel_transfers_preserve_all_modes_and_directory_order ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.18s
+
+     Running tests\rename_lineage.rs (target\debug\deps\rename_lineage-90b89404742c632a.exe)
+
+running 3 tests
+test rename_then_edit_vs_opposing_edit_holds_both_paths_from_target_only_event ... ok
+test old_name_events_before_targets_do_not_erase_persistent_rename_identity ... ok
+test split_opposing_targets_survive_restart_without_copying_either_original ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s
+

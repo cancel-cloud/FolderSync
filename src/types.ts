@@ -78,6 +78,7 @@ export interface Operation {
   b: Entry | null;
 }
 export interface Metrics {
+  lineage_links?: number;
   peak_workers?: number;
   scanned_entries: number;
   hashed_bytes: number;

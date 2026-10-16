@@ -2,6 +2,16 @@ use crate::*;
 use anyhow::Result;
 use rusqlite::params;
 impl Engine {
+    pub fn queue_watch_batch(&self, id: &str, batch: &watch::EventBatch) -> Result<()> {
+        let transaction = self.index.db.unchecked_transaction()?;
+        for hint in &batch.renames {
+            self.record_rename_hint(id, hint)?;
+        }
+        self.queue_paths(id, &batch.paths, batch.uncertain)?;
+        self.record_watch_events(id, batch.events)?;
+        transaction.commit()?;
+        Ok(())
+    }
     pub fn record_watch_events(&self, id: &str, count: u64) -> Result<()> {
         let key = format!("watch-events/{id}");
         let before = self

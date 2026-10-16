@@ -1,0 +1,22 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 16.31s
+     Running unittests src\lib.rs (target\debug\deps\foldersync_engine-bdd0533f7a4fcee3.exe)
+
+running 1 test
+test watch::tests::multiple_old_names_before_a_new_name_request_reconciliation_without_guessing_a_pair ... FAILED
+
+failures:
+
+---- watch::tests::multiple_old_names_before_a_new_name_request_reconciliation_without_guessing_a_pair stdout ----
+
+thread 'watch::tests::multiple_old_names_before_a_new_name_request_reconciliation_without_guessing_a_pair' (12252) panicked at crates\sync-engine\src\watch.rs:222:9:
+assertion failed: batch.renames.is_empty()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    watch::tests::multiple_old_names_before_a_new_name_request_reconciliation_without_guessing_a_pair
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p foldersync-engine --lib`
