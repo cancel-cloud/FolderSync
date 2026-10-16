@@ -1,0 +1,162 @@
+Window: "FolderSync", App: foldersync.exe.
+	0 window FolderSync Secondary Actions: Raise
+		1 pane
+			8 pane FolderSync
+				22 pane (disabled)
+				9 region FolderSync - Web content
+					10 region
+						11 region
+							12 region
+								13 region
+								14 region
+									15 region
+										16 region
+											17 region
+												18 region
+												23 document FolderSync Value: http://tauri.localhost/ ID: RootWebArea
+													24 group ID: root
+														25 complementary
+															26 graphic
+															27 text FolderSync
+															28 text LOCAL WORKSPACE
+															29 navigation Main navigation
+																30 button Aufgaben 1
+																	31 graphic
+																32 button Einstellungen
+																	33 graphic
+															34 graphic
+															35 text Ihre Dateien bleiben auf Ihrem Computer.
+															36 text Kein Konto. Keine Telemetrie.
+														37 header
+															38 text Arbeitsbereich
+															39 text /
+															40 text Aufgaben
+															41 text Engine bereit
+															42 button Automatik pausieren oder fortsetzen
+																43 graphic
+															44 button Aktiven Lauf stoppen
+																45 graphic
+														46 main
+															47 text ORDNERSYNCHRONISATION
+															48 heading Ihre Sync-Aufgaben
+															49 text Änderungen prüfen. Jede Übertragung im Blick behalten.
+															50 button Neue Aufgabe
+																51 graphic
+															52 check box (settable, string) Select all tasks
+															53 text Aufgaben auswählen
+															54 button (disabled) Auswahl prüfen
+															55 button Aktualisieren
+																56 graphic
+															57 article
+																58 check box (settable, string) Select FolderSync GUI acceptance
+																59 graphic
+																60 heading FolderSync GUI acceptance
+																61 text Zwei-Wege-Synchronisation
+																62 text Manuell
+																63 text A
+																64 text C:\Users\Lukas\Developer\SyncFolders\.tools\FolderSync-GUI\A
+																65 text B
+																66 text C:\Users\Lukas\Developer\SyncFolders\.tools\FolderSync-GUI\B
+																67 text Attention
+																68 text 10/16/2026, 11:58:19 AM
+																69 text 
+																70 text ·
+																71 text 
+																72 text 1
+																73 text 
+																74 text offene Konflikte
+																75 text Nächster Lauf
+																76 text :
+																77 text 
+																78 text —
+																79 button Details
+																80 button Konfigurieren
+																81 button Vorschau / Start
+															82 heading Aufgabe erstellen
+															83 text Vier Wege für abgestimmte Ordner
+															84 button 01 Zwei-Wege-Synchronisation Änderungen in beiden Ordnern abgleichen. Konflikte bleiben geschützt. ↗
+																85 heading Zwei-Wege-Synchronisation
+															86 button 02 Spiegeln A → B B an A angleichen. Löschungen am Ziel vorher prüfen. ↗
+																87 heading Spiegeln A → B
+															88 button 03 Kopieren A → B Dateien in B ergänzen und aktualisieren. Zusätzliche Zieldateien behalten. ↗
+																89 heading Kopieren A → B
+															90 button 04 Verschieben A → B Jede Übertragung nach B prüfen, bevor die Quelle entfernt wird. ↗
+																91 heading Verschieben A → B
+														92 footer
+															93 graphic
+															94 text Geprüfte Übertragungen · geschützte Originale
+															95 text FolderSync 0.1.0
+								19 region
+						20 region
+						21 region
+		2 title bar (settable, string) Value: FolderSync
+			3 menu bar System ID: MenuBar
+				4 menu item System
+			5 button Minimize
+			6 button Maximize
+			7 button Close
+
+Document text: ```
+FolderSync
+LOCAL WORKSPACE
+￼
+Aufgaben
+1
+￼
+Einstellungen
+￼
+Ihre Dateien bleiben auf Ihrem Computer.
+Kein Konto. Keine Telemetrie.
+Arbeitsbereich
+/
+Aufgaben
+Engine bereit
+￼
+￼
+ORDNERSYNCHRONISATION
+Ihre Sync-Aufgaben
+Änderungen prüfen. Jede Übertragung im Blick behalten.
+￼
+Neue Aufgabe
+Select all tasks
+Aufgaben auswählen
+Auswahl prüfen
+￼
+Aktualisieren
+Select FolderSync GUI acceptance
+￼
+FolderSync GUI acceptance
+Zwei-Wege-Synchronisation
+Manuell
+A
+C:\Users\Lukas\Developer\SyncFolders\.tools\FolderSync-GUI\A
+B
+C:\Users\Lukas\Developer\SyncFolders\.tools\FolderSync-GUI\B
+Attention
+10/16/2026, 11:58:19 AM · 1 offene Konflikte
+Nächster Lauf: —
+Details
+Konfigurieren
+Vorschau / Start
+Aufgabe erstellen
+Vier Wege für abgestimmte Ordner
+01
+Zwei-Wege-Synchronisation
+Änderungen in beiden Ordnern abgleichen. Konflikte bleiben geschützt.
+↗
+02
+Spiegeln A → B
+B an A angleichen. Löschungen am Ziel vorher prüfen.
+↗
+03
+Kopieren A → B
+Dateien in B ergänzen und aktualisieren. Zusätzliche Zieldateien behalten.
+↗
+04
+Verschieben A → B
+Jede Übertragung nach B prüfen, bevor die Quelle entfernt wird.
+↗
+￼
+Geprüfte Übertragungen · geschützte Originale
+FolderSync 0.1.0
+```

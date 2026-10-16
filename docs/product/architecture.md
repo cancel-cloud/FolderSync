@@ -1,53 +1,37 @@
-# FolderSync architecture
+# Architecture
 
-Design contract only. No product components are implemented or tested yet.
+Implemented structure as of 2026-10-16. Verification scope is recorded separately in qa-report.md.
 
-## Ownership and modules
+## Ownership
 
-- `sync-core`: typed task/scope/entry/plan models, shared matcher, root validation, scanner, planner, verified executor and recovery. Has no UI dependency.
-- `sync-index`: bundled SQLite migrations, per-side entry cache, baseline/tombstones, dirty queue, directory digests, immutable run history and operation journal.
-- `sync-watch`: Windows recursive notifications through notify; event coalescing, dirty-path invalidation, overflow/disconnect uncertainty. No direct file mutations.
-- `sync-scheduler`: persisted trigger definitions, calendar/periodic due times, overlap prevention, pause/resume and missed-run rules.
-- Tauri 2 adapter: per-user app-data location, typed commands/events, native folder dialog, tray, autostart and notifications. Coordinates a bounded worker queue. React/TypeScript has no filesystem mutation API.
+The Cargo workspace contains `crates/sync-engine` and `src-tauri`. The engine has explicit model, fs, engine/planner/executor, transfer, index, recovery, watch, automation, scheduler and logging modules. It does not depend on Tauri. The React/TypeScript/Vite/Tailwind frontend uses local shadcn-style Button primitives (Radix Slot/CVA) and a native HTML dialog for confirmations. It calls typed Tauri commands; it has no filesystem mutation plugin permission.
 
-All run origins use the same planner and executor. Serialize per task and acquire root-intersection guards across tasks. A task edit invalidates its pending previews. Imported task configuration remains disabled until validated and reviewed; arbitrary hooks are not accepted.
+The Tauri adapter runs blocking engine work on its blocking pool behind a shared mutex. This deliberately serializes all tasks, avoiding overlapping writers. Automatic tasks with intersecting canonical roots are rejected. Notifications/events carry completion summaries; operation detail is loaded separately. Toast activation carries the task ID, opens the window and routes to its Details screen without applying any plan. The OS activation path remains unverified. Recent local logs are bounded to the final 64 KiB. Current history requests load up to 100 complete plans and the UI paginates 200 rows; backend detail pagination and bounded summary/detail queries remain future work.
 
-## SQLite design
+## Persistent state
 
-Store the database in the Windows user's app-data directory, outside task roots. Enable foreign keys, WAL and a busy timeout; use prepared statements and explicit transactions. Schema migrations have versioned, transactional steps.
+State lives in the current user's Tauri app-data directory (`%APPDATA%\dev.foldersync.desktop`), outside all synchronization roots. SQLite uses WAL, synchronous FULL, foreign keys, busy timeout, keyed lookup/parent indexes and transactions. Schema version 2 migrates original entries to include index generation/native file ID; a future schema is rejected rather than downgraded.
 
-Tables: `tasks`, `settings`, `entries(task_id, side, path_key, display_path, kind, size, mtime_ns, file_id, digest, generation)`, `baseline(task_id, path_key, digest, tombstone, generation)`, `directories(task_id, side, path_key, digest, generation)`, `dirty_paths(task_id, side, path_key, uncertainty, queued_at)`, `runs`, `operations`, `versions` and `schedule_state`. Composite indexes support exact-path/parent lookups and pending work. Completed run records are immutable; current task status is derived separately.
+Tables contain tasks and generations, per-side JSON entries/digests/parents, common baselines (NULL tombstones), cached Merkle digests, immutable plan revisions/run outcomes, operation journal, protected versions, dirty paths, settings/calendar checkpoints, owned staging and displaced-file recovery records. Run status comes from the authoritative status column, including Interrupted. Each successful path commits its own baseline; unresolved conflicts keep their prior baseline in a persistent conflicts table.
 
-Baseline updates follow durable operation completion. Never commit success merely because a plan was created. Conflicts retain their prior common baseline. Startup reconciles journal entries that were in progress at shutdown.
+## Discovery and incremental work
 
-## Incremental processing
+The scanner enumerates existing roots and streams BLAKE3 through 256 KiB buffers. Metadata is not trusted as content equality. Each entry records size, nanosecond mtime string, type and native file ID when available. Windows root volume/file IDs and canonical paths detect root substitution. Reparse points, nested roots and state overlap are rejected. Non-Unicode paths fail visibly.
 
-Install watchers before initial enumeration and buffer concurrent events; reconcile the buffer before marking the cache certain. Events are hints, not proof of absence or stable content. Coalesce bursts with the task's debounce, initially 20 seconds, and validate stabilization/unlock before reading.
+`notify` 8.2 uses ReadDirectoryChangesW on Windows, recursively on both roots. Its inspected Windows buffer is 16,384 bytes, below the SMB 64 KiB limit. A bounded 2,048-message channel marks uncertainty on overflow/error. Events are coalesced into durable dirty paths; owned stage/displaced names are excluded. Own writes are revalidated rather than hidden behind a blanket time window.
 
-A known single-file event updates that entry and affected ancestors only. A known directory event scans the narrow subtree. Dirty records survive process interruption. Ancestor digests are built from sorted child names/types/content digests; they summarize known state and cannot detect missed external changes on their own.
+A single-file event reads only the two corresponding entries and baseline; directory events enumerate the affected subtree. SQLite ancestor hashes are rebuilt from cached child hashes. These hashes summarize known state and cannot discover missed events. Restart, watcher uncertainty, failure and a five-minute monitored safety interval cause a full reconciliation. No USN optimization is implemented. UNC roots use the user's existing Windows access; no credentials are stored. Real SMB reliability has not been verified.
 
-On event overflow, watcher error, root disappearance, unsupported notifications or process restart, mark the affected scope uncertain and perform controlled reconciliation. Cache reuse is forbidden where uncertainty could hide timestamp-preserving edits. A complete verify scan hashes files when required for correctness. Explicit full reconciliation remains available.
+## Execution and recovery
 
-Self-write events are revalidated against verified post-operation state; never suppress a time window that could hide an external edit. Rename pairs may narrow refresh scope but cannot independently authorize destructive actions.
+Preview writes internal metadata only. Apply checks task equality/generation, root identities and every planned input before mutation, then checks each operation again. Sources are opened without write sharing. Stages are uniquely created on the destination filesystem, streamed, flushed, rehashed and given the source mtime.
 
-## Windows and SMB
+New-file commit uses no-replace MoveFileExW. Replacement uses ReplaceFileW with a unique same-volume backup path journaled before the API call. The actual displaced object is verified and retained in app-data protected history on success AND failure. A concurrent last-moment rename cannot silently discard its displaced bytes. Matching already-protected content is reused so duplicate backup captures do not consume retention slots. A commit race is reported for review even if replacement took place. Startup preserves journaled displaced bytes before removing owned incomplete stages; offline roots postpone their recovery. Task deletion is refused while displaced recovery is pending.
 
-Use the Windows notify backend built on ReadDirectoryChangesW, watching both roots. Verify the chosen release's network buffer stays within the documented 64 KiB limit before shipping. Unsupported network notifications require a visible reconciliation policy; offline changes cannot be reconstructed from the local cache.
+File deletion holds a Windows handle denying writes/deletes, revalidates and backs up the content, then sets disposition on that same handle. Move additionally holds a read guard denying destination writes/deletes through protected source removal. Directory removal is nonrecursive. File/directory conflicts or changed descendants preserve originals. ACLs, alternate streams, EFS, server durability and power-loss atomicity are not promised.
 
-Root canonicalization, filesystem identity and reparse-point checks precede execution and are repeated during it. UNC paths remain visible and are not rewritten to mapped drive assumptions. No credentials are stored. Real SMB coverage requires a specifically authorized disposable share; local error tests cannot prove SMB behavior.
+## Lifecycle
 
-USN is optional and initially omitted. No administrator rights or Windows service is required for normal application use. ACL equivalence, arbitrary alternate streams and complete timestamp parity are not claimed without corresponding tests.
+The native window hides on Close, retaining tray/worker lifetime. Single-instance reopening shows it. Quit pauses dispatch, requests cancellation and waits for the engine lock before exit. Cancellation checks bounded transfer chunks and bandwidth sleeps. Pause is process-local. Schedules persist next occurrence and durably queue due work before advancing it; restart resumes queued work even if the next date is later. Sleep/wake coalesces missed occurrences; DST gaps advance to a valid minute, repeated civil time occurs once, missing monthly days skip.
 
-## Lifecycle and automation
-
-Closing the main window hides it while the process and tray remain active. Quit cancels or checkpoints active work and exits explicitly. Pause stops scheduling new work; Stop requests cancellation of current work at safe boundaries. Debounce and queued-path state must survive worker restarts.
-
-Schedules persist their last dispatched occurrence and next due time. On wake, dispatch at most one missed occurrence per task, then compute the next future occurrence. Never overlap. Calendar schedules use local civil time and an explicit DST policy: nonexistent times advance to the first valid instant, repeated times dispatch once. Monthly invalid days skip that month. These rules require tests before activation.
-
-Notifications distinguish completed transfers, pending conflicts and failures. Deep links must route to a real task/run. Event payloads are bounded summaries with paginated detail queries; backend work and filesystem access never run on the UI thread.
-
-## Verification and diagnostics
-
-Instrument enumerated entries, hashed bytes, copied bytes, watcher events, queued paths and reconciliations per run. The benchmark uses at least 10,000 synthetic files and reports initial, incremental and forced-full measurements plus peak memory. No performance claims precede executed measurements.
-
-Use tracing with configurable local verbosity and redacted diagnostics by default. No telemetry or remote reporting. Optional hooks, chaining, power actions, splitting and mobile controls remain absent until separately implemented and verified.
+Background work never authorizes a removal or Move source deletion. Such plans become Review required. Other automatic non-destructive plans apply, including equal snapshots that establish baseline. Conflict attention survives independent successful transfers. Retry count is bounded and delay increases exponentially. Logging is off by default, local only, rotates after 5 MiB (one previous file); basic records omit file paths and detailed logging explicitly includes them. Ordinary run history is pruned transactionally to the latest 100 plans per task; Applying/Interrupted recovery runs are retained. Baselines and protected versions are independent.

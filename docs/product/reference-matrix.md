@@ -1,6 +1,6 @@
 # Reference and acceptance matrix
 
-Status on 2026-10-16: all product implementation and acceptance tests below are pending. Existing research is evidence about SyncFolder 2.0.79, not proof about FolderSync.
+Status on 2026-10-16: the table records the original evidence and required proof. The implementation/test outcomes below supersede the initial pending checkpoint. Existing research is evidence about SyncFolder 2.0.79, not proof about FolderSync.
 
 | Feature | Reference evidence | Intended FolderSync behavior | Required proof |
 |---|---|---|---|
@@ -21,3 +21,23 @@ Status on 2026-10-16: all product implementation and acceptance tests below are 
 | SMB | Reference runtime unknown | UNC roots, notification uncertainty fallback, offline safety | Fault tests; real share testing only on specifically authorized disposable share |
 
 Reference files live in `../syncfolders-research/` and remain untouched. Their verified UI, tested runtime, user-reported and unknown distinctions take precedence over shorthand in this matrix.
+
+## Executed implementation mapping
+
+| Feature | Implementation and actual proof | Remaining gap |
+|---|---|---|
+| Tasks/picker | Rust persistent tasks + native Tauri dialog; Computer Use created pair, picked A, saved/restarted/configured; management import tests | Established roots/mode require fresh task; task IDs internal UUID |
+| Four modes | Pure classifier plus real executor; planner/integration/windows_paths tests | Real SMB modes pending |
+| Preview/conflict | Immutable plans, resolve returns a new plan; GUI filesystem snapshots before/after selection; App.test.tsx proves no Apply until Confirm | Broad GUI deletion matrix pending |
+| Deletion/root loss | Common baseline, protected versions, guarded deletion, nonrecursive directories; integration + safety + review_safety tests | Full ACL/partial SMB enumeration fault matrix pending; every removal requires review |
+| History/restore | Protected app-data catalog, cap and verified displaced-content dedup; recovery/retention/transfer unit tests; actual GUI restore | History capped at 100 ordinary plans per task; no reset UI; deleting a task strands its versions in storage without task UI |
+| Scope/path | Shared matcher, hidden ancestor/pair exclusion; filesystem/scope/review_safety/windows_paths tests | Full Windows Unicode ordinal casing and adversarial junction swapping unverified |
+| Incremental | Native watcher, durable queue, exact records, cached ancestors; watcher/incremental/automation/index tests; 10k benchmark | Real network notification/reconnect reliability pending |
+| Schedule | Calendar/DST + durable scheduled startup recovery; scheduler/automation_recovery/runtime tests | Actual sleep/logon OS session not exercised |
+| Background | GUI close plus real both-direction copies/conflict preservation while hidden; process remained alive | Tray menu dispatch/toast deep link not verified |
+| Settings/logs | Language change through GUI; private-basic/detailed log test; JSON round trip/schema/import atomicity tests | Some raw status/reason/diagnostic text remains English; native export/import GUI verified |
+| Recovery | Actual killed subprocess during staged copy, stale destination race, disk-full injection, read-only/locked destination tests, displaced restart test | No exhaustive crash at every journal boundary; physical power-loss/AV faults pending |
+| Packaging | Tauri release + x64 current-user NSIS generated | See QA for subsequent install/uninstall evidence |
+| Optional | No hooks/chaining/power/splitting/mobile/USN controls | Intentionally omitted |
+
+All Markdown research and locally supplied unique transcript text were read. Fixture evidence was inspected without modification. Not every original reference screenshot was separately visually verified; its contents are not treated as new runtime proof. GUI evidence here refers to the new FolderSync application only. Research files remain untracked because the original indexing permission failure was not bypassed.

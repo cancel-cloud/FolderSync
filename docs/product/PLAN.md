@@ -27,6 +27,4 @@ Purpose: safely synchronize an engineering workspace and a user-accessible share
 
 ## Current checkpoint
 
-Repository contains the specification and research only. No product code exists. Research Markdown documents have been read; the individual screenshot/transcript and fixture artifact audit remains to be completed before implementation. Computer Use initialization and application enumeration succeeded.
-
-Rust stable MSVC installed per user without modifying PATH. A native Rust compilation probe fails because `link.exe` is missing. Automatic approval review rejected the C++ Build Tools provisioning command with `blocked by policy`. No alternative installation route or UAC bypass was attempted. Implementation and executable tests await an available MSVC toolchain and Windows SDK; see `qa-report.md`.
+Implementation steps 1–6 have produced a running Rust/Tauri application with real filesystem tests and Computer Use acceptance workflows. Steps 7–8 are in final verification/packaging. The initial missing MSVC prerequisite was supplied externally; the original blocked provisioning command was never retried. Actual results supersede the early audit checkpoint and are recorded in qa-report.md. Remaining acceptance gaps are explicit, especially real SMB, tray interaction/toast activation, full localization/accessibility and history growth.
