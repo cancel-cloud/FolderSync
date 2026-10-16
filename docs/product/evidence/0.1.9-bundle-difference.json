@@ -1,0 +1,18 @@
+{
+  "build_bytes": 16860160,
+  "installed_bytes": 16860160,
+  "different_bytes": 3,
+  "difference_ranges": [
+    [
+      12515026,
+      12515029
+    ]
+  ],
+  "differences": [
+    {
+      "offset": 12515026,
+      "build": "554e4b",
+      "installed": "4e5353"
+    }
+  ]
+}

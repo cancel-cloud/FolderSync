@@ -1,0 +1,12 @@
+{
+  "installer_bytes": 4146519,
+  "version": "0.1.9",
+  "installation_did_not_launch": true,
+  "installer_sha256": "CFEA999339A900B2A930045580A3D0D321C626930DC7A3758B21B39B4947C633",
+  "elevated": false,
+  "exit_code": 0,
+  "source_commit": "9cbe229",
+  "installed_exe_sha256": "B07B387E789BE76FB2F0A0D00EC48D225A60665D9B15A9444AA68F09D72F3273",
+  "startup_enabled": true,
+  "startup_preference_preserved": true
+}

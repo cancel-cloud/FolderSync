@@ -1,0 +1,24 @@
+   Compiling foldersync-engine v0.1.9 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.05s
+     Running unittests src\lib.rs (target\debug\deps\foldersync_engine-116ee70a1ec6ca6c.exe)
+
+running 1 test
+test automation::observation_tests::failed_incremental_discovery_does_not_commit_partial_observations ... FAILED
+
+failures:
+
+---- automation::observation_tests::failed_incremental_discovery_does_not_commit_partial_observations stdout ----
+
+thread 'automation::observation_tests::failed_incremental_discovery_does_not_commit_partial_observations' (20660) panicked at crates\sync-engine\src\automation.rs:243:9:
+assertion `left == right` failed: Failed discovery must retain the previous coherent observations
+  left: Some(Entry { path: "equal", digest: "b8e6ddccc451bf53cb50cc4b50291345aaf8a082c28879efd9c0e422846af809", directory: false, size: 36, mtime_ns: "1792184521382502100", file_id: Some("4241541576:1245184:3106220") })
+ right: Some(Entry { path: "equal", digest: "b5e59620e39c46ee9f93ff533ed82f16b073b54bdfd531ef4c2f0a3985c52c2e", directory: false, size: 23, mtime_ns: "1792184521343979300", file_id: Some("4241541576:1245184:3106220") })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    automation::observation_tests::failed_incremental_discovery_does_not_commit_partial_observations
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 18 filtered out; finished in 0.13s
+
+error: test failed, to rerun pass `-p foldersync-engine --lib`

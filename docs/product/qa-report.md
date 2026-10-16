@@ -1,5 +1,10 @@
 # QA report — 2026-10-16
 
+## Latest incremental-monitoring release: 0.1.9
+
+170 workspace Rust tests, 8 patched-notify tests and 33 frontend tests pass, with formatting, Clippy, TypeScript, lint, frontend and NSIS production builds. The current-user installer from source `9cbe229` installed without elevation, exit 0. Computer Use verified version, saved/restored safety interval and an actual conflict-bearing disposable Preview with metadata. Two task configurations, five protected payloads and prior preferences were preserved. The steady-state 35k-per-side benchmark processed a real single-file notification through verified Apply in 337 ms excluding debounce, without full reconciliation; full equal reconciliation remains 42.008 s. Real SMB reconnection and OS sign-in remain unverified. See [release evidence and limitations](release-0.1.9.md).
+
+
 ## Latest UI-fix release: 0.1.3
 
 145 Rust / 31 frontend tests and full verification passed; after a Computer Use-discovered MSIX Explorer-path issue, the corrected native resolver passed all 26 native tests and Clippy. Final rebuilt installer from **32ad5a1** installed without elevation, exit 0. Both Open buttons now reach their actual directories in Explorer. UI checks confirm corrected text/spacing/placeholders, absent sidebar slogan and no test-notification message on Tasks. Exact task JSON, five backup payloads and disposable originals remained unchanged. Windows Settings directly exposed **Do not disturb ON**, explaining center-only notifications; FolderSync sender was enabled for Banners/Sounds. No OS setting was changed. See [0.1.3 release report](release-0.1.3.md) for exact installer hash, evidence and limits. Earlier sections are historical.

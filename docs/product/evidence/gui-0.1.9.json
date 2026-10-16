@@ -1,0 +1,24 @@
+{
+  "installed_version": "0.1.9",
+  "computer_use_verified": [
+    "Tasks loaded",
+    "Settings daily default",
+    "Six-hour interval saved as 360 in live SQLite",
+    "Daily interval restored as 1440",
+    "Version tab 0.1.9",
+    "Actual disposable task Preview: 315 unchanged, 1 conflict, Apply disabled pending choice",
+    "Unchanged filter displays per-side metadata",
+    "Returned to Tasks with no active run"
+  ],
+  "tasks_preserved": 2,
+  "protected_payloads_preserved": 5,
+  "prior_preferences_preserved": true,
+  "interval_minutes": 1440,
+  "no_apply_invoked": true,
+  "source_commit": "9cbe229",
+  "limitations": [
+    "No actual SMB disconnect/reconnect verification",
+    "No OS sign-in test",
+    "No physical forced Windows kernel-buffer overflow test; completion signaling and collector overflow have focused tests"
+  ]
+}

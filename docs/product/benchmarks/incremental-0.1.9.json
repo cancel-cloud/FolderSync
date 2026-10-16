@@ -1,0 +1,48 @@
+{
+  "automatic_equal_reconciliation": {
+    "metrics": {
+      "copied_bytes": 0,
+      "hashed_bytes": 665280000,
+      "lineage_links": 0,
+      "peak_workers": 0,
+      "queued_paths": 1,
+      "reconciliations": 1,
+      "scanned_entries": 70700,
+      "watch_events": 0
+    },
+    "wall_ms": 42008
+  },
+  "build": "release",
+  "bytes_per_side": 332640000,
+  "files_per_side": 35000,
+  "fixture": "\\\\?\\C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-Incremental-d1cbe620-12a9-4974-a813-83859fd2f88c",
+  "manual_preview_apply": {
+    "metrics": {
+      "copied_bytes": 0,
+      "hashed_bytes": 1330560000,
+      "lineage_links": 0,
+      "peak_workers": 0,
+      "queued_paths": 0,
+      "reconciliations": 1,
+      "scanned_entries": 141400,
+      "watch_events": 0
+    },
+    "wall_ms": 42861
+  },
+  "native_single_file_apply_excluding_debounce": {
+    "metrics": {
+      "copied_bytes": 153,
+      "hashed_bytes": 918,
+      "lineage_links": 0,
+      "peak_workers": 1,
+      "queued_paths": 1,
+      "reconciliations": 0,
+      "scanned_entries": 8,
+      "watch_events": 2
+    },
+    "operations": 1,
+    "wall_ms": 337
+  },
+  "verified_single_file_destination": true,
+  "version": "0.1.9"
+}
