@@ -1,0 +1,6 @@
+FolderSync 0.1.4: Settings moved after Recovery in DOM/tab order and anchored at bottom using flex layout. Source 0eb9250.
+31 frontend tests passed; TypeScript, ESLint, web build and cargo check passed. Optimized Tauri/NSIS build exited 0.
+Actual current-user installer exited 0 without elevation, preserved startup preference, did not launch synchronization.
+Computer Use verified bottom-positioned Settings and clicked it successfully in installed app. Screenshot: 0.1.4-sidebar.png.
+Installer: target/release/bundle/nsis/FolderSync_0.1.4_x64-setup.exe
+SHA256: 95DA0C3164410AE0585AC9653DE508FFEB98AD8548A5C15E29E7F00AC244CE48
