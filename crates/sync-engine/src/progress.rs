@@ -67,6 +67,50 @@ impl ProgressState {
             update(value);
         }
     }
+    pub(crate) fn hashed_file(&self, path: &std::path::Path, bytes: u64, total: u64) {
+        self.update(|state| {
+            if state.phase == ProgressPhase::Applying {
+                state.phase = ProgressPhase::Validating;
+            }
+            if matches!(
+                state.phase,
+                ProgressPhase::Discovering | ProgressPhase::Validating
+            ) {
+                state.path = Some(path.to_string_lossy().into_owned());
+            }
+            // One atomic snapshot: concurrent readers must never mix one
+            // file's byte count with a different file's total or display path.
+            state.file_bytes = bytes;
+            state.file_total = total;
+        });
+    }
+}
+
+#[cfg(test)]
+mod snapshot_tests {
+    use super::*;
+    #[test]
+    fn interleaved_hash_readers_publish_one_coherent_file_snapshot() {
+        let state = ProgressState::default();
+        let _guard = state.begin("task", None, ProgressPhase::Discovering, 2);
+        let a = std::path::Path::new("large.bin");
+        let b = std::path::Path::new("small.bin");
+        state.hashed_file(a, 4096, 8192);
+        state.hashed_file(b, 128, 256);
+        state.hashed_file(a, 8192, 8192);
+        let snapshot = state.snapshot().unwrap();
+        assert_eq!(snapshot.path.as_deref(), Some("large.bin"));
+        assert_eq!((snapshot.file_bytes, snapshot.file_total), (8192, 8192));
+        state.update(|s| {
+            s.phase = ProgressPhase::Verifying;
+            s.path = Some("reviewed-name.bin".into());
+        });
+        state.hashed_file(std::path::Path::new(".foldersync-stage-internal"), 256, 256);
+        assert_eq!(
+            state.snapshot().unwrap().path.as_deref(),
+            Some("reviewed-name.bin")
+        );
+    }
 }
 pub(crate) struct ProgressGuard(ProgressState);
 impl Drop for ProgressGuard {

@@ -24,4 +24,16 @@ Baseline raw evidence: [before](benchmarks/profile-local-before.json). The old 4
 
 The isolated SQLite experiment measured 1,000 individual FULL durable commits at 3,448 ms versus 6.43 ms for one transaction containing the same 1,000 rows: [flush experiment](benchmarks/flush-cost.json). This supports the per-file persistence bottleneck; it is not a projected end-to-end speedup. Phase sampling in the harness reports time occupying a progress phase, which can recur during individual copies; it must not be interpreted as an isolated global pre-validation timer.
 
-Final-source measurements, verification and installation evidence follow after execution. The full 35,000-file comparison is measured; a complete 35,000-file copy is not claimed. File flushes and safe recovery still have a substantial cost for many tiny files. Antivirus contribution was not isolated and no antivirus/security setting was changed.
+Performance-pipeline measurements from commit `9eff048`, release build 0.1.8: [raw results](benchmarks/profile-local-latest.json).
+
+| Work | Original 0.1.7 | Final 0.1.8 |
+|---|---:|---:|
+| Safe full filesystem scan, 35,000 files | 24.754 s | 4.615 s |
+| Complete full Preview, 35,350 entries | 57.546 s | 24.732 s |
+| Verify-copy 1,000 small files | 40.453 s (1 worker), 40.813 s (2 workers); 4 failed | 24.509 s (4 workers) |
+
+Final raw content hashing took 1.663 s with 10 readers and 6.466 s with one reader. These warm-cache readings are distinct from full Preview, which additionally builds the index and plans/checks conflicts. The 4-worker final copy sample rehashed all 1,000 output files successfully. Copied bytes were exactly 2,150,831; cumulative measured bytes hashed across Preview/Apply were 12,904,986. Copy samples use the same files but not the same concurrency in the before/final comparison; the intermediate report supplies the controlled 1/2/4/10 comparison. A full 35,000-file copy is not claimed. File flushes and safe recovery still have a substantial cost for many tiny files. Antivirus contribution was not isolated and no antivirus/security setting was changed.
+
+Fresh verification passed: **153 Rust tests, 32 frontend tests**, cargo fmt, workspace/all-targets Clippy with warnings denied, TypeScript, ESLint and production frontend build. [Rust/Clippy evidence](evidence/verification-0.1.8-rust.txt), [frontend evidence](evidence/verification-0.1.8-frontend.txt). A cancellation-metrics regression introduced during parallelization was found by the existing streaming-hash cancellation test, fixed and passed in the complete Rust rerun. Frontend test label/encoding corrections were verified by rerunning the complete frontend checks after the Rust suite passed.
+
+Installed GUI verification then exposed mixed per-file progress fields from concurrent hash readers (bytes from one file, length from another). The final package includes a correction publishing each hash chunk's relative display path, bytes and total atomically. Staged verification preserves the reviewed display name. This display-only correction followed the performance measurements above. Fresh workspace/all-targets Clippy and 24 targeted Rust checks passed, covering the new coherent-snapshot unit regression, engine unit tests, parallel scan/validation, transfers, cancellation and crash recovery: [final progress verification](evidence/verification-0.1.8-progress.txt). No content verification or durability check was removed.
