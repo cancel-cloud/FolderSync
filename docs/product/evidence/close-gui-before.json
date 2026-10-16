@@ -1,0 +1,11 @@
+{
+  "task_uuid": "9b2d06d2-3805-4f2a-ba90-8498035bbb58",
+  "saved_name": "FolderSync GUI acceptance",
+  "source_bytes": 4194304,
+  "source_sha256": "2b07811057df887086f06a67edc6ebf911de8b6741156e7a2eb1416a4b8b1b2e",
+  "conflict_hashes": {
+    "A": "f70e0cad47a9aaeb66999c6395012f2a9b2e266f0e79456d2f6bc1374ea11488",
+    "B": "95b498713c7dfdc8a8dc1a970a6c19e66f6a57354da800c751223817c648b870"
+  },
+  "close_setting_before": null
+}

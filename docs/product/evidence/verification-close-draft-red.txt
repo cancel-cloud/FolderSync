@@ -1,0 +1,2574 @@
+$ vitest run
+
+ RUN  v3.2.7 C:/Users/Lukas/Developer/SyncFolders
+
+ ✓ src/review.test.ts (2 tests) 4ms
+ ✓ src/i18n.test.ts (2 tests) 32ms
+ ❯ src/App.test.tsx (15 tests | 2 failed) 8646ms
+   × quit-on-close asks before discarding an unsaved task draft 1601ms
+     → Unable to find role="dialog" and name "Discard unsaved changes and quit?"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"app"[39m
+    [36m>[39m
+      [36m<aside>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"brand"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mark"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-arrow-left-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"22"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"22"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 3 4 7l4 4"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M4 7h16"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m16 21 4-4-4-4"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 17H4"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [0mFolderSync[0m
+            [36m<small>[39m
+              [0mLOCAL WORKSPACE[0m
+            [36m</small>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<nav[39m
+          [33maria-label[39m=[32m"Main navigation"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-layout-dashboard"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"9"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"5"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"9"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"12"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"5"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"16"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mTasks[0m
+            [36m<span>[39m
+              [0m1[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-settings"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"3"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mSettings[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-file-clock"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M16 22h2a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M14 2v4a2 2 0 0 0 2 2h4"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"8"[39m
+                [33mcy[39m=[32m"16"[39m
+                [33mr[39m=[32m"6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M9.5 17.5 8 16.25V14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mRecovery[0m
+          [36m</button>[39m
+        [36m</nav>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"aside-bottom"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33mclass[39m=[32m"lucide lucide-shield-check"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"18"[39m
+            [33mstroke[39m...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"app"[39m
+    [36m>[39m
+      [36m<aside>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"brand"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mark"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-arrow-left-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"22"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"22"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 3 4 7l4 4"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M4 7h16"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m16 21 4-4-4-4"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 17H4"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [0mFolderSync[0m
+            [36m<small>[39m
+              [0mLOCAL WORKSPACE[0m
+            [36m</small>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<nav[39m
+          [33maria-label[39m=[32m"Main navigation"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-layout-dashboard"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"9"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"5"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"9"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"12"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"5"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"16"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mTasks[0m
+            [36m<span>[39m
+              [0m1[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-settings"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"3"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mSettings[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-file-clock"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M16 22h2a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M14 2v4a2 2 0 0 0 2 2h4"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"8"[39m
+                [33mcy[39m=[32m"16"[39m
+                [33mr[39m=[32m"6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M9.5 17.5 8 16.25V14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mRecovery[0m
+          [36m</button>[39m
+        [36m</nav>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"aside-bottom"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33mclass[39m=[32m"lucide lucide-shield-check"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"18"[39m
+            [33mstroke[39m...
+   × close behavior persists and failed preference saves do not change the selection 1399ms
+     → Unable to find an element with the text: Preference write failed. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"app"[39m
+    [36m>[39m
+      [36m<aside>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"brand"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mark"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-arrow-left-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"22"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"22"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 3 4 7l4 4"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M4 7h16"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m16 21 4-4-4-4"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 17H4"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [0mFolderSync[0m
+            [36m<small>[39m
+              [0mLOCAL WORKSPACE[0m
+            [36m</small>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<nav[39m
+          [33maria-label[39m=[32m"Main navigation"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-layout-dashboard"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"9"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"5"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"9"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"12"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"5"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"16"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mTasks[0m
+            [36m<span>[39m
+              [0m0[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"active"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-settings"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"3"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mSettings[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-file-clock"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M16 22h2a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M14 2v4a2 2 0 0 0 2 2h4"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"8"[39m
+                [33mcy[39m=[32m"16"[39m
+                [33mr[39m=[32m"6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M9.5 17.5 8 16.25V14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mRecovery[0m
+          [36m</button>[39m
+        [36m</nav>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"aside-bottom"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33mclass[39m=[32m"lucide lucide-shield-check"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"18"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"18"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m9 12 2 2 4-4"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<p>[39m
+            [0mYour files stay on your computer.[0m
+            [36m<small>[39m
+              [0mNo account. No telemetry.[0m
+            [36m</small>[39m
+          [36m</p>[39m
+        [36m</div>[39m
+      [36m</aside>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"workspace"[39m
+      [36m>[39m
+        [36m<header>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"breadcrumb"[39m
+          [36m>[39m
+            [0mWorkspace[0m
+            [36m<span>[39m
+              [0m/[0m
+            [36m</span>[39m
+            [0mSettings[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"header-actions"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"status-dot"[39m
+            [36m/>[39m
+            [0mEngine ready[0m
+            [36m<button[39m
+              [33maria-label[39m=[32m"Pause or resume automation"[39m
+              [33mclass[39m=[32m"button ghost"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33mclass[39m=[32m"lucide lucide-pause"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"15"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"15"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"16"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"4"[39m
+                  [33mx[39m=[32m"14"[39m
+                  [33my[39m=[32m"4"[39m
+                [36m/>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"16"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"4"[39m
+                  [33mx[39m=[32m"6"[39m
+                  [33my[39m=[32m"4"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"Stop active work"[39m
+              [33mclass[39m=[32m"button ghost"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33mclass[39m=[32m"lucide lucide-square"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"15"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"15"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"18"[39m
+                  [33mrx[39m=[32m"2"[39m
+                  [33mwidth[39m=[32m"18"[39m
+                  [33mx[39m=[32m"3"[39m
+                  [33my[39m=[32m"3"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</header>[39m
+        [36m<main[39m
+          [33maria-busy[39m=[32m"false"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"alert error"[39m
+            [33mrole[39m=[32m"alert"[39m
+          [36m>[39m
+            [36m<strong>[39m
+              [0mAction could not complete[0m
+            [36m</strong>[39m
+            [36m<p>[39m
+              [0mError: Preference write failed[0m
+            [36m</p>[39m
+            [36m<button>[39m
+              [0mDismiss[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"page-heading"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"eyebrow"[39m
+              [36m>[39m
+                [0mAPPLICATION[0m
+              [36m</div>[39m
+              [36m<h1>[39m
+                [0mSettings[0m
+              [36m</h1>[39m
+              [36m<p>[39m
+                [0mLocal preferences and portable task configuration.[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<section[39m
+            [33mclass[39m=[32m"panel"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0mPreferences[0m
+            [36m</h2>[39m
+            [36m<label>[39m
+              [0mLanguage[0m
+              [36m<select>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"en"[39m
+                [36m>[39m
+                  [0mEnglish[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"de"[39m
+                [36m>[39m
+                  [0mDeutsch[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"check-row"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [0mStart FolderSync when I sign in[0m
+            [36m</label>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"check-row"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mchecked[39m=[32m""[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [0mWindows notifications[0m
+            [36m</label>[39m
+            [36m<label>[39m
+              [0mLocal operation logging[0m
+              [36m<select>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"off"[39m
+                [36m>[39m
+                  [0mDisabled[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"basic"[39m
+                [36m>[39m
+                  [0mBasic (no file paths)[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"detailed"[39m
+                [36m>[39m
+                  [0mDetailed (includes paths)[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<label>[39m
+              [0mWhen I close the window[0m
+              [36m<select[39m
+                [33maria-label[39m=[32m"When I close the window"[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"tray"[39m
+                [36m>[39m
+                  [0mKeep running in the tray[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"quit"[39m
+                [36m>[39m
+                  [0mStop safely and quit[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<p>[39m
+              [0mClosing the window stops active work safely and quits FolderSync.[0m
+            [36m</p>[39m
+          [36m</section>[39m
+          [36m<section[39m
+            [33mclass[39m=[32m"panel"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0mImport & export[0m
+            [36m</h2>[39m
+            [36m<p>[39m
+              [0mFolderSync versioned JSON only. Imported automatic triggers are disabled. Duplicate task IDs receive a new automatic ID.[0m
+            [36m</p>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"toolbar"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button outline"[39m
+              [36m>[39m
+                [0mExport tasks…[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button outline"[39m
+              [36m>[39m
+                [0mImport tasks…[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</section>[39m
+          [36m<section[39m
+            [33mclass[39m=[32m"panel"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0mData & privacy[0m
+            [36m</h2>[39m
+            [36m<code[39m
+              [33mclass[39m=[32m"storage-path"[39m
+            [36m/>[39m
+            [36m<p>[39m
+              [0mSQLite state and protected versions are stored here. No telemetry or cloud services are used.[0m
+            [36m</p>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button outline"[39m
+            [36m>[39m
+              [0mView recent local log[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button outline"[39m
+            [36m>[39m
+              [0mQuit FolderSync[0m
+            [36m</button>[39m
+          [36m</section>[39m
+        [36m</main>[39m
+        [36m<footer>[39m
+          [36m<span>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-circle-check"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"10"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 12 2 2 4-4"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mVerified transfers · protected originals[0m
+          [36m</span>[39m
+          [36m<span>[39m
+            [0mFolderSync 0.1.0[0m
+          [36m</span>[39m
+        [36m</footer>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"app"[39m
+    [36m>[39m
+      [36m<aside>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"brand"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mark"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-arrow-left-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"22"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"22"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 3 4 7l4 4"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M4 7h16"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m16 21 4-4-4-4"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 17H4"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [0mFolderSync[0m
+            [36m<small>[39m
+              [0mLOCAL WORKSPACE[0m
+            [36m</small>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<nav[39m
+          [33maria-label[39m=[32m"Main navigation"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-layout-dashboard"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"9"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"5"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"9"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"12"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"5"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"16"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mTasks[0m
+            [36m<span>[39m
+              [0m0[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"active"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-settings"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"3"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mSettings[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-file-clock"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M16 22h2a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M14 2v4a2 2 0 0 0 2 2h4"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"8"[39m
+                [33mcy[39m=[32m"16"[39m
+                [33mr[39m=[32m"6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M9.5 17.5 8 16.25V14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mRecovery[0m
+          [36m</button>[39m
+        [36m</nav>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"aside-bottom"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33mclass[39m=[32m"lucide lucide-shield-check"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"18"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"18"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m9 12 2 2 4-4"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<p>[39m
+            [0mYour files stay on your computer.[0m
+            [36m<small>[39m
+              [0mNo account. No telemetry.[0m
+            [36m</small>[39m
+          [36m</p>[39m
+        [36m</div>[39m
+      [36m</aside>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"workspace"[39m
+      [36m>[39m
+        [36m<header>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"breadcrumb"[39m
+          [36m>[39m
+            [0mWorkspace[0m
+            [36m<span>[39m
+              [0m/[0m
+            [36m</span>[39m
+            [0mSettings[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"header-actions"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"status-dot"[39m
+            [36m/>[39m
+            [0mEngine ready[0m
+            [36m<button[39m
+              [33maria-label[39m=[32m"Pause or resume automation"[39m
+              [33mclass[39m=[32m"button ghost"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33mclass[39m=[32m"lucide lucide-pause"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"15"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"15"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"16"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"4"[39m
+                  [33mx[39m=[32m"14"[39m
+                  [33my[39m=[32m"4"[39m
+                [36m/>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"16"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"4"[39m
+                  [33mx[39m=[32m"6"[39m
+                  [33my[39m=[32m"4"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"Stop active work"[39m
+              [33mclass[39m=[32m"button ghost"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33mclass[39m=[32m"lucide lucide-square"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"15"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"15"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"18"[39m
+                  [33mrx[39m=[32m"2"[39m
+                  [33mwidth[39m=[32m"18"[39m
+                  [33mx[39m=[32m"3"[39m
+                  [33my[39m=[32m"3"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</header>[39m
+        [36m<main[39m
+          [33maria-busy[39m=[32m"false"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"alert error"[39m
+            [33mrole[39m=[32m"alert"[39m
+          [36m>[39m
+            [36m<strong>[39m
+              [0mAction could not complete[0m
+            [36m</strong>[39m
+            [36m<p>[39m
+              [0mError: Preference write failed[0m
+            [36m</p>[39m
+            [36m<button>[39m
+              [0mDismiss[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"page-heading"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"eyebrow"[39m
+              [36m>[39m
+                [0mAPPLICATION[0m
+              [36m</div>[39m
+              [36m<h1>[39m
+                [0mSettings[0m
+              [36m</h1>[39m
+              [36m<p>[39m
+                [0mLocal preferences and portable task configuration.[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<section[39m
+            [33mclass[39m=[32m"panel"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0mPreferences[0m
+            [36m</h2>[39m
+            [36m<label>[39m
+              [0mLanguage[0m
+              [36m<select>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"en"[39m
+                [36m>[39m
+                  [0mEnglish[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"de"[39m
+                [36m>[39m
+                  [0mDeutsch[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"check-row"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [0mStart FolderSync when I sign in[0m
+            [36m</label>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"check-row"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mchecked[39m=[32m""[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [0mWindows notifications[0m
+            [36m</label>[39m
+            [36m<label>[39m
+              [0mLocal operation logging[0m
+              [36m<select>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"off"[39m
+                [36m>[39m
+                  [0mDisabled[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"basic"[39m
+                [36m>[39m
+                  [0mBasic (no file paths)[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"detailed"[39m
+                [36m>[39m
+                  [0mDetailed (includes paths)[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<label>[39m
+              [0mWhen I close the window[0m
+              [36m<select[39m
+                [33maria-label[39m=[32m"When I close the window"[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"tray"[39m
+                [36m>[39m
+                  [0mKeep running in the tray[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"quit"[39m
+                [36m>[39m
+                  [0mStop safely and quit[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<p>[39m
+              [0mClosing the window stops active work safely and quits FolderSync.[0m
+            [36m</p>[39m
+          [36m</section>[39m
+          [36m<section[39m
+            [33mclass[39m=[32m"panel"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0mImport & export[0m
+            [36m</h2>[39m
+            [36m<p>[39m
+              [0mFolderSync versioned JSON only. Imported automatic triggers are disabled. Duplicate task IDs receive a new automatic ID.[0m
+            [36m</p>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"toolbar"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button outline"[39m
+              [36m>[39m
+                [0mExport tasks…[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button outline"[39m
+              [36m>[39m
+                [0mImport tasks…[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</section>[39m
+          [36m<section[39m
+            [33mclass[39m=[32m"panel"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0mData & privacy[0m
+            [36m</h2>[39m
+            [36m<code[39m
+              [33mclass[39m=[32m"storage-path"[39m
+            [36m/>[39m
+            [36m<p>[39m
+              [0mSQLite state and protected versions are stored here. No telemetry or cloud services are used.[0m
+            [36m</p>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button outline"[39m
+            [36m>[39m
+              [0mView recent local log[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button outline"[39m
+            [36m>[39m
+              [0mQuit FolderSync[0m
+            [36m</button>[39m
+          [36m</section>[39m
+        [36m</main>[39m
+        [36m<footer>[39m
+          [36m<span>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-circle-check"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"10"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 12 2 2 4-4"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mVerified transfers · protected originals[0m
+          [36m</span>[39m
+          [36m<span>[39m
+            [0mFolderSync 0.1.0[0m
+          [36m</span>[39m
+        [36m</footer>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+   ✓ Ignore revises preview only and leaves conflict attention visible after confirmed Apply  450ms
+   ✓ editable task identifiers save without replacing internal task identity  652ms
+   ✓ deleted-task recovery stays separate from synchronization and restore requires confirmation  381ms
+   ✓ enabling automatic deletion requires a separate policy confirmation before saving  371ms
+   ✓ group filtering clears hidden selections and bulk reassignment refreshes collapsible groups  686ms
+   ✓ saving a selected task into another group clears its hidden bulk selection  563ms
+   ✓ nested conflict choice only revises preview; Apply requires its separate confirmation  568ms
+   ✓ saved German preference localizes dashboard, conflict review and metadata 151ms
+   ✓ review requests bounded pages and resets paging when filters change  795ms
+   ✓ terminal Apply result Failed: destination locked updates the dashboard and requires a fresh preview  380ms
+   ✓ terminal Apply result Cancelled updates the dashboard and requires a fresh preview  360ms
+   ✓ latest progress is visible during background work and Cancel reaches the native stop command 133ms
+   ✓ cancelled discovery refreshes persisted status and shows a localized cancellation message 153ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/App.test.tsx > quit-on-close asks before discarding an unsaved task draft
+TestingLibraryElementError: Unable to find role="dialog" and name "Discard unsaved changes and quit?"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="app"
+    >
+      <aside>
+        <div
+          class="brand"
+        >
+          <div
+            class="mark"
+          >
+            <svg
+              class="lucide lucide-arrow-left-right"
+              fill="none"
+              height="22"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="22"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 3 4 7l4 4"
+              />
+              <path
+                d="M4 7h16"
+              />
+              <path
+                d="m16 21 4-4-4-4"
+              />
+              <path
+                d="M20 17H4"
+              />
+            </svg>
+          </div>
+          <div>
+            FolderSync
+            <small>
+              LOCAL WORKSPACE
+            </small>
+          </div>
+        </div>
+        <nav
+          aria-label="Main navigation"
+        >
+          <button
+            class=""
+          >
+            <svg
+              class="lucide lucide-layout-dashboard"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                height="9"
+                rx="1"
+                width="7"
+                x="3"
+                y="3"
+              />
+              <rect
+                height="5"
+                rx="1"
+                width="7"
+                x="14"
+                y="3"
+              />
+              <rect
+                height="9"
+                rx="1"
+                width="7"
+                x="14"
+                y="12"
+              />
+              <rect
+                height="5"
+                rx="1"
+                width="7"
+                x="3"
+                y="16"
+              />
+            </svg>
+            Tasks
+            <span>
+              1
+            </span>
+          </button>
+          <button
+            class=""
+          >
+            <svg
+              class="lucide lucide-settings"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+              />
+              <circle
+                cx="12"
+                cy="12"
+                r="3"
+              />
+            </svg>
+            Settings
+          </button>
+          <button
+            class=""
+          >
+            <svg
+              class="lucide lucide-file-clock"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M16 22h2a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"
+              />
+              <path
+                d="M14 2v4a2 2 0 0 0 2 2h4"
+              />
+              <circle
+                cx="8"
+                cy="16"
+                r="6"
+              />
+              <path
+                d="M9.5 17.5 8 16.25V14"
+              />
+            </svg>
+            Recovery
+          </button>
+        </nav>
+        <div
+          class="aside-bottom"
+        >
+          <svg
+            class="lucide lucide-shield-check"
+            fill="none"
+            height="18"
+            stroke...
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="app"
+    >
+      <aside>
+        <div
+          class="brand"
+        >
+          <div
+            class="mark"
+          >
+            <svg
+              class="lucide lucide-arrow-left-right"
+              fill="none"
+              height="22"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="22"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 3 4 7l4 4"
+              />
+              <path
+                d="M4 7h16"
+              />
+              <path
+                d="m16 21 4-4-4-4"
+              />
+              <path
+                d="M20 17H4"
+              />
+            </svg>
+          </div>
+          <div>
+            FolderSync
+            <small>
+              LOCAL WORKSPACE
+            </small>
+          </div>
+        </div>
+        <nav
+          aria-label="Main navigation"
+        >
+          <button
+            class=""
+          >
+            <svg
+              class="lucide lucide-layout-dashboard"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                height="9"
+                rx="1"
+                width="7"
+                x="3"
+                y="3"
+              />
+              <rect
+                height="5"
+                rx="1"
+                width="7"
+                x="14"
+                y="3"
+              />
+              <rect
+                height="9"
+                rx="1"
+                width="7"
+                x="14"
+                y="12"
+              />
+              <rect
+                height="5"
+                rx="1"
+                width="7"
+                x="3"
+                y="16"
+              />
+            </svg>
+            Tasks
+            <span>
+              1
+            </span>
+          </button>
+          <button
+            class=""
+          >
+            <svg
+              class="lucide lucide-settings"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+              />
+              <circle
+                cx="12"
+                cy="12"
+                r="3"
+              />
+            </svg>
+            Settings
+          </button>
+          <button
+            class=""
+          >
+            <svg
+              class="lucide lucide-file-clock"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M16 22h2a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"
+              />
+              <path
+                d="M14 2v4a2 2 0 0 0 2 2h4"
+              />
+              <circle
+                cx="8"
+                cy="16"
+                r="6"
+              />
+              <path
+                d="M9.5 17.5 8 16.25V14"
+              />
+            </svg>
+            Recovery
+          </button>
+        </nav>
+        <div
+          class="aside-bottom"
+        >
+          <svg
+            class="lucide lucide-shield-check"
+            fill="none"
+            height="18"
+            stroke...
+ ❯ waitForWrapper node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/App.test.tsx:79:16
+     77|   await user.type(screen.getByRole("textbox",{name:"Task name"})," uns…
+     78|   await act(async()=>{api.listeners.get("request-close")?.({payload:nu…
+     79|   await screen.findByRole("dialog",{name:"Discard unsaved changes and …
+       |                ^
+     80|   expect(quit).toBe(false);
+     81|   await user.click(screen.getByRole("button",{name:"Cancel"}));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/App.test.tsx > close behavior persists and failed preference saves do not change the selection
+TestingLibraryElementError: Unable to find an element with the text: Preference write failed. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div />
+  <div>
+    <div
+      class="app"
+    >
+      <aside>
+        <div
+          class="brand"
+        >
+          <div
+            class="mark"
+          >
+            <svg
+              class="lucide lucide-arrow-left-right"
+              fill="none"
+              height="22"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="22"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 3 4 7l4 4"
+              />
+              <path
+                d="M4 7h16"
+              />
+              <path
+                d="m16 21 4-4-4-4"
+              />
+              <path
+                d="M20 17H4"
+              />
+            </svg>
+          </div>
+          <div>
+            FolderSync
+            <small>
+              LOCAL WORKSPACE
+            </small>
+          </div>
+        </div>
+        <nav
+          aria-label="Main navigation"
+        >
+          <button
+            class=""
+          >
+            <svg
+              class="lucide lucide-layout-dashboard"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                height="9"
+                rx="1"
+                width="7"
+                x="3"
+                y="3"
+              />
+              <rect
+                height="5"
+                rx="1"
+                width="7"
+                x="14"
+                y="3"
+              />
+              <rect
+                height="9"
+                rx="1"
+                width="7"
+                x="14"
+                y="12"
+              />
+              <rect
+                height="5"
+                rx="1"
+                width="7"
+                x="3"
+                y="16"
+              />
+            </svg>
+            Tasks
+            <span>
+              0
+            </span>
+          </button>
+          <button
+            class="active"
+          >
+            <svg
+              class="lucide lucide-settings"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+              />
+              <circle
+                cx="12"
+                cy="12"
+                r="3"
+              />
+            </svg>
+            Settings
+          </button>
+          <button
+            class=""
+          >
+            <svg
+              class="lucide lucide-file-clock"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M16 22h2a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"
+              />
+              <path
+                d="M14 2v4a2 2 0 0 0 2 2h4"
+              />
+              <circle
+                cx="8"
+                cy="16"
+                r="6"
+              />
+              <path
+                d="M9.5 17.5 8 16.25V14"
+              />
+            </svg>
+            Recovery
+          </button>
+        </nav>
+        <div
+          class="aside-bottom"
+        >
+          <svg
+            class="lucide lucide-shield-check"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
+            />
+            <path
+              d="m9 12 2 2 4-4"
+            />
+          </svg>
+          <p>
+            Your files stay on your computer.
+            <small>
+              No account. No telemetry.
+            </small>
+          </p>
+        </div>
+      </aside>
+      <div
+        class="workspace"
+      >
+        <header>
+          <div
+            class="breadcrumb"
+          >
+            Workspace
+            <span>
+              /
+            </span>
+            Settings
+          </div>
+          <div
+            class="header-actions"
+          >
+            <span
+              class="status-dot"
+            />
+            Engine ready
+            <button
+              aria-label="Pause or resume automation"
+              class="button ghost"
+            >
+              <svg
+                class="lucide lucide-pause"
+                fill="none"
+                height="15"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="15"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect
+                  height="16"
+                  rx="1"
+                  width="4"
+                  x="14"
+                  y="4"
+                />
+                <rect
+                  height="16"
+                  rx="1"
+                  width="4"
+                  x="6"
+                  y="4"
+                />
+              </svg>
+            </button>
+            <button
+              aria-label="Stop active work"
+              class="button ghost"
+            >
+              <svg
+                class="lucide lucide-square"
+                fill="none"
+                height="15"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="15"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect
+                  height="18"
+                  rx="2"
+                  width="18"
+                  x="3"
+                  y="3"
+                />
+              </svg>
+            </button>
+          </div>
+        </header>
+        <main
+          aria-busy="false"
+        >
+          <div
+            class="alert error"
+            role="alert"
+          >
+            <strong>
+              Action could not complete
+            </strong>
+            <p>
+              Error: Preference write failed
+            </p>
+            <button>
+              Dismiss
+            </button>
+          </div>
+          <div
+            class="page-heading"
+          >
+            <div>
+              <div
+                class="eyebrow"
+              >
+                APPLICATION
+              </div>
+              <h1>
+                Settings
+              </h1>
+              <p>
+                Local preferences and portable task configuration.
+              </p>
+            </div>
+          </div>
+          <section
+            class="panel"
+          >
+            <h2>
+              Preferences
+            </h2>
+            <label>
+              Language
+              <select>
+                <option
+                  value="en"
+                >
+                  English
+                </option>
+                <option
+                  value="de"
+                >
+                  Deutsch
+                </option>
+              </select>
+            </label>
+            <label
+              class="check-row"
+            >
+              <input
+                type="checkbox"
+              />
+              Start FolderSync when I sign in
+            </label>
+            <label
+              class="check-row"
+            >
+              <input
+                checked=""
+                type="checkbox"
+              />
+              Windows notifications
+            </label>
+            <label>
+              Local operation logging
+              <select>
+                <option
+                  value="off"
+                >
+                  Disabled
+                </option>
+                <option
+                  value="basic"
+                >
+                  Basic (no file paths)
+                </option>
+                <option
+                  value="detailed"
+                >
+                  Detailed (includes paths)
+                </option>
+              </select>
+            </label>
+            <label>
+              When I close the window
+              <select
+                aria-label="When I close the window"
+              >
+                <option
+                  value="tray"
+                >
+                  Keep running in the tray
+                </option>
+                <option
+                  value="quit"
+                >
+                  Stop safely and quit
+                </option>
+              </select>
+            </label>
+            <p>
+              Closing the window stops active work safely and quits FolderSync.
+            </p>
+          </section>
+          <section
+            class="panel"
+          >
+            <h2>
+              Import & export
+            </h2>
+            <p>
+              FolderSync versioned JSON only. Imported automatic triggers are disabled. Duplicate task IDs receive a new automatic ID.
+            </p>
+            <div
+              class="toolbar"
+            >
+              <button
+                class="button outline"
+              >
+                Export tasks…
+              </button>
+              <button
+                class="button outline"
+              >
+                Import tasks…
+              </button>
+            </div>
+          </section>
+          <section
+            class="panel"
+          >
+            <h2>
+              Data & privacy
+            </h2>
+            <code
+              class="storage-path"
+            />
+            <p>
+              SQLite state and protected versions are stored here. No telemetry or cloud services are used.
+            </p>
+            <button
+              class="button outline"
+            >
+              View recent local log
+            </button>
+            <button
+              class="button outline"
+            >
+              Quit FolderSync
+            </button>
+          </section>
+        </main>
+        <footer>
+          <span>
+            <svg
+              class="lucide lucide-circle-check"
+              fill="none"
+              height="13"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="13"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+              />
+              <path
+                d="m9 12 2 2 4-4"
+              />
+            </svg>
+            Verified transfers · protected originals
+          </span>
+          <span>
+            FolderSync 0.1.0
+          </span>
+        </footer>
+      </div>
+    </div>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div />
+  <div>
+    <div
+      class="app"
+    >
+      <aside>
+        <div
+          class="brand"
+        >
+          <div
+            class="mark"
+          >
+            <svg
+              class="lucide lucide-arrow-left-right"
+              fill="none"
+              height="22"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="22"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 3 4 7l4 4"
+              />
+              <path
+                d="M4 7h16"
+              />
+              <path
+                d="m16 21 4-4-4-4"
+              />
+              <path
+                d="M20 17H4"
+              />
+            </svg>
+          </div>
+          <div>
+            FolderSync
+            <small>
+              LOCAL WORKSPACE
+            </small>
+          </div>
+        </div>
+        <nav
+          aria-label="Main navigation"
+        >
+          <button
+            class=""
+          >
+            <svg
+              class="lucide lucide-layout-dashboard"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                height="9"
+                rx="1"
+                width="7"
+                x="3"
+                y="3"
+              />
+              <rect
+                height="5"
+                rx="1"
+                width="7"
+                x="14"
+                y="3"
+              />
+              <rect
+                height="9"
+                rx="1"
+                width="7"
+                x="14"
+                y="12"
+              />
+              <rect
+                height="5"
+                rx="1"
+                width="7"
+                x="3"
+                y="16"
+              />
+            </svg>
+            Tasks
+            <span>
+              0
+            </span>
+          </button>
+          <button
+            class="active"
+          >
+            <svg
+              class="lucide lucide-settings"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+              />
+              <circle
+                cx="12"
+                cy="12"
+                r="3"
+              />
+            </svg>
+            Settings
+          </button>
+          <button
+            class=""
+          >
+            <svg
+              class="lucide lucide-file-clock"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M16 22h2a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"
+              />
+              <path
+                d="M14 2v4a2 2 0 0 0 2 2h4"
+              />
+              <circle
+                cx="8"
+                cy="16"
+                r="6"
+              />
+              <path
+                d="M9.5 17.5 8 16.25V14"
+              />
+            </svg>
+            Recovery
+          </button>
+        </nav>
+        <div
+          class="aside-bottom"
+        >
+          <svg
+            class="lucide lucide-shield-check"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
+            />
+            <path
+              d="m9 12 2 2 4-4"
+            />
+          </svg>
+          <p>
+            Your files stay on your computer.
+            <small>
+              No account. No telemetry.
+            </small>
+          </p>
+        </div>
+      </aside>
+      <div
+        class="workspace"
+      >
+        <header>
+          <div
+            class="breadcrumb"
+          >
+            Workspace
+            <span>
+              /
+            </span>
+            Settings
+          </div>
+          <div
+            class="header-actions"
+          >
+            <span
+              class="status-dot"
+            />
+            Engine ready
+            <button
+              aria-label="Pause or resume automation"
+              class="button ghost"
+            >
+              <svg
+                class="lucide lucide-pause"
+                fill="none"
+                height="15"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="15"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect
+                  height="16"
+                  rx="1"
+                  width="4"
+                  x="14"
+                  y="4"
+                />
+                <rect
+                  height="16"
+                  rx="1"
+                  width="4"
+                  x="6"
+                  y="4"
+                />
+              </svg>
+            </button>
+            <button
+              aria-label="Stop active work"
+              class="button ghost"
+            >
+              <svg
+                class="lucide lucide-square"
+                fill="none"
+                height="15"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="15"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect
+                  height="18"
+                  rx="2"
+                  width="18"
+                  x="3"
+                  y="3"
+                />
+              </svg>
+            </button>
+          </div>
+        </header>
+        <main
+          aria-busy="false"
+        >
+          <div
+            class="alert error"
+            role="alert"
+          >
+            <strong>
+              Action could not complete
+            </strong>
+            <p>
+              Error: Preference write failed
+            </p>
+            <button>
+              Dismiss
+            </button>
+          </div>
+          <div
+            class="page-heading"
+          >
+            <div>
+              <div
+                class="eyebrow"
+              >
+                APPLICATION
+              </div>
+              <h1>
+                Settings
+              </h1>
+              <p>
+                Local preferences and portable task configuration.
+              </p>
+            </div>
+          </div>
+          <section
+            class="panel"
+          >
+            <h2>
+              Preferences
+            </h2>
+            <label>
+              Language
+              <select>
+                <option
+                  value="en"
+                >
+                  English
+                </option>
+                <option
+                  value="de"
+                >
+                  Deutsch
+                </option>
+              </select>
+            </label>
+            <label
+              class="check-row"
+            >
+              <input
+                type="checkbox"
+              />
+              Start FolderSync when I sign in
+            </label>
+            <label
+              class="check-row"
+            >
+              <input
+                checked=""
+                type="checkbox"
+              />
+              Windows notifications
+            </label>
+            <label>
+              Local operation logging
+              <select>
+                <option
+                  value="off"
+                >
+                  Disabled
+                </option>
+                <option
+                  value="basic"
+                >
+                  Basic (no file paths)
+                </option>
+                <option
+                  value="detailed"
+                >
+                  Detailed (includes paths)
+                </option>
+              </select>
+            </label>
+            <label>
+              When I close the window
+              <select
+                aria-label="When I close the window"
+              >
+                <option
+                  value="tray"
+                >
+                  Keep running in the tray
+                </option>
+                <option
+                  value="quit"
+                >
+                  Stop safely and quit
+                </option>
+              </select>
+            </label>
+            <p>
+              Closing the window stops active work safely and quits FolderSync.
+            </p>
+          </section>
+          <section
+            class="panel"
+          >
+            <h2>
+              Import & export
+            </h2>
+            <p>
+              FolderSync versioned JSON only. Imported automatic triggers are disabled. Duplicate task IDs receive a new automatic ID.
+            </p>
+            <div
+              class="toolbar"
+            >
+              <button
+                class="button outline"
+              >
+                Export tasks…
+              </button>
+              <button
+                class="button outline"
+              >
+                Import tasks…
+              </button>
+            </div>
+          </section>
+          <section
+            class="panel"
+          >
+            <h2>
+              Data & privacy
+            </h2>
+            <code
+              class="storage-path"
+            />
+            <p>
+              SQLite state and protected versions are stored here. No telemetry or cloud services are used.
+            </p>
+            <button
+              class="button outline"
+            >
+              View recent local log
+            </button>
+            <button
+              class="button outline"
+            >
+              Quit FolderSync
+            </button>
+          </section>
+        </main>
+        <footer>
+          <span>
+            <svg
+              class="lucide lucide-circle-check"
+              fill="none"
+              height="13"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="13"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+              />
+              <path
+                d="m9 12 2 2 4-4"
+              />
+            </svg>
+            Verified transfers · protected originals
+          </span>
+          <span>
+            FolderSync 0.1.0
+          </span>
+        </footer>
+      </div>
+    </div>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/App.test.tsx:141:23
+    139|     "tray",
+    140|   );
+    141|   expect(await screen.findByText("Preference write failed")).toBeTruth…
+       |                       ^
+    142|   expect(
+    143|     (
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  2 failed | 17 passed (19)
+   Start at  15:08:54
+   Duration  16.13s (transform 3.93s, setup 0ms, collect 4.65s, tests 8.68s, environment 1.99s, prepare 966ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

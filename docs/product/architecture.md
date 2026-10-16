@@ -56,3 +56,7 @@ Each task keeps its immutable UUID for database relations, history, watcher queu
 ## Typed review and ignored conflicts
 
 Operation serialization adds a computed OperationKind from action/metadata, retaining legacy deserialization and avoiding a second mutable source of operation truth. Plan summaries from memory and bounded SQLite queries count Ignore as unresolved plus an ignored subset. The executor skips Ignore without journaling or baseline advancement, keeps Attention and preserves persistent conflicts. No schema migration is needed for the additive review-kind field or the new action enum variant; earlier application versions cannot read newly ignored runs and should not be used to downgrade this build.
+
+## Window close preference
+
+Global close_behavior persists tray (default) or quit in SQLite. A native CloseBehavior atomic snapshot is published only after a successful setting write under the engine lock; window events read it without waiting on that lock. Tray mode hides the main window. Quit mode emits a renderer close request so a layout-updated draft snapshot can request explicit discard confirmation for an unsaved task editor. Clean state or confirmed discard invokes the same pause/cancel/engine-lock-wait Quit path used elsewhere. The renderer must respond to that request; native tray Quit remains available if it stalls. Unsupported preferences cannot alter saved or native state. This preference does not enable automation.

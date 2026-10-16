@@ -10,6 +10,7 @@ use std::sync::{
 use tauri::{Emitter, Manager, State};
 use tauri_plugin_notification::NotificationExt;
 mod background;
+mod lifecycle;
 mod presentation;
 mod progress_runtime;
 fn command_error(error: &anyhow::Error) -> String {
@@ -25,6 +26,7 @@ struct Runtime {
     cancel: Arc<AtomicBool>,
     paused: Arc<AtomicBool>,
     progress: ProgressState,
+    close_behavior: Arc<lifecycle::CloseBehavior>,
 }
 async fn work<T: Send + 'static>(
     r: Runtime,
@@ -156,6 +158,7 @@ async fn set_setting(
         "language" => ["en", "de"].contains(&value.as_str()),
         "notifications" | "paused" => ["on", "off"].contains(&value.as_str()),
         "log_level" => ["off", "basic", "detailed"].contains(&value.as_str()),
+        "close_behavior" => ["tray", "quit"].contains(&value.as_str()),
         _ => false,
     };
     if !allowed {
@@ -166,7 +169,15 @@ async fn set_setting(
     } else {
         None
     };
-    work(r.inner().clone(), move |e| e.set_setting(&key, &value)).await?;
+    let behavior = r.close_behavior.clone();
+    work(r.inner().clone(), move |e| {
+        if key == "close_behavior" {
+            behavior.save(e, &value)
+        } else {
+            e.set_setting(&key, &value)
+        }
+    })
+    .await?;
     if let Some(de) = language
         && let Some(tray) = app.tray_by_id("main-tray")
     {
@@ -262,11 +273,13 @@ fn main() {
             let de = engine.setting("language")?.as_deref() == Some("de");
             let cancel = engine.cancel.clone();
             let progress = engine.progress.clone();
+            let close_behavior = Arc::new(lifecycle::CloseBehavior::load(&engine)?);
             app.manage(Runtime {
                 engine: Arc::new(Mutex::new(engine)),
                 cancel,
                 paused: Arc::new(AtomicBool::new(false)),
                 progress: progress.clone(),
+                close_behavior,
             });
             let handle = app.handle().clone();
             app.notification().on_action(move |action| {
@@ -318,8 +331,19 @@ fn main() {
         })
         .on_window_event(|w, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                if w.label() != "main" {
+                    return;
+                }
                 api.prevent_close();
-                let _ = w.hide();
+                if let Some(r) = w.try_state::<Runtime>()
+                    && r.close_behavior.quit_on_close()
+                {
+                    // Renderer checks for an unsaved task draft before invoking
+                    // the same safe Quit command used by Settings and the tray.
+                    let _ = w.emit("request-close", ());
+                } else {
+                    let _ = w.hide();
+                }
             }
         })
         .invoke_handler(tauri::generate_handler![

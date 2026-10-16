@@ -66,6 +66,120 @@ afterEach(() => {
   vi.clearAllMocks();
   api.listeners.clear();
 });
+test("quit-on-close immediately requests safe quit when there is no draft", async () => {
+  let quit = false;
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks" || command === "statuses") return [];
+    if (command === "quit") quit = true;
+    return null;
+  });
+  render(<App />);
+  await screen.findByRole("button", { name: "Settings" });
+  await act(async () => {
+    api.listeners.get("request-close")?.({ payload: null });
+  });
+  await waitFor(() => expect(quit).toBe(true));
+  expect(screen.queryByRole("dialog")).toBeNull();
+});
+
+test("quit-on-close asks before discarding an unsaved task draft", async () => {
+  const task = { ...newTask(), name: "Saved pair", a: "A", b: "B" };
+  let quit = false;
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks") return [task];
+    if (command === "statuses") return [];
+    if (command === "quit") quit = true;
+    return null;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "Configure" }));
+  await user.type(
+    screen.getByRole("textbox", { name: "Task name" }),
+    " unsaved",
+  );
+  await act(async () => {
+    api.listeners.get("request-close")?.({ payload: null });
+  });
+  await screen.findByRole("dialog", {
+    name: "Discard unsaved changes and quit?",
+  });
+  expect(quit).toBe(false);
+  await user.click(screen.getByRole("button", { name: "Cancel" }));
+  expect(
+    (screen.getByRole("textbox", { name: "Task name" }) as HTMLInputElement)
+      .value,
+  ).toBe("Saved pair unsaved");
+  await act(async () => {
+    api.listeners.get("request-close")?.({ payload: null });
+  });
+  await user.click(await screen.findByRole("button", { name: "Confirm" }));
+  await waitFor(() => expect(quit).toBe(true));
+});
+
+test("close behavior persists and failed preference saves do not change the selection", async () => {
+  let preference = "tray";
+  let reject = false;
+  api.invoke.mockImplementation(
+    async (command: string, args?: { key: string; value: string }) => {
+      if (command === "tasks" || command === "statuses") return [];
+      if (command === "setting" && args?.key === "close_behavior")
+        return preference;
+      if (command === "set_setting" && args?.key === "close_behavior") {
+        if (reject) throw new Error("Preference write failed");
+        preference = args.value;
+      }
+      return null;
+    },
+  );
+  const user = userEvent.setup();
+  const mounted = render(<App />);
+  await user.click(await screen.findByRole("button", { name: "Settings" }));
+  await user.selectOptions(
+    screen.getByRole("combobox", { name: "When I close the window" }),
+    "quit",
+  );
+  await waitFor(() =>
+    expect(
+      (
+        screen.getByRole("combobox", {
+          name: "When I close the window",
+        }) as HTMLSelectElement
+      ).value,
+    ).toBe("quit"),
+  );
+  expect(
+    screen.getByText(
+      "Closing the window stops active work safely and quits FolderSync.",
+    ),
+  ).toBeTruthy();
+  mounted.unmount();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "Settings" }));
+  await waitFor(() =>
+    expect(
+      (
+        screen.getByRole("combobox", {
+          name: "When I close the window",
+        }) as HTMLSelectElement
+      ).value,
+    ).toBe("quit"),
+  );
+  reject = true;
+  await user.selectOptions(
+    screen.getByRole("combobox", { name: "When I close the window" }),
+    "tray",
+  );
+  expect(await screen.findByText(/Preference write failed/)).toBeTruthy();
+  expect(
+    (
+      screen.getByRole("combobox", {
+        name: "When I close the window",
+      }) as HTMLSelectElement
+    ).value,
+  ).toBe("quit");
+});
+
 test("Ignore revises preview only and leaves conflict attention visible after confirmed Apply", async () => {
   const task = { ...newTask(), name: "Ignore acceptance", a: "A", b: "B" };
   const entry = {

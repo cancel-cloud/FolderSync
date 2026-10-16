@@ -1,0 +1,36 @@
+   Compiling foldersync v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\src-tauri)
+warning: unused import: `super::*`
+ --> src-tauri\src\lifecycle.rs:3:9
+  |
+3 |     use super::*;
+  |         ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0433]: cannot find type `CloseBehavior` in this scope
+ --> src-tauri\src\lifecycle.rs:9:22
+  |
+9 |         let behavior=CloseBehavior::load(&engine).unwrap();
+  |                      ^^^^^^^^^^^^^ use of undeclared type `CloseBehavior`
+
+error[E0433]: cannot find type `CloseBehavior` in this scope
+  --> src-tauri\src\lifecycle.rs:15:65
+   |
+15 |         let engine=Engine::open(d.path()).unwrap();let behavior=CloseBehavior::load(&engine).unwrap();
+   |                                                                 ^^^^^^^^^^^^^ use of undeclared type `CloseBehavior`
+
+error[E0433]: cannot find type `CloseBehavior` in this scope
+  --> src-tauri\src\lifecycle.rs:24:65
+   |
+24 |         let engine=Engine::open(d.path()).unwrap();let behavior=CloseBehavior::load(&engine).unwrap();
+   |                                                                 ^^^^^^^^^^^^^ use of undeclared type `CloseBehavior`
+
+error[E0433]: cannot find type `CloseBehavior` in this scope
+  --> src-tauri\src\lifecycle.rs:31:17
+   |
+31 |         assert!(CloseBehavior::load(&engine).unwrap().quit_on_close());
+   |                 ^^^^^^^^^^^^^ use of undeclared type `CloseBehavior`
+
+For more information about this error, try `rustc --explain E0433`.
+warning: `foldersync` (bin "foldersync" test) generated 1 warning
+error: could not compile `foldersync` (bin "foldersync" test) due to 4 previous errors; 1 warning emitted

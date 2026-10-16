@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open, save } from "@tauri-apps/plugin-dialog";
@@ -93,6 +93,7 @@ export default function App() {
     [startup, setStartup] = useState(false),
     [notifications, setNotifications] = useState(true),
     [logLevel, setLogLevel] = useState("off"),
+    [closeBehavior, setCloseBehavior] = useState("tray"),
     [logText, setLogText] = useState<string | null>(null),
     [samplePath, setSamplePath] = useState("project/file.txt"),
     [sampleResult, setSampleResult] = useState(""),
@@ -105,6 +106,38 @@ export default function App() {
   const [groupFilter, setGroupFilter] = useState("*");
   const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
   const [selectedGroup, setSelectedGroup] = useState("");
+  const closeContext = useRef({ dirty: false, language: "en" });
+  useLayoutEffect(() => {
+    closeContext.current = {
+      dirty:
+        page === "editor" && task !== null && JSON.stringify(task) !== original,
+      language: lang,
+    };
+  }, [page, task, original, lang]);
+  useEffect(() => {
+    const listener = listen<null>("request-close", () => {
+      const quit = async () => {
+        await invoke("quit");
+      };
+      if (closeContext.current.dirty) {
+        const de = closeContext.current.language === "de";
+        setConfirm({
+          title: de
+            ? "Ungespeicherte Änderungen verwerfen und beenden?"
+            : "Discard unsaved changes and quit?",
+          body: de
+            ? "Die Änderungen an dieser Aufgabe wurden nicht gespeichert. Aktive Arbeit wird sicher gestoppt, bevor FolderSync beendet wird."
+            : "This task's changes have not been saved. Active work will stop safely before FolderSync quits.",
+          action: quit,
+        });
+      } else {
+        void quit().catch((e) => setError(String(e)));
+      }
+    });
+    return () => {
+      void listener.then((unlisten) => unlisten());
+    };
+  }, []);
   const groupNames = [...new Set(tasks.map((t) => t.group))].sort();
   const filteredTasks = tasks.filter(
     (t) => groupFilter === "*" || `group:${t.group}` === groupFilter,
@@ -202,6 +235,7 @@ export default function App() {
       isEnabled(),
       invoke<string | null>("setting", { key: "notifications" }),
       invoke<string | null>("setting", { key: "log_level" }),
+      invoke<string | null>("setting", { key: "close_behavior" }),
     ])
       .then(
         ([
@@ -212,6 +246,7 @@ export default function App() {
           enabled,
           notifications,
           logging,
+          closing,
         ]) => {
           if (mounted) {
             setTasks(tasks);
@@ -221,6 +256,7 @@ export default function App() {
             setStartup(enabled);
             setNotifications(notifications !== "off");
             setLogLevel(logging || "off");
+            setCloseBehavior(closing === "quit" ? "quit" : "tray");
           }
         },
       )
@@ -2228,11 +2264,47 @@ export default function App() {
                     </option>
                   </select>
                 </label>
+                <label>
+                  {tr("When I close the window", "Beim Schließen des Fensters")}
+                  <select
+                    aria-label={tr(
+                      "When I close the window",
+                      "Beim Schließen des Fensters",
+                    )}
+                    value={closeBehavior}
+                    disabled={busy}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      void perform(async () => {
+                        await invoke("set_setting", {
+                          key: "close_behavior",
+                          value,
+                        });
+                        setCloseBehavior(value);
+                      });
+                    }}
+                  >
+                    <option value="tray">
+                      {tr(
+                        "Keep running in the tray",
+                        "Im Infobereich weiterlaufen",
+                      )}
+                    </option>
+                    <option value="quit">
+                      {tr("Stop safely and quit", "Sicher stoppen und beenden")}
+                    </option>
+                  </select>
+                </label>
                 <p>
-                  {tr(
-                    "Closing the window keeps the process in the tray. Choose Quit in the tray to stop it.",
-                    "Beim Schließen bleibt der Prozess im Infobereich. Beenden im Tray stoppt die Anwendung.",
-                  )}
+                  {closeBehavior === "quit"
+                    ? tr(
+                        "Closing the window stops active work safely and quits FolderSync.",
+                        "Beim Schließen wird aktive Arbeit sicher gestoppt und FolderSync beendet.",
+                      )
+                    : tr(
+                        "Closing the window keeps the process in the tray. Choose Quit in the tray to stop it.",
+                        "Beim Schließen bleibt der Prozess im Infobereich. Beenden im Tray stoppt die Anwendung.",
+                      )}
                 </p>
               </section>
               <section className="panel">
