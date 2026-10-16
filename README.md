@@ -26,7 +26,7 @@ Native event through Apply took 340 ms before the configured debounce; peak work
 
 ## Install and run
 
-Run `target\release\bundle\nsis\FolderSync_0.1.9_x64-setup.exe`. The NSIS installer targets the current user, with no service or administrator requirement. Microsoft Edge WebView2 Runtime is required; the Tauri installer can provision it when missing. This machine already has it. No signing certificate is configured.
+Run `target\release\bundle\nsis\FolderSync_0.1.10_x64-setup.exe`. The NSIS installer targets the current user, with no service or administrator requirement. Microsoft Edge WebView2 Runtime is required; the Tauri installer can provision it when missing. This machine already has it. No signing certificate is configured.
 
 The optional installer checkbox **Start FolderSync in the tray when I sign in** registers only the current account. It is unchecked for a new install. Silent installation supports `/S /STARTUP=1` or `/S /STARTUP=0`; omitting the option preserves an existing registration. Settings offers the same option. Sign-in uses the quoted installed executable with `--background`, loads saved configuration and leaves the window hidden. Installing or enabling startup does not enable any task, watch, schedule or deletion policy. Previously enabled task triggers still run when FolderSync starts. Uninstall removes its sign-in entry and retains saved data unless you explicitly request removal.
 
@@ -35,6 +35,8 @@ Create a task with two existing writable folders, choose the direction, then Pre
 Closing the window leaves the process running in the tray by default. Settings can instead make Close stop work safely and quit; unsaved task drafts require confirmation. Reopen with the shortcut or executable; single-instance handling shows the existing window. Quit from Settings or the tray stops the process. Triggers are off on new/imported/duplicated tasks. Only enable monitoring after checking the first manual result.
 
 ## Implemented
+
+Release 0.1.10 adds a live tray hover tooltip: active job and phase/name, no active job, or paused automation. It uses the existing progress sampler and keeps updating while the window is closed. [Release and verification status](docs/product/release-0.1.10.md).
 
 - Two-way, copy, mirror and verified move; baseline-aware conflicts and protected deletions.
 - Persistent tasks with editable IDs, groups, duplication, own versioned JSON import/export, native directory picker.

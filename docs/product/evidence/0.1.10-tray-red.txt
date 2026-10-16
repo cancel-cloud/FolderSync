@@ -1,0 +1,36 @@
+   Compiling foldersync v0.1.9 (C:\Users\Lukas\Developer\SyncFolders\src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.70s
+     Running unittests src\main.rs (target\debug\deps\foldersync-6e10f6b8fdc5569b.exe)
+
+running 3 tests
+test tray_status::tests::every_phase_is_localized_without_claiming_idle ... FAILED
+test tray_status::tests::running_job_then_idle_and_pause_are_distinct ... FAILED
+test tray_status::tests::tooltip_fits_windows_utf16_limit_and_sanitizes_task_names ... FAILED
+
+failures:
+
+---- tray_status::tests::every_phase_is_localized_without_claiming_idle stdout ----
+
+thread 'tray_status::tests::every_phase_is_localized_without_claiming_idle' (9600) panicked at src-tauri\src\tray_status.rs:33:13:
+assertion failed: de.contains("Aufgabe läuft")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- tray_status::tests::running_job_then_idle_and_pause_are_distinct stdout ----
+
+thread 'tray_status::tests::running_job_then_idle_and_pause_are_distinct' (33448) panicked at src-tauri\src\tray_status.rs:19:9:
+assertion failed: running.contains("Aufgabe läuft")
+
+---- tray_status::tests::tooltip_fits_windows_utf16_limit_and_sanitizes_task_names stdout ----
+
+thread 'tray_status::tests::tooltip_fits_windows_utf16_limit_and_sanitizes_task_names' (17624) panicked at src-tauri\src\tray_status.rs:43:9:
+assertion failed: text.contains("Fixture")
+
+
+failures:
+    tray_status::tests::every_phase_is_localized_without_claiming_idle
+    tray_status::tests::running_job_then_idle_and_pause_are_distinct
+    tray_status::tests::tooltip_fits_windows_utf16_limit_and_sanitizes_task_names
+
+test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 29 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p foldersync --bin foldersync`
