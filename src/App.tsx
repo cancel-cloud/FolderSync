@@ -30,6 +30,8 @@ import type {
   RestorePreview,
   TaskStatus,
   OperationPage,
+  ApplyOutcome,
+  RunProgress,
 } from "./types";
 import { newTask } from "./types";
 import {
@@ -93,6 +95,8 @@ export default function App() {
     [sampleResult, setSampleResult] = useState(""),
     [operationPage, setOperationPage] = useState(0),
     [sort, setSort] = useState("path");
+  const [progress, setProgress] = useState<RunProgress | null>(null);
+  const [failedPlanId, setFailedPlanId] = useState("");
   const [operationRows, setOperationRows] = useState<
     (OperationPage & { key: string }) | null
   >(null);
@@ -194,6 +198,22 @@ export default function App() {
         if (mounted) setError(String(e));
       });
     const p = listen<boolean>("automation-paused", (e) => setPaused(e.payload));
+    let progressEventSeen = false;
+    const progressListener = listen<RunProgress | null>(
+      "run-progress",
+      (event) => {
+        progressEventSeen = true;
+        if (mounted) setProgress(event.payload);
+      },
+    );
+    void progressListener
+      .then(() => invoke<RunProgress | null>("progress"))
+      .then((value) => {
+        if (mounted && !progressEventSeen) setProgress(value);
+      })
+      .catch((e) => {
+        if (mounted) setError(String(e));
+      });
     const f = listen<{ status: string }>("run-finished", (e) => {
       setMessage(e.payload.status);
       void refresh();
@@ -209,6 +229,7 @@ export default function App() {
     return () => {
       mounted = false;
       void p.then((f) => f());
+      void progressListener.then((f) => f());
       void f.then((f) => f());
       void b.then((f) => f());
       void openTask.then((f) => f());
@@ -254,12 +275,16 @@ export default function App() {
   }
   async function preview(t: Task) {
     await perform(async () => {
-      const p = await invoke<Plan>("preview", { id: t.id });
-      setPlan(p);
-      setTask(t);
-      setPage("preview");
-      setApproved(false);
-      setOperationPage(0);
+      try {
+        const p = await invoke<Plan>("preview", { id: t.id });
+        setPlan(p);
+        setTask(t);
+        setPage("preview");
+        setApproved(false);
+        setOperationPage(0);
+      } finally {
+        await refresh();
+      }
     });
   }
   async function details(t: Task) {
@@ -440,12 +465,82 @@ export default function App() {
               {messageLabel(message, lang)}
             </div>
           )}
-          {busy && (
+          {(busy || progress) && (
             <div className="working" role="status">
               <RefreshCw size={16} className="spin" />
               {tr(
                 "Working… files are verified before replacement.",
                 "In Arbeit… Dateien werden vor dem Ersetzen geprüft.",
+              )}
+              {progress && (
+                <div className="run-progress">
+                  <strong>
+                    {
+                      {
+                        Discovering: tr(
+                          "Discovering files",
+                          "Dateien erfassen",
+                        ),
+                        Validating: tr(
+                          "Validating reviewed inputs",
+                          "Geprüfte Eingaben validieren",
+                        ),
+                        Applying: tr(
+                          "Applying reviewed operations",
+                          "Geprüfte Aktionen anwenden",
+                        ),
+                        Transferring: tr("Copying file", "Datei kopieren"),
+                        Protecting: tr(
+                          "Protecting previous version",
+                          "Vorherige Version schützen",
+                        ),
+                        Verifying: tr(
+                          "Verifying staged copy",
+                          "Zwischengespeicherte Kopie prüfen",
+                        ),
+                      }[progress.phase]
+                    }
+                  </strong>
+                  {progress.path && <code>{progress.path}</code>}
+                  {progress.total_entries > 0 && (
+                    <small>
+                      {progress.completed_entries} / {progress.total_entries}{" "}
+                      {tr("reviewed entries", "geprüfte Einträge")}
+                    </small>
+                  )}
+                  {progress.phase === "Discovering" &&
+                    progress.total_entries === 0 && (
+                      <small>
+                        {progress.completed_entries}{" "}
+                        {tr("entries examined", "Einträge geprüft")}
+                      </small>
+                    )}
+                  {progress.file_total > 0 && (
+                    <>
+                      <progress
+                        aria-label={tr(
+                          "Current file progress",
+                          "Fortschritt der aktuellen Datei",
+                        )}
+                        value={progress.file_bytes}
+                        max={progress.file_total}
+                      />
+                      <small>
+                        {bytes(progress.file_bytes)} /{" "}
+                        {bytes(progress.file_total)}{" "}
+                        {["Transferring", "Protecting"].includes(progress.phase)
+                          ? tr(
+                              "staged bytes; verification and commit follow",
+                              "zwischengespeicherte Bytes; Prüfung und Übernahme folgen",
+                            )
+                          : tr(
+                              "hashed bytes in current file",
+                              "gehashte Bytes der aktuellen Datei",
+                            )}
+                      </small>
+                    </>
+                  )}
+                </div>
               )}
               <Button variant="ghost" onClick={() => void invoke("stop")}>
                 {tr("Cancel", "Abbrechen")}
@@ -1160,7 +1255,11 @@ export default function App() {
                 </div>
                 {["Preview", "Review required"].includes(plan.status) && (
                   <Button
-                    disabled={busy || (summary.deletes > 0 && !approved)}
+                    disabled={
+                      busy ||
+                      failedPlanId === plan.id ||
+                      (summary.deletes > 0 && !approved)
+                    }
                     onClick={() =>
                       setConfirm({
                         title: tr(
@@ -1173,13 +1272,15 @@ export default function App() {
                         ),
                         action: async () => {
                           await perform(async () => {
-                            setPlan(
-                              await invoke<Plan>("apply", {
-                                id: plan.id,
-                                destructive: approved || summary.explicit,
-                              }),
-                            );
+                            setFailedPlanId(plan.id);
+                            const result = await invoke<ApplyOutcome>("apply", {
+                              id: plan.id,
+                              destructive: approved || summary.explicit,
+                            });
+                            setPlan(result.plan);
                             await refresh();
+                            if (result.error) throw new Error(result.error);
+                            setFailedPlanId("");
                             setMessage(
                               "Run finished. See the actual result and protected versions.",
                             );

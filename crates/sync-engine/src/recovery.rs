@@ -186,15 +186,20 @@ impl Engine {
         Ok(())
     }
     pub fn restore_preview(&self, id: &str) -> Result<RestorePreview> {
+        self.cancel
+            .store(false, std::sync::atomic::Ordering::Relaxed);
         let json: String =
             self.index
                 .db
                 .query_row("SELECT json FROM versions WHERE id=?", [id], |r| r.get(0))?;
         let version: Version = serde_json::from_str(&json)?;
         let t = self.index.task(&version.task_id)?;
+        let _progress = self
+            .progress
+            .begin(&t.id, None, ProgressPhase::Validating, 1);
         self.validate(&t)?;
         let root = if version.side == "A" { &t.a } else { &t.b };
-        let current = crate::fs::read_entry(
+        let current = self.read_entry(
             root,
             &version.path,
             &Scope::default(),
@@ -211,11 +216,18 @@ impl Engine {
         Ok(p)
     }
     pub fn restore_apply(&mut self, id: &str) -> Result<()> {
+        self.cancel
+            .store(false, std::sync::atomic::Ordering::Relaxed);
         let json = self
             .setting(&format!("restore/{id}"))?
             .context("Restore preview missing or already used")?;
         let p: RestorePreview = serde_json::from_str(&json)?;
         let t = self.index.task(&p.version.task_id)?;
+        let _progress = self
+            .progress
+            .begin(&t.id, None, ProgressPhase::Validating, 1);
+        self.progress
+            .update(|s| s.path = Some(p.version.path.clone()));
         self.validate(&t)?;
         ensure!(
             self.index.generation(&t.id)? == p.generation,
@@ -228,8 +240,7 @@ impl Engine {
         );
         let mut metrics = Metrics::default();
         ensure!(
-            crate::fs::read_entry(root, &p.version.path, &Scope::default(), &mut metrics)?
-                == p.current,
+            self.read_entry(root, &p.version.path, &Scope::default(), &mut metrics)? == p.current,
             "Restore destination changed; review again"
         );
         ensure!(
@@ -237,7 +248,13 @@ impl Engine {
             "Invalid protected version path"
         );
         ensure!(
-            crate::fs::hash_file(&p.version.stored, &mut metrics)?.0 == p.version.digest,
+            crate::fs::hash_file_controlled(
+                &p.version.stored,
+                &mut metrics,
+                Some(&self.cancel),
+                Some(&self.progress)
+            )?
+            .0 == p.version.digest,
             "Protected version failed integrity check"
         );
         if let Some(current) = &p.current {

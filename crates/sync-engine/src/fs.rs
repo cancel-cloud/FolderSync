@@ -235,19 +235,41 @@ pub fn read_guard(path: &Path) -> Result<File> {
     Ok(options.open(path)?)
 }
 pub fn hash_file(path: &Path, metrics: &mut Metrics) -> Result<(String, u64)> {
+    hash_file_controlled(path, metrics, None, None)
+}
+pub(crate) fn hash_file_controlled(
+    path: &Path,
+    metrics: &mut Metrics,
+    cancel: Option<&std::sync::atomic::AtomicBool>,
+    progress: Option<&ProgressState>,
+) -> Result<(String, u64)> {
     let mut f = File::open(path)?;
+    if let Some(progress) = progress {
+        let length = f.metadata().map(|m| m.len()).unwrap_or(0);
+        progress.update(|s| {
+            s.file_bytes = 0;
+            s.file_total = length;
+            if s.phase == ProgressPhase::Applying {
+                s.phase = ProgressPhase::Validating;
+            }
+        });
+    }
     let mut h = blake3::Hasher::new();
     let mut buf = vec![0; 256 * 1024];
     let mut size = 0;
     loop {
+        crate::progress::check_cancel(cancel)?;
         let n = f.read(&mut buf)?;
         if n == 0 {
             break;
         }
         h.update(&buf[..n]);
         size += n as u64;
+        metrics.hashed_bytes += n as u64;
+        if let Some(progress) = progress {
+            progress.update(|s| s.file_bytes = size);
+        }
     }
-    metrics.hashed_bytes += size;
     Ok((h.finalize().to_hex().to_string(), size))
 }
 pub fn excluded_attributes(root: &Path, relative: &str, scope: &Scope) -> Result<bool> {
@@ -279,6 +301,17 @@ pub fn read_entry(
     scope: &Scope,
     metrics: &mut Metrics,
 ) -> Result<Option<Entry>> {
+    read_entry_controlled(root, relative, scope, metrics, None, None)
+}
+pub(crate) fn read_entry_controlled(
+    root: &Path,
+    relative: &str,
+    scope: &Scope,
+    metrics: &mut Metrics,
+    cancel: Option<&std::sync::atomic::AtomicBool>,
+    progress: Option<&ProgressState>,
+) -> Result<Option<Entry>> {
+    crate::progress::check_cancel(cancel)?;
     let path = safe_path(root, relative)?;
     if excluded_attributes(root, relative, scope)? {
         return Ok(None);
@@ -293,13 +326,23 @@ pub fn read_entry(
         return Ok(None);
     }
     metrics.scanned_entries += 1;
+    if let Some(progress) = progress {
+        progress.update(|s| {
+            s.path = Some(relative.into());
+            s.file_bytes = 0;
+            s.file_total = 0;
+            if s.phase == ProgressPhase::Discovering {
+                s.completed_entries = metrics.scanned_entries;
+            }
+        });
+    }
     let modified = m.modified()?;
     let file_id = native_file_id(&path).ok();
     let (digest, size) = if m.is_dir() {
         ("directory".into(), 0)
     } else {
         ensure!(m.is_file(), "Unsupported file type");
-        hash_file(&path, metrics)?
+        hash_file_controlled(&path, metrics, cancel, progress)?
     };
     let after = fs::metadata(&path)?;
     ensure!(
@@ -319,6 +362,16 @@ pub fn read_entry(
     }))
 }
 pub fn scan(root: &Path, scope: &Scope, metrics: &mut Metrics) -> Result<Tree> {
+    scan_controlled(root, scope, metrics, None, None)
+}
+pub(crate) fn scan_controlled(
+    root: &Path,
+    scope: &Scope,
+    metrics: &mut Metrics,
+    cancel: Option<&std::sync::atomic::AtomicBool>,
+    progress: Option<&ProgressState>,
+) -> Result<Tree> {
+    crate::progress::check_cancel(cancel)?;
     root_identity(root)?;
     let matcher = Matcher::new(scope)?;
     let mut tree = Tree::new();
@@ -327,6 +380,7 @@ pub fn scan(root: &Path, scope: &Scope, metrics: &mut Metrics) -> Result<Tree> {
         .min_depth(1)
         .into_iter();
     while let Some(next) = it.next() {
+        crate::progress::check_cancel(cancel)?;
         let item = next?;
         let relative = item
             .path()
@@ -340,7 +394,7 @@ pub fn scan(root: &Path, scope: &Scope, metrics: &mut Metrics) -> Result<Tree> {
             }
             continue;
         }
-        match read_entry(root, &relative, scope, metrics)? {
+        match read_entry_controlled(root, &relative, scope, metrics, cancel, progress)? {
             Some(e) => {
                 if tree.insert(path_key(&relative), e).is_some() {
                     bail!("Case-insensitive path collision: {relative}")

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
 import { newTask } from "./types";
@@ -31,9 +31,22 @@ function header(p: FixturePlan): Plan {
     },
   };
 }
-const api = vi.hoisted(() => ({ invoke: vi.fn() }));
+const api = vi.hoisted(() => ({
+  invoke: vi.fn(),
+  listeners: new Map<string, (event: { payload: unknown }) => void>(),
+}));
 vi.mock("@tauri-apps/api/core", () => ({ invoke: api.invoke }));
-vi.mock("@tauri-apps/api/event", () => ({ listen: async () => () => {} }));
+vi.mock("@tauri-apps/api/event", () => ({
+  listen: async (
+    name: string,
+    listener: (event: { payload: unknown }) => void,
+  ) => {
+    api.listeners.set(name, listener);
+    return () => {
+      api.listeners.delete(name);
+    };
+  },
+}));
 vi.mock("@tauri-apps/plugin-dialog", () => ({ open: vi.fn(), save: vi.fn() }));
 vi.mock("@tauri-apps/plugin-autostart", () => ({
   isEnabled: async () => false,
@@ -51,6 +64,7 @@ beforeAll(() => {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  api.listeners.clear();
 });
 test("nested conflict choice only revises preview; Apply requires its separate confirmation", async () => {
   const task = {
@@ -134,7 +148,7 @@ test("nested conflict choice only revises preview; Apply requires its separate c
         return header(current);
       case "apply":
         current = { ...current, status: "Applied" };
-        return header(current);
+        return { plan: header(current), error: null };
       default:
         return null;
     }
@@ -345,4 +359,110 @@ test("review requests bounded pages and resets paging when filters change", asyn
     (screen.getByRole("button", { name: "Next" }) as HTMLButtonElement)
       .disabled,
   ).toBe(true);
+});
+
+test("failed Apply shows the persisted result, refreshes dashboard and requires a fresh preview", async () => {
+  const task = { ...newTask(), name: "Failed copy", a: "A", b: "B" };
+  let failed = false;
+  const plan: Plan = {
+    id: "failed-run",
+    task,
+    created_at: 1,
+    status: "Preview",
+    metrics: {
+      scanned_entries: 1,
+      hashed_bytes: 1,
+      copied_bytes: 0,
+      queued_paths: 0,
+      reconciliations: 1,
+      watch_events: 0,
+    },
+    summary: {
+      entries: 1,
+      copies: 1,
+      deletes: 0,
+      conflicts: 0,
+      unchanged: 0,
+      to_a: 0,
+      to_b: 1,
+      remove_a: 0,
+      remove_b: 0,
+      explicit: false,
+    },
+  };
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks") return [task];
+    if (command === "statuses")
+      return failed
+        ? [
+            {
+              task_id: task.id,
+              last_run: { ...plan, status: "Failed: destination locked" },
+              pending_conflicts: 0,
+              next_run: null,
+            },
+          ]
+        : [];
+    if (command === "preview") return plan;
+    if (command === "operation_page") return { operations: [], total: 0 };
+    if (command === "apply") {
+      failed = true;
+      return {
+        plan: { ...plan, status: "Failed: destination locked" },
+        error: "destination locked",
+      };
+    }
+    return null;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(
+    await screen.findByRole("button", { name: "Preview / Run" }),
+  );
+  await user.click(
+    await screen.findByRole("button", { name: "Apply reviewed plan" }),
+  );
+  await user.click(screen.getByRole("button", { name: "Confirm" }));
+  expect(await screen.findByText("Error: destination locked")).toBeTruthy();
+  expect(screen.getByText("Failed: destination locked")).toBeTruthy();
+  expect(
+    screen.queryByRole("button", { name: "Apply reviewed plan" }),
+  ).toBeNull();
+  await user.click(screen.getByRole("button", { name: "All tasks" }));
+  expect(await screen.findByText("Failed: destination locked")).toBeTruthy();
+});
+
+test("latest progress is visible during background work and Cancel reaches the native stop command", async () => {
+  api.invoke.mockImplementation(async (command: string) =>
+    command === "tasks" || command === "statuses" ? [] : null,
+  );
+  const user = userEvent.setup();
+  render(<App />);
+  await screen.findByRole("button", { name: "New task" });
+  await act(async () => {
+    api.listeners.get("run-progress")?.({
+      payload: {
+        task_id: "task",
+        run_id: "run",
+        phase: "Transferring",
+        completed_entries: 2,
+        total_entries: 5,
+        path: "large.bin",
+        file_bytes: 1048576,
+        file_total: 4194304,
+      },
+    });
+  });
+  expect(await screen.findByText("large.bin")).toBeTruthy();
+  const bar = screen.getByRole("progressbar", {
+    name: "Current file progress",
+  }) as HTMLProgressElement;
+  expect(bar.value).toBe(1048576);
+  expect(bar.max).toBe(4194304);
+  await user.click(screen.getByRole("button", { name: "Cancel" }));
+  expect(api.invoke).toHaveBeenCalledWith("stop");
+  await act(async () => {
+    api.listeners.get("run-progress")?.({ payload: null });
+  });
+  expect(screen.queryByRole("progressbar")).toBeNull();
 });

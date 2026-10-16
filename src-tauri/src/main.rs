@@ -1,6 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use foldersync_engine::{
-    Engine, OperationPage, OperationQuery, PlanHeader, RestorePreview, Task, TaskStatus, Version,
+    ApplyOutcome, Engine, OperationPage, OperationQuery, PlanHeader, ProgressState, RestorePreview,
+    RunProgress, Task, TaskStatus, Version,
 };
 use std::sync::{
     Arc, Mutex,
@@ -10,11 +11,13 @@ use tauri::{Emitter, Manager, State};
 use tauri_plugin_notification::NotificationExt;
 mod background;
 mod presentation;
+mod progress_runtime;
 #[derive(Clone)]
 struct Runtime {
     engine: Arc<Mutex<Engine>>,
     cancel: Arc<AtomicBool>,
     paused: Arc<AtomicBool>,
+    progress: ProgressState,
 }
 async fn work<T: Send + 'static>(
     r: Runtime,
@@ -50,11 +53,19 @@ async fn preview(r: State<'_, Runtime>, id: String) -> Result<PlanHeader, String
     .await
 }
 #[tauri::command]
-async fn apply(r: State<'_, Runtime>, id: String, destructive: bool) -> Result<PlanHeader, String> {
+async fn apply(
+    r: State<'_, Runtime>,
+    id: String,
+    destructive: bool,
+) -> Result<ApplyOutcome, String> {
     work(r.inner().clone(), move |e| {
-        Ok(PlanHeader::from(&e.apply(&id, destructive)?))
+        e.apply_reviewed(&id, destructive)
     })
     .await
+}
+#[tauri::command]
+fn progress(r: State<'_, Runtime>) -> Option<RunProgress> {
+    r.progress.snapshot()
 }
 #[tauri::command]
 async fn resolve(
@@ -231,10 +242,12 @@ fn main() {
             let engine = Engine::open(&app.path().app_data_dir()?)?;
             let de = engine.setting("language")?.as_deref() == Some("de");
             let cancel = engine.cancel.clone();
+            let progress = engine.progress.clone();
             app.manage(Runtime {
                 engine: Arc::new(Mutex::new(engine)),
                 cancel,
                 paused: Arc::new(AtomicBool::new(false)),
+                progress: progress.clone(),
             });
             let handle = app.handle().clone();
             app.notification().on_action(move |action| {
@@ -248,6 +261,7 @@ fn main() {
                 }
             })?;
             background::start(app.handle().clone(), app.state::<Runtime>().inner().clone());
+            progress_runtime::start(app.handle().clone(), progress);
             let menu = tray_menu(app.handle(), de)?;
             let mut tray = tauri::tray::TrayIconBuilder::with_id("main-tray")
                 .tooltip(if de {
@@ -295,6 +309,7 @@ fn main() {
             save_task,
             preview,
             apply,
+            progress,
             resolve,
             history,
             operation_page,

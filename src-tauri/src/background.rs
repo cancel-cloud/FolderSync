@@ -122,8 +122,8 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
                 let result = r
                     .engine
                     .lock()
-                    .map_err(|_| "Engine lock failed".to_string())
-                    .and_then(|mut e| e.process_queue(&t.id).map_err(|e| format!("{e:#}")));
+                    .map_err(|_| anyhow::anyhow!("Engine lock failed"))
+                    .and_then(|mut e| e.process_queue(&t.id));
                 match result {
                     Ok(Some(plan)) => {
                         w.events = 0;
@@ -204,6 +204,15 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
                         }
                     }
                     Ok(None) => {}
+                    Err(error) if error.is::<foldersync_engine::Cancelled>() => {
+                        // Stop cancels this attempt. Preserve durable work for a later
+                        // event/schedule/reconciliation instead of retrying immediately.
+                        w.failures = 0;
+                        let _ = app.emit(
+                            "run-finished",
+                            serde_json::json!({"task":t.id,"status":"Cancelled","time":now()}),
+                        );
+                    }
                     Err(error) => {
                         w.failures += 1;
                         let _ = app.emit("background-error", format!("{}: {}", t.name, error));

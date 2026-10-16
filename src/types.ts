@@ -88,6 +88,26 @@ export interface OperationPage {
   operations: Operation[];
   total: number;
 }
+export interface ApplyOutcome {
+  plan: Plan;
+  error: string | null;
+}
+export interface RunProgress {
+  task_id: string;
+  run_id: string | null;
+  phase:
+    | "Discovering"
+    | "Validating"
+    | "Applying"
+    | "Transferring"
+    | "Protecting"
+    | "Verifying";
+  completed_entries: number;
+  total_entries: number;
+  path: string | null;
+  file_bytes: number;
+  file_total: number;
+}
 export interface Version {
   id: string;
   task_id: string;

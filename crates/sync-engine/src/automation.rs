@@ -102,7 +102,13 @@ impl Engine {
         } else {
             // Equal observations establish/advance the common baseline and
             // clear conflicts resolved externally, even without a transfer.
-            plan = self.apply(&plan.id, false)?;
+            plan = match self.apply(&plan.id, false) {
+                Ok(plan) => plan,
+                Err(error) => {
+                    self.record_apply_error(&plan.id, &error)?;
+                    return Err(error);
+                }
+            };
         }
         self.index
             .db

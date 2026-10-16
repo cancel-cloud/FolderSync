@@ -1,5 +1,5 @@
 use crate::{
-    fs::{self as syncfs, path_key, read_entry, scan, validate_roots},
+    fs::{self as syncfs, path_key, validate_roots},
     index::Index,
     *,
 };
@@ -17,92 +17,105 @@ use std::{
 pub struct Engine {
     pub(crate) index: Index,
     pub cancel: Arc<AtomicBool>,
+    pub progress: ProgressState,
 }
 impl Engine {
     pub fn preview_paths(&mut self, id: &str, paths: &[String]) -> Result<Plan> {
+        self.cancel.store(false, Ordering::Relaxed);
+        let _progress = self.progress.begin(id, None, ProgressPhase::Discovering, 0);
         let t = self.index.task(id)?;
-        self.validate(&t)?;
         let mut m = Metrics {
             queued_paths: paths.len() as u64,
             ..Metrics::default()
         };
-        let mut keys = BTreeSet::new();
-        let mut display_paths = std::collections::BTreeMap::new();
-        let (mut a, mut b) = (Tree::new(), Tree::new());
-        for path in paths {
-            let key = path_key(path);
-            display_paths.insert(key.clone(), path.clone());
-            keys.insert(key.clone());
-            for (side, root) in [("A", &t.a), ("B", &t.b)] {
-                let existing = self.index.entry(id, side, &key)?;
-                if existing.as_ref().is_some_and(|e| e.directory) {
-                    keys.extend(self.index.descendants(id, side, &key)?);
-                }
-                let actual = std::fs::symlink_metadata(syncfs::safe_path(root, path)?).ok();
-                if actual.as_ref().is_some_and(|e| e.is_dir()) {
-                    let matcher = syncfs::Matcher::new(&t.scope)?;
-                    let mut walk = walkdir::WalkDir::new(syncfs::safe_path(root, path)?)
-                        .follow_links(false)
-                        .min_depth(1)
-                        .into_iter();
-                    while let Some(item) = walk.next() {
-                        let item = item?;
-                        let relative = item
-                            .path()
-                            .strip_prefix(root)?
-                            .to_str()
-                            .context("Non-Unicode path unsupported")?
-                            .replace('\\', "/");
-                        let directory = item.file_type().is_dir();
-                        if !matcher.allows(&relative, directory)
-                            || (directory
-                                && read_entry(root, &relative, &t.scope, &mut m)?.is_none())
-                        {
-                            if directory {
-                                walk.skip_current_dir()
+        let result = (|| {
+            self.validate(&t)?;
+            let mut keys = BTreeSet::new();
+            let mut display_paths = std::collections::BTreeMap::new();
+            let (mut a, mut b) = (Tree::new(), Tree::new());
+            for path in paths {
+                let key = path_key(path);
+                display_paths.insert(key.clone(), path.clone());
+                keys.insert(key.clone());
+                for (side, root) in [("A", &t.a), ("B", &t.b)] {
+                    let existing = self.index.entry(id, side, &key)?;
+                    if existing.as_ref().is_some_and(|e| e.directory) {
+                        keys.extend(self.index.descendants(id, side, &key)?);
+                    }
+                    let actual = std::fs::symlink_metadata(syncfs::safe_path(root, path)?).ok();
+                    if actual.as_ref().is_some_and(|e| e.is_dir()) {
+                        let matcher = syncfs::Matcher::new(&t.scope)?;
+                        let mut walk = walkdir::WalkDir::new(syncfs::safe_path(root, path)?)
+                            .follow_links(false)
+                            .min_depth(1)
+                            .into_iter();
+                        while let Some(item) = walk.next() {
+                            crate::progress::check_cancel(Some(&self.cancel))?;
+                            let item = item?;
+                            let relative = item
+                                .path()
+                                .strip_prefix(root)?
+                                .to_str()
+                                .context("Non-Unicode path unsupported")?
+                                .replace('\\', "/");
+                            let directory = item.file_type().is_dir();
+                            if !matcher.allows(&relative, directory)
+                                || (directory
+                                    && self
+                                        .read_entry(root, &relative, &t.scope, &mut m)?
+                                        .is_none())
+                            {
+                                if directory {
+                                    walk.skip_current_dir()
+                                }
+                                continue;
                             }
-                            continue;
+                            let key = path_key(&relative);
+                            keys.insert(key.clone());
+                            display_paths.insert(key, relative);
                         }
-                        let key = path_key(&relative);
-                        keys.insert(key.clone());
-                        display_paths.insert(key, relative);
                     }
                 }
             }
-        }
-        for key in &keys {
-            for (side, root, tree) in [("A", &t.a, &mut a), ("B", &t.b, &mut b)] {
-                let display = self
-                    .index
-                    .entry(id, side, key)?
-                    .map(|e| e.path)
-                    .unwrap_or_else(|| {
-                        paths
-                            .iter()
-                            .find(|p| path_key(p) == *key)
-                            .cloned()
-                            .unwrap_or_else(|| {
-                                display_paths
-                                    .get(key)
-                                    .cloned()
-                                    .unwrap_or_else(|| key.clone())
-                            })
-                    });
-                let entry = read_entry(root, &display, &t.scope, &mut m)?;
-                self.index.put_entry(id, side, key, entry.as_ref())?;
-                if let Some(e) = entry {
-                    tree.insert(key.clone(), e);
+            for key in &keys {
+                for (side, root, tree) in [("A", &t.a, &mut a), ("B", &t.b, &mut b)] {
+                    let display = self
+                        .index
+                        .entry(id, side, key)?
+                        .map(|e| e.path)
+                        .unwrap_or_else(|| {
+                            paths
+                                .iter()
+                                .find(|p| path_key(p) == *key)
+                                .cloned()
+                                .unwrap_or_else(|| {
+                                    display_paths
+                                        .get(key)
+                                        .cloned()
+                                        .unwrap_or_else(|| key.clone())
+                                })
+                        });
+                    let entry = self.read_entry(root, &display, &t.scope, &mut m)?;
+                    self.index.put_entry(id, side, key, entry.as_ref())?;
+                    if let Some(e) = entry {
+                        tree.insert(key.clone(), e);
+                    }
                 }
             }
+            self.index.update_ancestors(id, "A", &keys)?;
+            self.index.update_ancestors(id, "B", &keys)?;
+            self.make_plan(t.clone(), &a, &b, keys, m.clone())
+        })();
+        if let Err(error) = &result {
+            self.record_discovery_error(&t, &m, error)?;
         }
-        self.index.update_ancestors(id, "A", &keys)?;
-        self.index.update_ancestors(id, "B", &keys)?;
-        self.make_plan(t, &a, &b, keys, m)
+        result
     }
     pub fn open(storage: &Path) -> Result<Self> {
         let engine = Self {
             index: Index::open(storage)?,
             cancel: Arc::new(AtomicBool::new(false)),
+            progress: ProgressState::default(),
         };
         engine.recover_displaced()?;
         engine.recover_stages()?;
@@ -175,23 +188,43 @@ impl Engine {
         Ok(roots)
     }
     pub fn preview(&mut self, id: &str) -> Result<Plan> {
+        self.cancel.store(false, Ordering::Relaxed);
+        let _progress = self.progress.begin(id, None, ProgressPhase::Discovering, 0);
         let t = self.index.task(id)?;
-        self.validate(&t)?;
         let mut m = Metrics {
             reconciliations: 1,
             ..Metrics::default()
         };
-        let a = scan(&t.a, &t.scope, &mut m)?;
-        let b = scan(&t.b, &t.scope, &mut m)?;
-        self.index.put_tree(id, "A", &a)?;
-        self.index.put_tree(id, "B", &b)?;
-        let keys = a
-            .keys()
-            .chain(b.keys())
-            .chain(self.index.baseline(id)?.keys())
-            .cloned()
-            .collect();
-        self.make_plan(t, &a, &b, keys, m)
+        let result = (|| {
+            self.validate(&t)?;
+            let a = syncfs::scan_controlled(
+                &t.a,
+                &t.scope,
+                &mut m,
+                Some(&self.cancel),
+                Some(&self.progress),
+            )?;
+            let b = syncfs::scan_controlled(
+                &t.b,
+                &t.scope,
+                &mut m,
+                Some(&self.cancel),
+                Some(&self.progress),
+            )?;
+            self.index.put_tree(id, "A", &a)?;
+            self.index.put_tree(id, "B", &b)?;
+            let keys = a
+                .keys()
+                .chain(b.keys())
+                .chain(self.index.baseline(id)?.keys())
+                .cloned()
+                .collect();
+            self.make_plan(t.clone(), &a, &b, keys, m.clone())
+        })();
+        if let Err(error) = &result {
+            self.record_discovery_error(&t, &m, error)?;
+        }
+        result
     }
     pub(crate) fn make_plan(
         &self,
@@ -333,6 +366,12 @@ impl Engine {
     pub fn apply(&mut self, id: &str, destructive: bool) -> Result<Plan> {
         self.cancel.store(false, Ordering::Relaxed);
         let mut p = self.index.plan(id)?;
+        let _progress = self.progress.begin(
+            &p.task.id,
+            Some(id),
+            ProgressPhase::Validating,
+            p.operations.len(),
+        );
         ensure!(
             matches!(p.status.as_str(), "Preview" | "Review required"),
             "Plan already applied or interrupted; create a new preview"
@@ -355,9 +394,14 @@ impl Engine {
                 ) || o.reason.starts_with("Explicit")),
             "Destructive review is required"
         );
-        for o in &p.operations {
+        for (completed, o) in p.operations.iter().enumerate() {
+            self.progress.update(|s| {
+                s.completed_entries = completed as u64;
+                s.path = Some(o.path.clone());
+            });
+            crate::progress::check_cancel(Some(&self.cancel))?;
             for (root, expected) in [(&p.task.a, &o.a), (&p.task.b, &o.b)] {
-                let actual = read_entry(root, &o.path, &p.task.scope, &mut p.metrics)?;
+                let actual = self.read_entry(root, &o.path, &p.task.scope, &mut p.metrics)?;
                 ensure!(
                     &actual == expected,
                     "Stale input: {}; preview again",
@@ -413,7 +457,14 @@ impl Engine {
             )
         });
         let result = (|| -> Result<()> {
-            for o in &mut p.operations {
+            for (completed, o) in p.operations.iter_mut().enumerate() {
+                self.progress.update(|s| {
+                    s.phase = ProgressPhase::Applying;
+                    s.completed_entries = completed as u64;
+                    s.path = Some(o.path.clone());
+                    s.file_bytes = 0;
+                    s.file_total = 0;
+                });
                 if matches!(o.action, Action::Conflict | Action::Unchanged) {
                     o.status = if o.action == Action::Conflict {
                         "Conflict".into()
@@ -422,10 +473,7 @@ impl Engine {
                     };
                     continue;
                 }
-                ensure!(
-                    !self.cancel.load(Ordering::Relaxed),
-                    "Cancelled at a safe operation boundary"
-                );
+                crate::progress::check_cancel(Some(&self.cancel))?;
                 self.validate(&p.task)?;
                 self.index.db.execute(
                     "INSERT OR REPLACE INTO journal(run,path,json,status) VALUES(?,?,?,'Pending')",
@@ -468,8 +516,13 @@ impl Engine {
                     let destination = syncfs::safe_path(&p.task.b, &o.path)?;
                     let _destination_guard = syncfs::read_guard(&destination)?;
                     ensure!(
-                        syncfs::hash_file(&destination, &mut p.metrics)?.0
-                            == o.a.as_ref().unwrap().digest,
+                        syncfs::hash_file_controlled(
+                            &destination,
+                            &mut p.metrics,
+                            Some(&self.cancel),
+                            Some(&self.progress)
+                        )?
+                        .0 == o.a.as_ref().unwrap().digest,
                         "Move destination changed; source preserved"
                     );
                     self.remove(&p.task, &o.path, "A", o.a.as_ref().unwrap(), &mut p.metrics)?;
@@ -480,8 +533,8 @@ impl Engine {
                 )?;
                 o.status = "Applied".into();
                 let (a, b) = (
-                    read_entry(&p.task.a, &o.path, &p.task.scope, &mut p.metrics)?,
-                    read_entry(&p.task.b, &o.path, &p.task.scope, &mut p.metrics)?,
+                    self.read_entry(&p.task.a, &o.path, &p.task.scope, &mut p.metrics)?,
+                    self.read_entry(&p.task.b, &o.path, &p.task.scope, &mut p.metrics)?,
                 );
                 let digest = if p.task.mode == Mode::TwoWay {
                     if a.as_ref().map(|e| &e.digest) != b.as_ref().map(|e| &e.digest) {
@@ -539,6 +592,7 @@ impl Engine {
                     "Applied".into()
                 }
             }
+            Err(e) if e.is::<crate::progress::Cancelled>() => "Cancelled".into(),
             Err(e) => format!("Failed: {e:#}"),
         };
         if let Some(error) = cleanup_error {
@@ -603,11 +657,11 @@ impl Engine {
         let source_root = if to_b { &t.a } else { &t.b };
         let target_root = if to_b { &t.b } else { &t.a };
         ensure!(
-            read_entry(source_root, path, &t.scope, m)?.as_ref() == Some(expected),
+            self.read_entry(source_root, path, &t.scope, m)?.as_ref() == Some(expected),
             "Source changed before transfer"
         );
         ensure!(
-            read_entry(target_root, path, &t.scope, m)?.as_ref() == dest,
+            self.read_entry(target_root, path, &t.scope, m)?.as_ref() == dest,
             "Destination changed before transfer"
         );
         let source = syncfs::safe_path(source_root, path)?;
@@ -642,7 +696,9 @@ impl Engine {
         m: &mut Metrics,
     ) -> Result<()> {
         let root = if side == "A" { &t.a } else { &t.b };
-        let actual = read_entry(root, path, &t.scope, m)?.context("Delete input vanished")?;
+        let actual = self
+            .read_entry(root, path, &t.scope, m)?
+            .context("Delete input vanished")?;
         ensure!(
             actual.digest == expected.digest && actual.directory == expected.directory,
             "Delete input changed"
@@ -660,12 +716,12 @@ impl Engine {
                     .open(&target)?
             };
             ensure!(
-                read_entry(root, path, &Scope::default(), m)?.as_ref() == Some(expected),
+                self.read_entry(root, path, &Scope::default(), m)?.as_ref() == Some(expected),
                 "Delete input changed before guard"
             );
             self.backup(t, path, side, expected, m)?;
             ensure!(
-                read_entry(root, path, &t.scope, m)?.as_ref() == Some(expected),
+                self.read_entry(root, path, &t.scope, m)?.as_ref() == Some(expected),
                 "Delete input changed during backup"
             );
             #[cfg(windows)]

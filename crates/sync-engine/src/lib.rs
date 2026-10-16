@@ -5,6 +5,7 @@ pub mod fs;
 mod index;
 mod logging;
 mod model;
+mod progress;
 mod recovery;
 mod review;
 pub mod scheduler;
@@ -12,6 +13,7 @@ mod transfer;
 pub mod watch;
 pub use engine::Engine;
 pub use model::*;
+pub use progress::{ApplyOutcome, Cancelled, ProgressPhase, ProgressState, RunProgress};
 pub fn classify(mode: Mode, a: Option<&str>, b: Option<&str>, base: Option<&str>) -> Action {
     use Action::*;
     if a == b {

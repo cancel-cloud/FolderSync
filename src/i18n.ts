@@ -27,6 +27,8 @@ const statuses: Record<string, string> = {
   Applied: "Angewendet",
   Attention: "Aufmerksamkeit erforderlich",
   Interrupted: "Unterbrochen",
+  Cancelled: "Abgebrochen",
+  "Not run": "Nicht ausgeführt",
   Planned: "Geplant",
   Conflict: "Konflikt",
   Unchanged: "Unverändert",
@@ -34,6 +36,8 @@ const statuses: Record<string, string> = {
 export function statusLabel(status: string, language: string): string {
   if (language !== "de") return status;
   if (status.startsWith("Failed:")) return `Fehlgeschlagen:${status.slice(7)}`;
+  if (status.startsWith("Rejected:"))
+    return `Zurückgewiesen:${status.slice(9)}`;
   const retention = status.indexOf("; retention cleanup pending:");
   if (retention >= 0)
     return `${statusLabel(status.slice(0, retention), language)}; Bereinigung ausstehend:${status.slice(retention + "; retention cleanup pending:".length)}`;
