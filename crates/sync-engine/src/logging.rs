@@ -26,7 +26,11 @@ impl Engine {
         let record = if level == "detailed" {
             serde_json::to_string(plan)?
         } else {
-            let status = if plan.status.starts_with("Failed") {
+            let status = if plan.status == "Cancelled" {
+                "Cancelled"
+            } else if plan.status.starts_with("Rejected:") {
+                "Rejected"
+            } else if plan.status.starts_with("Failed") {
                 "Failed"
             } else if plan.status.starts_with("Attention") {
                 "Attention"

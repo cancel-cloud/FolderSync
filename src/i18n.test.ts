@@ -27,6 +27,8 @@ test("every operation and result state has a human German label", () => {
     "Applied",
     "Attention",
     "Interrupted",
+    "Cancelled",
+    "Not run",
     "Planned",
     "Conflict",
     "Unchanged",
@@ -36,9 +38,9 @@ test("every operation and result state has a human German label", () => {
   expect(statusLabel("Failed: locked C:/fixture/f", "de")).toBe(
     "Fehlgeschlagen: locked C:/fixture/f",
   );
-  expect(
-    statusLabel("Applied; retention cleanup pending: locked", "de"),
-  ).toBe("Angewendet; Bereinigung ausstehend: locked");
+  expect(statusLabel("Applied; retention cleanup pending: locked", "de")).toBe(
+    "Angewendet; Bereinigung ausstehend: locked",
+  );
 });
 test("reasons and metadata use the selected language without changing raw paths/digests", () => {
   expect(

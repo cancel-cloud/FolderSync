@@ -4,7 +4,6 @@ use std::{
     fs::{self, OpenOptions},
     io::{Read, Write},
     path::Path,
-    sync::atomic::Ordering,
 };
 #[cfg(test)]
 thread_local! { static FAIL_STAGE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) }; }
@@ -27,7 +26,15 @@ impl Engine {
                     !metadata.is_symlink() && metadata.is_file(),
                     "Unsafe destination type"
                 );
-                Some(crate::fs::hash_file(target, m)?.0)
+                Some(
+                    crate::fs::hash_file_controlled(
+                        target,
+                        m,
+                        Some(&self.cancel),
+                        Some(&self.progress),
+                    )?
+                    .0,
+                )
             }
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => None,
             Err(e) => return Err(e.into()),
@@ -54,6 +61,15 @@ impl Engine {
             }
             let mut input = options.open(source)?;
             let before = input.metadata()?;
+            self.progress.update(|s| {
+                s.phase = if target.starts_with(self.storage()) {
+                    ProgressPhase::Protecting
+                } else {
+                    ProgressPhase::Transferring
+                };
+                s.file_bytes = 0;
+                s.file_total = before.len();
+            });
             let mut output = OpenOptions::new()
                 .write(true)
                 .create_new(true)
@@ -63,10 +79,7 @@ impl Engine {
             let mut hash = blake3::Hasher::new();
             let mut buf = vec![0; 256 * 1024];
             loop {
-                ensure!(
-                    !self.cancel.load(Ordering::Relaxed),
-                    "Cancelled during staged transfer"
-                );
+                crate::progress::check_cancel(Some(&self.cancel))?;
                 let n = input.read(&mut buf)?;
                 if n == 0 {
                     break;
@@ -78,13 +91,14 @@ impl Engine {
                 output.write_all(&buf[..n])?;
                 hash.update(&buf[..n]);
                 count += n as u64;
+                self.progress.update(|s| s.file_bytes = count);
                 if t.bandwidth_kib > 0 {
                     let expected = std::time::Duration::from_secs_f64(
                         count as f64 / (t.bandwidth_kib * 1024) as f64,
                     );
                     if let Some(mut delay) = expected.checked_sub(start.elapsed()) {
                         while !delay.is_zero() {
-                            ensure!(!self.cancel.load(Ordering::Relaxed), "Cancelled");
+                            crate::progress::check_cancel(Some(&self.cancel))?;
                             let chunk = delay.min(std::time::Duration::from_millis(100));
                             std::thread::sleep(chunk);
                             delay = delay.saturating_sub(chunk);
@@ -94,6 +108,7 @@ impl Engine {
             }
             output.sync_all()?;
             drop(output);
+            self.progress.update(|s| s.phase = ProgressPhase::Verifying);
             ensure!(
                 hash.finalize().to_hex().as_str() == digest && count == before.len(),
                 "Transfer verification failed"
@@ -103,7 +118,13 @@ impl Engine {
                 "Source changed during transfer"
             );
             ensure!(
-                crate::fs::hash_file(&stage, m)?.0 == digest,
+                crate::fs::hash_file_controlled(
+                    &stage,
+                    m,
+                    Some(&self.cancel),
+                    Some(&self.progress)
+                )?
+                .0 == digest,
                 "Staged content differs"
             );
             filetime::set_file_mtime(
@@ -123,7 +144,15 @@ impl Engine {
                         !metadata.is_symlink() && metadata.is_file(),
                         "Destination type changed"
                     );
-                    Some(crate::fs::hash_file(target, m)?.0)
+                    Some(
+                        crate::fs::hash_file_controlled(
+                            target,
+                            m,
+                            Some(&self.cancel),
+                            Some(&self.progress),
+                        )?
+                        .0,
+                    )
                 }
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => None,
                 Err(e) => return Err(e.into()),

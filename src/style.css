@@ -800,3 +800,17 @@ footer span {
   padding: 16px;
   background: #f3f6fa;
 }
+
+.run-progress {
+  display: grid;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+.run-progress code {
+  overflow-wrap: anywhere;
+}
+.run-progress progress {
+  width: 100%;
+  accent-color: #148677;
+}
