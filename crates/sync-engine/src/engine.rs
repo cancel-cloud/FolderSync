@@ -152,6 +152,8 @@ impl Engine {
         for other in self.tasks()?.into_iter().filter(|o| o.id != t.id) {
             if t.monitor
                 || other.monitor
+                || t.login
+                || other.login
                 || !t.schedule.kind.is_empty()
                 || !other.schedule.kind.is_empty()
             {
@@ -456,6 +458,9 @@ impl Engine {
                 },
             )
         });
+        for operation in &mut p.operations {
+            operation.status = "Not run".into();
+        }
         let result = (|| -> Result<()> {
             for (completed, o) in p.operations.iter_mut().enumerate() {
                 self.progress.update(|s| {
@@ -473,6 +478,7 @@ impl Engine {
                     };
                     continue;
                 }
+                o.status = "Applying".into();
                 crate::progress::check_cancel(Some(&self.cancel))?;
                 self.validate(&p.task)?;
                 self.index.db.execute(
@@ -579,6 +585,17 @@ impl Engine {
             }
             Ok(())
         })();
+        if let Err(error) = &result {
+            for operation in &mut p.operations {
+                if operation.status == "Applying" {
+                    operation.status = if error.is::<Cancelled>() {
+                        "Cancelled".into()
+                    } else {
+                        "Failed".into()
+                    };
+                }
+            }
+        }
         let cleanup_error = if result.is_ok() {
             self.cleanup_versions(&p.task).err()
         } else {

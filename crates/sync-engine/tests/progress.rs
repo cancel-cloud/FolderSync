@@ -69,6 +69,15 @@ fn cancellation_reports_actual_run_and_preserves_destination_during_staging() {
     }));
     assert_eq!(e.history_headers(&t.id).unwrap()[0].status, "Cancelled");
     assert_eq!(
+        e.history(&t.id).unwrap()[0]
+            .operations
+            .iter()
+            .find(|o| o.path == "f.bin")
+            .unwrap()
+            .status,
+        "Cancelled"
+    );
+    assert_eq!(
         serde_json::from_str::<serde_json::Value>(e.recent_log().unwrap().trim()).unwrap()["status"],
         "Cancelled"
     );

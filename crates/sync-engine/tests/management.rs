@@ -65,3 +65,39 @@ fn refuses_future_database_schema() {
         "A future schema must never be silently downgraded"
     );
 }
+
+#[test]
+fn login_only_tasks_are_guarded_against_intersecting_pairs() {
+    let d = tempfile::Builder::new()
+        .prefix("FolderSync-login-overlap-")
+        .tempdir()
+        .unwrap();
+    for name in ["A", "B", "C"] {
+        fs::create_dir(d.path().join(name)).unwrap();
+    }
+    let mut e = Engine::open(&d.path().join("state")).unwrap();
+    let mut first = Task {
+        a: d.path().join("A"),
+        b: d.path().join("B"),
+        login: true,
+        ..Task::default()
+    };
+    e.save_task(&first).unwrap();
+    let mut second = Task {
+        a: d.path().join("B"),
+        b: d.path().join("C"),
+        ..Task::default()
+    };
+    assert!(
+        e.save_task(&second).is_err(),
+        "Existing login task must protect its roots"
+    );
+    first.login = false;
+    e.save_task(&first).unwrap();
+    second.login = true;
+    assert!(
+        e.save_task(&second).is_err(),
+        "Enabling login must validate other task roots"
+    );
+    assert_eq!(e.tasks().unwrap().len(), 1);
+}

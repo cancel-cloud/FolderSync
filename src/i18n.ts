@@ -29,6 +29,7 @@ const statuses: Record<string, string> = {
   Interrupted: "Unterbrochen",
   Cancelled: "Abgebrochen",
   "Not run": "Nicht ausgeführt",
+  Failed: "Fehlgeschlagen",
   Planned: "Geplant",
   Conflict: "Konflikt",
   Unchanged: "Unverändert",
@@ -99,6 +100,8 @@ export function triggerLabel(task: Task, language: string) {
 export function messageLabel(message: string, language: string) {
   if (language !== "de") return message;
   const messages: Record<string, string> = {
+    "Run cancelled. Completed operations remain committed. Create a fresh preview to continue.":
+      "Lauf abgebrochen. Bereits abgeschlossene Aktionen bleiben erhalten. Erstellen Sie zum Fortsetzen eine neue Vorschau.",
     "Task configuration exported.": "Aufgabenkonfiguration exportiert.",
     "Run finished. See the actual result and protected versions.":
       "Lauf abgeschlossen. Prüfen Sie das Ergebnis und die geschützten Versionen.",

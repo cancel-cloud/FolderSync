@@ -1,0 +1,10 @@
+{
+  "fixture_bytes": 16777216,
+  "source_sha256": "3b74c275d1764b980613b1e42fa5b083c0f10e0c90cec788423898342f96d652",
+  "destination_present": false,
+  "all_automatic_triggers_off": true,
+  "conflict": {
+    "A": "f70e0cad47a9aaeb66999c6395012f2a9b2e266f0e79456d2f6bc1374ea11488",
+    "B": "95b498713c7dfdc8a8dc1a970a6c19e66f6a57354da800c751223817c648b870"
+  }
+}

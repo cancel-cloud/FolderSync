@@ -361,76 +361,90 @@ test("review requests bounded pages and resets paging when filters change", asyn
   ).toBe(true);
 });
 
-test("failed Apply shows the persisted result, refreshes dashboard and requires a fresh preview", async () => {
-  const task = { ...newTask(), name: "Failed copy", a: "A", b: "B" };
-  let failed = false;
-  const plan: Plan = {
-    id: "failed-run",
-    task,
-    created_at: 1,
-    status: "Preview",
-    metrics: {
-      scanned_entries: 1,
-      hashed_bytes: 1,
-      copied_bytes: 0,
-      queued_paths: 0,
-      reconciliations: 1,
-      watch_events: 0,
-    },
-    summary: {
-      entries: 1,
-      copies: 1,
-      deletes: 0,
-      conflicts: 0,
-      unchanged: 0,
-      to_a: 0,
-      to_b: 1,
-      remove_a: 0,
-      remove_b: 0,
-      explicit: false,
-    },
-  };
-  api.invoke.mockImplementation(async (command: string) => {
-    if (command === "tasks") return [task];
-    if (command === "statuses")
-      return failed
-        ? [
-            {
-              task_id: task.id,
-              last_run: { ...plan, status: "Failed: destination locked" },
-              pending_conflicts: 0,
-              next_run: null,
-            },
-          ]
-        : [];
-    if (command === "preview") return plan;
-    if (command === "operation_page") return { operations: [], total: 0 };
-    if (command === "apply") {
-      failed = true;
-      return {
-        plan: { ...plan, status: "Failed: destination locked" },
-        error: "destination locked",
-      };
-    }
-    return null;
-  });
-  const user = userEvent.setup();
-  render(<App />);
-  await user.click(
-    await screen.findByRole("button", { name: "Preview / Run" }),
-  );
-  await user.click(
-    await screen.findByRole("button", { name: "Apply reviewed plan" }),
-  );
-  await user.click(screen.getByRole("button", { name: "Confirm" }));
-  expect(await screen.findByText("Error: destination locked")).toBeTruthy();
-  expect(screen.getByText("Failed: destination locked")).toBeTruthy();
-  expect(
-    screen.queryByRole("button", { name: "Apply reviewed plan" }),
-  ).toBeNull();
-  await user.click(screen.getByRole("button", { name: "All tasks" }));
-  expect(await screen.findByText("Failed: destination locked")).toBeTruthy();
-});
+test.each(["Failed: destination locked", "Cancelled"])(
+  "terminal Apply result %s updates the dashboard and requires a fresh preview",
+  async (status) => {
+    const task = { ...newTask(), name: "Failed copy", a: "A", b: "B" };
+    let failed = false;
+    const plan: Plan = {
+      id: "failed-run",
+      task,
+      created_at: 1,
+      status: "Preview",
+      metrics: {
+        scanned_entries: 1,
+        hashed_bytes: 1,
+        copied_bytes: 0,
+        queued_paths: 0,
+        reconciliations: 1,
+        watch_events: 0,
+      },
+      summary: {
+        entries: 1,
+        copies: 1,
+        deletes: 0,
+        conflicts: 0,
+        unchanged: 0,
+        to_a: 0,
+        to_b: 1,
+        remove_a: 0,
+        remove_b: 0,
+        explicit: false,
+      },
+    };
+    api.invoke.mockImplementation(async (command: string) => {
+      if (command === "tasks") return [task];
+      if (command === "statuses")
+        return failed
+          ? [
+              {
+                task_id: task.id,
+                last_run: { ...plan, status },
+                pending_conflicts: 0,
+                next_run: null,
+              },
+            ]
+          : [];
+      if (command === "preview") return plan;
+      if (command === "operation_page") return { operations: [], total: 0 };
+      if (command === "apply") {
+        failed = true;
+        return {
+          plan: { ...plan, status },
+          error:
+            status === "Cancelled"
+              ? "Cancelled at a safe boundary"
+              : "destination locked",
+        };
+      }
+      return null;
+    });
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(
+      await screen.findByRole("button", { name: "Preview / Run" }),
+    );
+    await user.click(
+      await screen.findByRole("button", { name: "Apply reviewed plan" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    if (status === "Cancelled") {
+      expect(
+        await screen.findByText(
+          "Run cancelled. Completed operations remain committed. Create a fresh preview to continue.",
+        ),
+      ).toBeTruthy();
+      expect(screen.queryByRole("alert")).toBeNull();
+    } else
+      expect(await screen.findByText("Error: destination locked")).toBeTruthy();
+    expect(screen.getByText(status)).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "Apply reviewed plan" }),
+    ).toBeNull();
+    await user.click(screen.getByRole("button", { name: "All tasks" }));
+    expect(await screen.findByText(status)).toBeTruthy();
+  },
+);
 
 test("latest progress is visible during background work and Cancel reaches the native stop command", async () => {
   api.invoke.mockImplementation(async (command: string) =>
@@ -465,4 +479,70 @@ test("latest progress is visible during background work and Cancel reaches the n
     api.listeners.get("run-progress")?.({ payload: null });
   });
   expect(screen.queryByRole("progressbar")).toBeNull();
+});
+
+test("cancelled discovery refreshes persisted status and shows a localized cancellation message", async () => {
+  const task = { ...newTask(), name: "Cancelled discovery", a: "A", b: "B" };
+  let cancelled = false;
+  const plan: Plan = {
+    id: "cancelled-discovery",
+    task,
+    created_at: 1,
+    status: "Cancelled",
+    metrics: {
+      scanned_entries: 1,
+      hashed_bytes: 262144,
+      copied_bytes: 0,
+      queued_paths: 0,
+      reconciliations: 1,
+      watch_events: 0,
+    },
+    summary: {
+      entries: 0,
+      copies: 0,
+      deletes: 0,
+      conflicts: 0,
+      unchanged: 0,
+      to_a: 0,
+      to_b: 0,
+      remove_a: 0,
+      remove_b: 0,
+      explicit: false,
+    },
+  };
+  api.invoke.mockImplementation(
+    async (command: string, args?: { key?: string }) => {
+      if (command === "tasks") return [task];
+      if (command === "statuses")
+        return cancelled
+          ? [
+              {
+                task_id: task.id,
+                last_run: plan,
+                pending_conflicts: 0,
+                next_run: null,
+              },
+            ]
+          : [];
+      if (command === "setting") return args?.key === "language" ? "de" : null;
+      if (command === "preview") {
+        cancelled = true;
+        throw "[FolderSync:Cancelled]";
+      }
+      return null;
+    },
+  );
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(
+    await screen.findByRole("button", { name: "Vorschau / Start" }),
+  );
+  expect(
+    await screen.findByText(
+      "Lauf abgebrochen. Bereits abgeschlossene Aktionen bleiben erhalten. Erstellen Sie zum Fortsetzen eine neue Vorschau.",
+    ),
+  ).toBeTruthy();
+  expect(screen.getByText("Abgebrochen")).toBeTruthy();
+  expect(screen.queryByRole("alert")).toBeNull();
+  expect(screen.queryByText("[FolderSync:Cancelled]")).toBeNull();
 });

@@ -1,0 +1,11 @@
+{
+  "source_commit": "bf25084",
+  "run_id": "aac4423e-9a8e-4138-a4b8-5fe33f335768",
+  "status": "Cancelled",
+  "source_unchanged": true,
+  "destination_absent": true,
+  "stages_remaining": 0,
+  "conflict_hashes_unchanged": true,
+  "observed_partial_progress_bytes": 4718592,
+  "fixture_bytes": 16777216
+}
