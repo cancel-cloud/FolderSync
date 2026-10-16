@@ -6,20 +6,20 @@ This is a working, tested engineering release, not a claim that every acceptance
 
 Rust 1.99.1 / cargo 1.99.1, Windows MSVC Build Tools 18 (14.51 compiler), Node 24.19, pnpm 11.25, Windows WebView2 already present. The original compiler prerequisite failure was resolved by an externally supplied toolchain; the rejected installer command was never retried.
 
-Latest `scripts/verify.ps1` completed with exit 0 against runtime source `6e5b430`:
+Latest `scripts/verify.ps1` completed with exit 0 against runtime source `20f96f8` with CARGO_INCREMENTAL=0:
 
 | Command | Actual result |
 |---|---|
 | `cargo fmt --all -- --check` | Pass |
 | `cargo clippy --workspace --all-targets -- -D warnings` | Pass, no warnings |
-| `cargo test --workspace` | 91 tests passed, 0 failed; includes actual-file rename safety and native Windows event coverage |
+| `cargo test --workspace` | 98 tests passed, 0 failed; includes durable strict-policy holds and native Windows event coverage |
 | `pnpm typecheck` | Pass |
 | `pnpm lint` | Pass |
-| `pnpm test` | 22 tests passed in 4 files |
+| `pnpm test` | 23 tests passed in 4 files |
 | `pnpm build` | Pass; production Vite assets generated |
 | `scripts/package.ps1` / `pnpm tauri build` | Release executable + current-user x64 NSIS installer generated |
 
-Current command evidence is in `evidence/verification-ambiguous-renames-full.txt` and `evidence/package-ambiguous-renames.txt`; earlier evidence is retained. No test result is inferred from compilation.
+Current command evidence is in `evidence/verification-task-policies-full.txt` and `evidence/package-task-policies.txt`; earlier evidence is retained. No test result is inferred from compilation.
 
 ## Filesystem coverage
 
@@ -48,15 +48,15 @@ A UTF-8 write mistake truncated App.tsx during localization work. It was restore
 
 ## Benchmarks
 
-`benchmarks/latest.json` and `latest-memory.json` contain the latest measured synthetic run against runtime source `6e5b430` (debug engine, local filesystem). 10,000 files per side, 1,024 bytes each, 100 folders per side. These are discovery measurements; initial fixture creation and baseline Apply are outside discovery times.
+`benchmarks/latest.json` and `latest-memory.json` contain the latest measured synthetic run against runtime source `20f96f8` with default incremental/independent policies (debug engine, local filesystem). 10,000 files per side, 1,024 bytes each, 100 folders per side. These are discovery measurements; initial fixture creation and baseline Apply are outside discovery times.
 
 | Phase | Wall time | Entries examined | Bytes hashed |
 |---|---:|---:|---:|
-| Initial discovery | 23,413 ms | 20,200 | 20,480,000 |
-| Single-file incremental discovery | 141 ms | 2 | 2,048 |
-| Forced full verification | 23,828 ms | 20,200 | 20,480,000 |
+| Initial discovery | 23,545 ms | 20,200 | 20,480,000 |
+| Single-file incremental discovery | 140 ms | 2 | 2,048 |
+| Forced full verification | 24,144 ms | 20,200 | 20,480,000 |
 
-Native event through Apply: **318 ms**, with 2 native events. This excludes configured UI debounce. Windows sampled peak working set: **57,102,336 bytes**, exit 0. Prior raw measurements are retained in before-ambiguous-renames files. Single-file steady state still examines only two entries and hashes 2,048 bytes; the full verification examines 20,200 entries and hashes 20,480,000 bytes.
+Native event through Apply: **314 ms**, with 2 native events. This excludes configured UI debounce. Windows sampled peak working set: **57,208,832 bytes**, exit 0. Prior raw measurements are retained in before-task-policies files. Single-file steady state still examines only two entries and hashes 2,048 bytes; full verification examines 20,200 entries and hashes 20,480,000 bytes.
 
 ## Packaging
 
@@ -255,3 +255,9 @@ The first full verification failed with Windows Access denied writing Rust's inc
 
 
 Fresh full scripts/verify.ps1 (CARGO_INCREMENTAL=0) completed exit 0: **98 Rust / 23 frontend tests**, formatting, Clippy with warnings denied, TypeScript, ESLint and production web build. Evidence: verification-task-policies-full.txt, plus retained cache failure and red/green targeted logs. Installed policy workflow and benchmark follow packaging.
+
+
+Installed runtime `20f96f8`: current-user unsigned NSIS package/install exit 0; **3,884,412 bytes**, SHA-256 `DBC1D647DC4B56ADCC5DC704753CD48BA908F4010F6670F7D4AA9390EF7098A8`. Computer Use selected FullContent and RequireChoices in the real German editor, saved, and verified native JSON persistence without file mutation. Preview showed one 47-byte independent Create and one established conflict; Apply was visibly disabled with hold guidance. Selecting Ignore revised only Preview, with destination still absent. Apply then became enabled; separate Apply/Confirm copied matching bytes, left the conflict as Ignored/Attention and preserved both originals' SHA-256 values. Actual Settings Quit exited the process; relaunch and reopening the editor displayed both saved policies. Both active tasks remain manual, deletion policies OFF, global startup OFF and close behavior tray. The first disposable task intentionally retains FullContent/RequireChoices for later inspection. Incremental-trigger full-policy semantics are proven by the actual-filesystem native test, not inferred from this always-full manual GUI Preview. Evidence: task-policies-gui-*.json, installed-task-polic*.png, package-task-policies.txt and install-task-policies.json. Benchmark rerun is in progress with GUI idle.
+
+
+Default-policy benchmark against source `20f96f8` completed exit 0 after GUI work became idle: 10,000 files per side, 1,024 bytes each, 100 folders per side. Initial **23,545 ms**, incremental **140 ms**, forced full **24,144 ms**; examined entries **20,200 / 2 / 20,200**, hashed bytes **20,480,000 / 2,048 / 20,480,000**. Native event through Apply **314 ms**, 2 events, excluding debounce; peak working set **57,208,832 bytes**. The default incremental acceptance condition passes. The opt-in FullContent policy intentionally scans both trees on each trigger; it is not represented as incremental. Current raw latest files supersede preceding measurements, retained in before-task-policies files. Benchmark compilation also used process-local CARGO_INCREMENTAL=0; runtime is the debug engine as before.
