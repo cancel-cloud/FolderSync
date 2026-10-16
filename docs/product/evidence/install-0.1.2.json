@@ -1,0 +1,12 @@
+{
+  "installer_sha256": "80307619A406DDAFF6E65D49738EC912DD61D292FC739F09FE196C1207C21123",
+  "source_commit": "28019d534aa7a3b470268ea0e72c399617d0976c",
+  "elevated": false,
+  "startup_enabled": true,
+  "installer_bytes": 4100644,
+  "exit_code": 0,
+  "startup_preference_preserved": true,
+  "installed_exe_sha256": "160F0C7B2757C04B1222FB7AB6E5BB9D2B04FD228EABE3F5D8A4440DF34C8D33",
+  "version": "0.1.2",
+  "installation_did_not_launch": true
+}
