@@ -10,6 +10,8 @@ use tauri_plugin_notification::NotificationExt;
 struct Watched {
     task: Task,
     watch: Option<WatchService>,
+    watch_retry_at: Instant,
+    recovery_pending: bool,
     reconciled_at: Instant,
     last: Option<Instant>,
     events: u64,
@@ -34,7 +36,12 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
         let mut startup = true;
         loop {
             std::thread::sleep(Duration::from_millis(250));
-            let tasks = match r.engine.lock().ok().and_then(|e| e.tasks().ok()) {
+            let (tasks, safety_interval) = match r.engine.lock().ok().and_then(|e| {
+                Some((
+                    e.tasks().ok()?,
+                    e.setting(crate::reconciliation::KEY).ok().flatten(),
+                ))
+            }) {
                 Some(t) => t,
                 None => continue,
             };
@@ -93,6 +100,8 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
                         Watched {
                             task: t.clone(),
                             watch,
+                            watch_retry_at: Instant::now() + Duration::from_secs(30),
+                            recovery_pending: false,
                             reconciled_at: Instant::now(),
                             last,
                             events: 0,
@@ -102,16 +111,40 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
                     );
                 }
                 let w = watched.get_mut(&t.id).unwrap();
+                if t.monitor && w.watch.is_none() && Instant::now() >= w.watch_retry_at {
+                    w.watch_retry_at = Instant::now() + Duration::from_secs(30);
+                    if let Ok(watch) = WatchService::new(&t) {
+                        w.watch = Some(watch);
+                        // Notifications cannot reconstruct changes while disconnected.
+                        w.recovery_pending = true;
+                    }
+                }
                 if due.contains(&t.id) {
                     w.last = Some(Instant::now() - Duration::from_secs(t.debounce_secs));
                 }
                 let mut batch = w.watch.as_ref().map(|w| w.poll()).unwrap_or_default();
-                if t.monitor && w.reconciled_at.elapsed() >= Duration::from_secs(300) {
+                if batch.watch_lost {
+                    w.watch = None;
+                    w.watch_retry_at = Instant::now() + Duration::from_secs(30);
+                    let _ = app.emit(
+                        "background-error",
+                        format!(
+                            "{}: watcher interrupted; reconnecting with reconciliation fallback",
+                            t.name
+                        ),
+                    );
+                }
+                let periodic = t.monitor
+                    && crate::reconciliation::interval(
+                        w.watch.is_some(),
+                        safety_interval.as_deref(),
+                    )
+                    .is_some_and(|interval| w.reconciled_at.elapsed() >= interval);
+                if periodic || w.recovery_pending {
                     batch.uncertain = true;
-                    w.reconciled_at = Instant::now();
                 }
                 if batch.uncertain || !batch.paths.is_empty() {
-                    if let Ok(e) = r.engine.lock() {
+                    let queued = if let Ok(e) = r.engine.lock() {
                         if !e
                             .tasks()
                             .ok()
@@ -119,7 +152,23 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
                         {
                             continue;
                         }
-                        let _ = e.queue_watch_batch(&t.id, &batch);
+                        e.queue_watch_batch(&t.id, &batch)
+                    } else {
+                        Err(anyhow::anyhow!("Engine lock failed"))
+                    };
+                    if let Err(error) = queued {
+                        // poll drains memory, but failed persistence must never
+                        // silently lose those paths or rename hints.
+                        w.recovery_pending = true;
+                        let _ = app.emit(
+                            "background-error",
+                            format!("{}: queue persistence failed: {error:#}", t.name),
+                        );
+                        continue;
+                    }
+                    w.recovery_pending = false;
+                    if batch.uncertain {
+                        w.reconciled_at = Instant::now();
                     }
                     w.last = Some(Instant::now());
                     w.events += batch.events;
@@ -146,6 +195,9 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
                     });
                 match result {
                     Ok(Some(plan)) => {
+                        if plan.metrics.reconciliations > 0 {
+                            w.reconciled_at = Instant::now();
+                        }
                         w.events = 0;
                         w.failures = 0;
                         let pending = r

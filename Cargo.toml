@@ -2,9 +2,13 @@
 members = ["crates/sync-engine", "src-tauri"]
 default-members = ["crates/sync-engine"]
 resolver = "2"
+exclude = ["vendor/notify"]
+
+[patch.crates-io]
+notify = { path = "vendor/notify" }
 
 [workspace.package]
 edition = "2024"
 license = "MIT"
-version = "0.1.8"
+version = "0.1.9"
 

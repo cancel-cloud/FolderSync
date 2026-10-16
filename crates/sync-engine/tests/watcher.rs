@@ -32,3 +32,44 @@ fn native_notifications_observe_both_roots() {
     }
     panic!("Missing native notifications: {paths:?}");
 }
+
+#[test]
+fn native_save_burst_is_coalesced_while_consumer_is_busy() {
+    let dir = tempfile::Builder::new()
+        .prefix("FolderSync-busy-watch-")
+        .tempdir()
+        .unwrap();
+    let task = Task {
+        a: dir.path().join("A"),
+        b: dir.path().join("B"),
+        ..Task::default()
+    };
+    fs::create_dir(&task.a).unwrap();
+    fs::create_dir(&task.b).unwrap();
+    let watch = WatchService::new(&task).unwrap();
+    // Let the native callback run, but do not poll while the engine is busy.
+    for index in 0..2500 {
+        fs::write(task.a.join("busy.txt"), index.to_string()).unwrap();
+        std::thread::sleep(Duration::from_millis(2));
+    }
+    std::thread::sleep(Duration::from_millis(100));
+    let batch = watch.poll();
+    assert!(
+        !batch.uncertain,
+        "A repeated save burst must not overflow the application's raw event queue: {batch:?}"
+    );
+    assert_eq!(batch.paths, vec!["busy.txt"]);
+    assert!(
+        batch.events > 2048,
+        "The regression must exercise more than the old queue capacity"
+    );
+    fs::write(task.b.join("later.txt"), "arrived after drain").unwrap();
+    let deadline = Instant::now() + Duration::from_secs(5);
+    while Instant::now() < deadline {
+        if watch.poll().paths.contains(&"later.txt".to_string()) {
+            return;
+        }
+        std::thread::sleep(Duration::from_millis(20));
+    }
+    panic!("Event after draining the collector was lost");
+}

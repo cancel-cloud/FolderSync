@@ -15,6 +15,7 @@ mod lifecycle;
 mod notification_status;
 mod presentation;
 mod progress_runtime;
+mod reconciliation;
 mod startup;
 mod storage_location;
 fn command_error(error: &anyhow::Error) -> String {
@@ -172,6 +173,7 @@ async fn set_setting(
         "log_level" => ["off", "basic", "detailed"].contains(&value.as_str()),
         "close_behavior" => ["tray", "quit"].contains(&value.as_str()),
         "task_view" => ["tiles", "list"].contains(&value.as_str()),
+        reconciliation::KEY => reconciliation::valid(&value),
         _ => false,
     };
     if !allowed {
