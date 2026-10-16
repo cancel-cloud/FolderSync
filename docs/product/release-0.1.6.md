@@ -16,4 +16,16 @@ The editor section is now “File versions & recovery” with a concrete previou
 
 New engine tests first failed because history OFF was ignored. Tests cover no retained versions after update and proven deletion, preserving old versions through OFF/restart/manual restore, old-config default ON and export/import OFF. Displacement tests cover crash recovery and unreviewed bytes with history OFF. Frontend regression first failed for the draft ID; it checks the unsaved-folder hint, absent Open link, optional-history checkbox and disabled retention controls.
 
-Final verification, installer and installed GUI outcomes are appended after execution.
+Full `scripts/verify.ps1` completed successfully: **149 Rust tests and 32 frontend tests**, Rust formatting, workspace/all-targets Clippy with warnings denied, TypeScript, ESLint and production frontend build. Raw output: [verification-0.1.6.txt](evidence/verification-0.1.6.txt). Final copy edits also passed TypeScript and ESLint before packaging.
+
+The production NSIS installer was built from source commit `2981947` and installed successfully without elevation. Installed executable version is **0.1.6**. The existing user sign-in preference was preserved; installation did not launch the application or enable task automation. [Installation evidence](evidence/install-0.1.6.json).
+
+- Installer: `target/release/bundle/nsis/FolderSync_0.1.6_x64-setup.exe` (4,123,378 bytes).
+- Installer SHA256: `1C864E10F0A5E5EB7177924AFFB5150FD1484119088EF6D2B7B04ADDAEADF4D8`.
+- Installed executable SHA256: `F4FEEA7A0741CBE3249821FFFC6723B6E015E2D802D94D123BFC507F2C6BCE91`.
+
+Computer Use launched the installed executable and inspected the task editor. Turning file versions OFF showed the explanation and disabled retention fields; turning it back ON restored the previous controls. Navigating back to Tasks required no discard prompt. The GUI check did not save a changed policy. The OFF engine behavior, restart and recovery were verified separately against disposable filesystem fixtures by the Rust tests. [Installed GUI screenshot](evidence/0.1.6-versions-off.png).
+
+Read-only checks before installation and after the installed GUI interaction matched exactly: two saved tasks, five protected versions, and all disposable source/destination file contents unchanged. Fixture SHA256: `d896f6e3ba2fb12b9729ecd57f29e3a8f983dddda87208d918499e37969f7176`. Evidence: [before](evidence/state-0.1.6-before.json), [after](evidence/state-0.1.6-after.json).
+
+The package remains unsigned. No new network-share or Windows notification-banner claims are made by this change; previously documented OS/network limitations remain applicable.
