@@ -107,8 +107,13 @@ aside {
   border-radius: 11px;
 }
 nav {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   gap: 7px;
+}
+nav .settings-nav {
+  margin-top: auto;
 }
 nav button {
   border: 0;
