@@ -997,8 +997,13 @@ test("latest progress is visible during background work and Cancel reaches the n
     command === "tasks" || command === "statuses" ? [] : null,
   );
   const user = userEvent.setup();
-  render(<App />);
+  const { container } = render(<App />);
   await screen.findByRole("button", { name: "New task" });
+  const dock = screen.getByRole("region", { name: "Synchronization status" });
+  expect(dock.parentElement?.className).toBe("workspace");
+  expect(dock.closest("main")).toBeNull();
+  expect(screen.getByText("No active run")).toBeTruthy();
+  expect(container.querySelector("footer")).toBeNull();
   await act(async () => {
     api.listeners.get("run-progress")?.({
       payload: {
@@ -1016,6 +1021,7 @@ test("latest progress is visible during background work and Cancel reaches the n
     });
   });
   expect(await screen.findByText("large.bin")).toBeTruthy();
+  expect(dock.contains(screen.getByText("large.bin"))).toBe(true);
   expect(screen.getByText("2 / 2 active transfers")).toBeTruthy();
   const bar = screen.getByRole("progressbar", {
     name: "Current file progress",
@@ -1028,6 +1034,8 @@ test("latest progress is visible during background work and Cancel reaches the n
     api.listeners.get("run-progress")?.({ payload: null });
   });
   expect(screen.queryByRole("progressbar")).toBeNull();
+  expect(screen.getByRole("region", { name: "Synchronization status" })).toBe(dock);
+  expect(screen.getByText("No active run")).toBeTruthy();
 });
 
 test("cancelled discovery refreshes persisted status and shows a localized cancellation message", async () => {
@@ -1133,7 +1141,7 @@ test("settings exposes version information separately from local data", async ()
   expect(screen.getByRole("heading", { name: "Local data" })).toBeTruthy();
   await user.click(screen.getByRole("tab", { name: "Version" }));
   expect(
-    screen.getByRole("heading", { name: "FolderSync 0.1.6" }),
+    screen.getByRole("heading", { name: "FolderSync 0.1.7" }),
   ).toBeTruthy();
   expect(screen.queryByRole("heading", { name: "Local data" })).toBeNull();
   expect(screen.getByText(/Automatic updates are not configured/)).toBeTruthy();
