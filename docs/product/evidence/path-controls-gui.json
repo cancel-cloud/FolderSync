@@ -1,0 +1,17 @@
+{
+  "source_commit": "1df12d5",
+  "dashboard_expansion": true,
+  "keyboard_Return_expansion": true,
+  "clipboard_pasted_value": "C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\B",
+  "unsaved_paste_field_cleared": true,
+  "task_configuration_unchanged": true,
+  "close_behavior": "tray",
+  "conflict_hashes": {
+    "A": "f70e0cad47a9aaeb66999c6395012f2a9b2e266f0e79456d2f6bc1374ea11488",
+    "B": "95b498713c7dfdc8a8dc1a970a6c19e66f6a57354da800c751223817c648b870"
+  },
+  "transfer_hashes": {
+    "A": "2b07811057df887086f06a67edc6ebf911de8b6741156e7a2eb1416a4b8b1b2e",
+    "B": "2b07811057df887086f06a67edc6ebf911de8b6741156e7a2eb1416a4b8b1b2e"
+  }
+}

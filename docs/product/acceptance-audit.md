@@ -34,7 +34,7 @@ Checkpoint: 2026-10-16, after source `88c18c2` and the subsequent progress/cance
 | Settings/logging/import-export | actual language/log viewer/native JSON save/open; management/privacy tests | Verified principal workflows; persistent global close-to-tray or safe Quit preference implemented; 86 Rust/20 frontend tests and installed close-to-tray, clean/draft/active-copy safe Quit and retry verified in 09ef954 |
 | Task speed/concurrency/comparison/conflict controls | Bandwidth/retry/scope/history controls; fixed one engine job, verified content comparison, preserve conflicts | Partial: concurrency/comparison/conflict policy controls absent rather than inert |
 | Detailed result/error/actions/history UI | persisted plans, bounded 200-row loading, error banner, protected versions and restore | Principal workflows verified; richer per-operation failure details and failed discovery result navigation need review |
-| Localization/accessibility/responsive/paths | English/German helpers, modal focus tests, actual narrow window | Comprehensive screen-reader, high-DPI/minimum-height and full-path copy/expand controls pending |
+| Localization/accessibility/responsive/paths | English/German helpers, modal focus tests, actual narrow window | Full-path expand/copy and keyboard Return verified in installed 1df12d5; comprehensive screen-reader and high-DPI/minimum-height QA pending |
 | Installer/standard-user behavior | current-user unsigned NSIS, installed GUI, uninstall/reinstall state evidence | Verified this user's non-elevated session; separate standard account not created |
 | Optional hooks/chaining/shutdown/splitting/mobile/USN | Absent controls, explicit docs | Intentionally omitted as permitted by specification |
 
@@ -46,7 +46,7 @@ Checkpoint: 2026-10-16, after source `88c18c2` and the subsequent progress/cance
 - Extend approved automatic deletion testing to specifically authorized disposable SMB/physical USB roots when available; local baseline, threshold and hidden-window workflows pass.
 - Verify startup registration and schedule dispatch through the real app. Actual sign-in/sleep and toast activation need an available OS session/interface; do not simulate these as OS passes.
 - Real SMB testing requires a specifically authorized disposable share. No production share or company path is authorized.
-- Complete resized/high-DPI/keyboard/screen-reader QA and full-path actions.
+- Complete resized/high-DPI/keyboard/screen-reader QA; shared full-path actions have dashboard GUI evidence.
 - Rebuild/reinstall after final source changes and preserve exact source/hash/test evidence. Existing benchmark measurements remain actual measurements of their recorded build; rerun if engine performance architecture changes.
 
 The hard acceptance gate's manual two-way, Preview safety, protected deletion, crash recovery, persistence, incremental events and real UI paths have evidence. The additional explicit requirements above remain part of the goal; they are not waived by those passing paths.
