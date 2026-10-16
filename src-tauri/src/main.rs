@@ -18,6 +18,7 @@ mod progress_runtime;
 mod reconciliation;
 mod startup;
 mod storage_location;
+mod tray_status;
 fn command_error(error: &anyhow::Error) -> String {
     if error.is::<foldersync_engine::Cancelled>() {
         "[FolderSync:Cancelled]".into()
@@ -198,12 +199,6 @@ async fn set_setting(
     {
         let menu = tray_menu(&app, de).map_err(|e| e.to_string())?;
         tray.set_menu(Some(menu)).map_err(|e| e.to_string())?;
-        tray.set_tooltip(Some(if de {
-            "FolderSync — Ordnersynchronisation"
-        } else {
-            "FolderSync — folder synchronization"
-        }))
-        .map_err(|e| e.to_string())?;
     }
     Ok(())
 }
@@ -338,15 +333,9 @@ fn main() {
                     let _ = handle.emit("open-task", id);
                 }
             })?;
-            background::start(app.handle().clone(), app.state::<Runtime>().inner().clone());
-            progress_runtime::start(app.handle().clone(), progress);
             let menu = tray_menu(app.handle(), de)?;
             let mut tray = tauri::tray::TrayIconBuilder::with_id("main-tray")
-                .tooltip(if de {
-                    "FolderSync — Ordnersynchronisation"
-                } else {
-                    "FolderSync — folder synchronization"
-                })
+                .tooltip(tray_status::tooltip(de, false, None, None))
                 .menu(&menu);
             if let Some(icon) = app.default_window_icon() {
                 tray = tray.icon(icon.clone());
@@ -373,6 +362,12 @@ fn main() {
                 }
             })
             .build(app)?;
+            progress_runtime::start(
+                app.handle().clone(),
+                app.state::<Runtime>().inner().clone(),
+                de,
+            );
+            background::start(app.handle().clone(), app.state::<Runtime>().inner().clone());
             if lifecycle::should_open_window(&std::env::args().collect::<Vec<_>>())
                 && let Some(w) = app.get_webview_window("main")
             {
