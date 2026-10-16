@@ -31,6 +31,21 @@ fn unchanged_automatic_reconciliation_establishes_deletion_baseline() {
 }
 
 #[test]
+fn automatic_equal_observations_are_hashed_once_per_side() {
+    let (_dir, mut engine, task) = fixture();
+    let bytes = b"verified equal content";
+    fs::write(task.a.join("f"), bytes).unwrap();
+    fs::write(task.b.join("f"), bytes).unwrap();
+    engine.queue_paths(&task.id, &[], true).unwrap();
+    let plan = engine.process_queue(&task.id).unwrap().unwrap();
+    assert_eq!(plan.status, "Applied");
+    assert_eq!(plan.metrics.hashed_bytes, (bytes.len() * 2) as u64);
+    assert_eq!(plan.metrics.copied_bytes, 0);
+    assert_eq!(fs::read(task.a.join("f")).unwrap(), bytes);
+    assert_eq!(fs::read(task.b.join("f")).unwrap(), bytes);
+}
+
+#[test]
 fn equal_external_resolution_advances_baseline_and_clears_conflict() {
     let (_dir, mut engine, task) = fixture();
     fs::write(task.a.join("f"), "base").unwrap();

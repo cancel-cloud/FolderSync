@@ -94,23 +94,27 @@ impl Engine {
                         .entry(id, side, key)?
                         .map(|e| e.path)
                         .unwrap_or_else(|| {
-                            paths
-                                .iter()
-                                .find(|p| path_key(p) == *key)
+                            display_paths
+                                .get(key)
                                 .cloned()
-                                .unwrap_or_else(|| {
-                                    display_paths
-                                        .get(key)
-                                        .cloned()
-                                        .unwrap_or_else(|| key.clone())
-                                })
+                                .unwrap_or_else(|| key.clone())
                         });
                     let entry = self.read_entry(root, &display, &t.scope, &mut m)?;
-                    self.index.put_entry(id, side, key, entry.as_ref())?;
                     if let Some(e) = entry {
                         tree.insert(key.clone(), e);
                     }
                 }
+            }
+            // A burst is one observation batch, not a durable disk flush for
+            // every path/side. Failed reads leave the previous index intact.
+            {
+                let transaction = self.index.db.unchecked_transaction()?;
+                for key in &keys {
+                    for (side, tree) in [("A", &a), ("B", &b)] {
+                        self.index.put_entry(id, side, key, tree.get(key))?;
+                    }
+                }
+                transaction.commit()?;
             }
             self.expand_lineage(&t, &mut a, &mut b, &mut keys, &mut m)?;
             self.index.update_ancestors(id, "A", &keys)?;
@@ -530,7 +534,14 @@ impl Engine {
                 ) || o.reason.starts_with("Explicit")),
             "Destructive review is required"
         );
-        self.validate_inputs(&p.task, &p.operations, &mut p.metrics)?;
+        // Fresh automatic equal observations do not mutate either root. Their
+        // verified common content can advance the baseline without reading both
+        // trees again. Later events (or restart recovery) compare against that
+        // observation. Manual previews and every plan with a non-equal action
+        // retain the complete stale-input barrier before any mutation.
+        if manual || p.operations.iter().any(|o| o.action != Action::Unchanged) {
+            self.validate_inputs(&p.task, &p.operations, &mut p.metrics)?;
+        }
         // Persist all mutation intents before touching a file. One durable
         // transaction provides the same write-ahead boundary without a flush
         // for every small file. Pending does not mean that a file was changed.

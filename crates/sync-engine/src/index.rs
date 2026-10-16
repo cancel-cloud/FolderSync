@@ -9,6 +9,7 @@ pub struct Index {
     pub db: Connection,
     pub storage: PathBuf,
 }
+
 impl Index {
     /// Existing database only: never migrate, mark runs interrupted, or clean
     /// another worker's live staging/displacement journal.
@@ -48,6 +49,7 @@ impl Index {
  CREATE TABLE IF NOT EXISTS tasks(id TEXT PRIMARY KEY,json TEXT NOT NULL,root_a TEXT NOT NULL,root_b TEXT NOT NULL,generation INTEGER NOT NULL DEFAULT 0);
  CREATE TABLE IF NOT EXISTS entries(task TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,side TEXT NOT NULL,path TEXT NOT NULL,parent TEXT NOT NULL,json TEXT NOT NULL,digest TEXT NOT NULL,PRIMARY KEY(task,side,path));
  CREATE INDEX IF NOT EXISTS entries_parent ON entries(task,side,parent);
+ CREATE INDEX IF NOT EXISTS entries_parent_path ON entries(task,side,parent,path);
  CREATE TABLE IF NOT EXISTS baseline(task TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,path TEXT NOT NULL,digest TEXT,PRIMARY KEY(task,path));
  CREATE TABLE IF NOT EXISTS merkle(task TEXT NOT NULL,side TEXT NOT NULL,path TEXT NOT NULL,digest TEXT NOT NULL,PRIMARY KEY(task,side,path));
  CREATE TABLE IF NOT EXISTS runs(id TEXT PRIMARY KEY,task TEXT NOT NULL,json TEXT NOT NULL,status TEXT NOT NULL,created INTEGER NOT NULL);
@@ -305,5 +307,43 @@ impl Index {
             .prepare("SELECT json FROM versions WHERE task=? ORDER BY rowid DESC")?;
         let rows = s.query_map([task], |r| r.get::<_, String>(0))?;
         rows.map(|r| Ok(serde_json::from_str(&r?)?)).collect()
+    }
+}
+
+#[cfg(test)]
+mod performance_tests {
+    use super::*;
+
+    #[test]
+    fn ordered_children_query_work_scales_with_children_instead_of_the_entire_tree() {
+        let dir = tempfile::tempdir().unwrap();
+        let index = Index::open(dir.path()).unwrap();
+        index
+            .db
+            .execute("INSERT INTO tasks VALUES('task','{}','A','B',0)", [])
+            .unwrap();
+        let tx = index.db.unchecked_transaction().unwrap();
+        for i in 0..10_000 {
+            let parent = format!("group-{:03}", i / 100);
+            let path = format!("{parent}/f{i:05}");
+            tx.execute(
+                "INSERT INTO entries VALUES('task','A',?,?,'{}','digest',0,NULL)",
+                params![path, parent],
+            )
+            .unwrap();
+        }
+        tx.commit().unwrap();
+        let mut statement = index.db.prepare("SELECT path,digest,json FROM entries WHERE task=? AND side=? AND parent=? ORDER BY path").unwrap();
+        let rows: Vec<String> = statement
+            .query_map(params!["task", "A", "group-099"], |r| r.get(0))
+            .unwrap()
+            .collect::<rusqlite::Result<_>>()
+            .unwrap();
+        assert_eq!(rows.len(), 100);
+        let steps = statement.get_status(rusqlite::StatementStatus::VmStep);
+        assert!(
+            steps < 2_000,
+            "Reading 100 ordered children must not inspect 10,000 siblings; executed {steps} SQL VM steps"
+        );
     }
 }
