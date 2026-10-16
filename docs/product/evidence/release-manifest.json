@@ -1,0 +1,11 @@
+{
+  "installer": "FolderSync_0.1.1_x64-setup.exe",
+  "version": "0.1.1",
+  "sha256": "83F93D17502B1995890B72E825AA7B40357D8555F38001F909DE5318CC2B657C",
+  "frontend_tests": 24,
+  "release_report": "docs/product/release-0.1.1.md",
+  "source_commit": "f13b9bc423432427729671d2d709ffb416877d73",
+  "rust_tests": 123,
+  "signed": false,
+  "bytes": 4043349
+}

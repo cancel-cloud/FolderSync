@@ -1,0 +1,14 @@
+[
+  {
+    "icon": ",0",
+    "target": "C:\\Users\\Lukas\\AppData\\Local\\FolderSync\\foldersync.exe",
+    "target_exists": true,
+    "path": "C:\\Users\\Lukas\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\FolderSync.lnk"
+  },
+  {
+    "icon": ",0",
+    "target": "C:\\Users\\Lukas\\AppData\\Local\\FolderSync\\foldersync.exe",
+    "target_exists": true,
+    "path": "C:\\Users\\Lukas\\Desktop\\FolderSync.lnk"
+  }
+]
