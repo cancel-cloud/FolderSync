@@ -21,11 +21,21 @@ pub struct Engine {
 }
 impl Engine {
     pub fn preview_paths(&mut self, id: &str, paths: &[String]) -> Result<Plan> {
+        let t = self.index.task(id)?;
+        if t.comparison == Comparison::FullContent {
+            return self.preview(id);
+        }
+        let queued_paths = paths.len() as u64;
+        let mut paths = paths.to_vec();
+        if t.conflict_policy == ConflictPolicy::RequireChoices {
+            paths.extend(self.index.conflict_paths(id)?);
+            paths.sort();
+            paths.dedup();
+        }
         self.cancel.store(false, Ordering::Relaxed);
         let _progress = self.progress.begin(id, None, ProgressPhase::Discovering, 0);
-        let t = self.index.task(id)?;
         let mut m = Metrics {
-            queued_paths: paths.len() as u64,
+            queued_paths,
             ..Metrics::default()
         };
         let result = (|| {
@@ -33,7 +43,7 @@ impl Engine {
             let mut keys = BTreeSet::new();
             let mut display_paths = std::collections::BTreeMap::new();
             let (mut a, mut b) = (Tree::new(), Tree::new());
-            for path in paths {
+            for path in &paths {
                 let key = path_key(path);
                 display_paths.insert(key.clone(), path.clone());
                 keys.insert(key.clone());
@@ -276,10 +286,12 @@ impl Engine {
             )?;
             self.index.put_tree(id, "A", &a)?;
             self.index.put_tree(id, "B", &b)?;
+            let pending = self.index.conflict_paths(id)?;
             let keys = a
                 .keys()
                 .chain(b.keys())
                 .chain(self.index.baseline(id)?.keys())
+                .chain(pending.iter())
                 .cloned()
                 .collect();
             self.make_plan(t.clone(), &a, &b, keys, m.clone())
@@ -315,12 +327,20 @@ impl Engine {
             let be = b.get(&key);
             let path = ae.or(be).map(|e| e.path.clone()).unwrap_or(key.clone());
             if !matcher.allows(&path, ae.or(be).is_some_and(|e| e.directory)) {
+                self.index.db.execute(
+                    "DELETE FROM conflicts WHERE task=? AND path=?",
+                    params![t.id, key],
+                )?;
                 continue;
             }
             // An excluded existing object is never evidence of absence.
             if syncfs::excluded_attributes(&t.a, &path, &t.scope)?
                 || syncfs::excluded_attributes(&t.b, &path, &t.scope)?
             {
+                self.index.db.execute(
+                    "DELETE FROM conflicts WHERE task=? AND path=?",
+                    params![t.id, key],
+                )?;
                 continue;
             }
             if let Some(Some(digest)) = &baseline {
@@ -474,10 +494,25 @@ impl Engine {
             "Plan already applied or interrupted; create a new preview"
         );
         ensure!(
+            p.task.conflict_policy != ConflictPolicy::RequireChoices
+                || !p.operations.iter().any(|o| o.action == Action::Conflict),
+            "Choose a copy direction or Ignore for every conflict before applying this task"
+        );
+        ensure!(
             self.index.task(&p.task.id)? == p.task
                 && self.index.generation(&p.task.id)? == p.baseline_generation,
             "Task or baseline changed; preview again"
         );
+        if p.task.conflict_policy == ConflictPolicy::RequireChoices {
+            let reviewed: BTreeSet<_> = p.operations.iter().map(|o| path_key(&o.path)).collect();
+            ensure!(
+                self.index
+                    .conflict_paths(&p.task.id)?
+                    .iter()
+                    .all(|path| reviewed.contains(path)),
+                "Task has newly discovered conflicts; preview again"
+            );
+        }
         let roots = self.validate(&p.task)?;
         ensure!(
             roots == (p.root_a.clone(), p.root_b.clone()),

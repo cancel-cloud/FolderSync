@@ -88,10 +88,12 @@ impl Engine {
             .deletion_review
             .as_ref()
             .is_some_and(|r| r.reason == DeletionReason::Approved);
-        let review_required = plan
-            .deletion_review
-            .as_ref()
-            .is_some_and(|r| r.reason != DeletionReason::Approved);
+        let review_required = (plan.task.conflict_policy == ConflictPolicy::RequireChoices
+            && plan.operations.iter().any(|o| o.action == Action::Conflict))
+            || plan
+                .deletion_review
+                .as_ref()
+                .is_some_and(|r| r.reason != DeletionReason::Approved);
         if review_required {
             plan.status = "Review required".into();
         }

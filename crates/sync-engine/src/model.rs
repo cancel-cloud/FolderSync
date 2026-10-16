@@ -8,6 +8,18 @@ pub enum Mode {
     Copy,
     Move,
 }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Comparison {
+    #[default]
+    Incremental,
+    FullContent,
+}
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ConflictPolicy {
+    #[default]
+    ContinueIndependent,
+    RequireChoices,
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Action {
     Unchanged,
@@ -47,6 +59,8 @@ pub struct Task {
     pub debounce_secs: u64,
     pub retries: u32,
     pub bandwidth_kib: u64,
+    pub comparison: Comparison,
+    pub conflict_policy: ConflictPolicy,
     pub history_patterns: Vec<String>,
     pub history_cap: u32,
     pub schedule: Schedule,
@@ -68,6 +82,8 @@ impl Default for Task {
             debounce_secs: 20,
             retries: 3,
             bandwidth_kib: 0,
+            comparison: Comparison::default(),
+            conflict_policy: ConflictPolicy::default(),
             history_patterns: vec![],
             history_cap: 10,
             schedule: Schedule::default(),

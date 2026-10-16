@@ -156,6 +156,10 @@ export function triggerLabel(task: Task, language: string) {
 export function messageLabel(message: string, language: string) {
   if (language !== "de") return message;
   const messages: Record<string, string> = {
+    "Choose a copy direction or Ignore for every conflict before applying this task":
+      "Vor dem Anwenden für jeden Konflikt eine Kopierrichtung oder Überspringen wählen.",
+    "Task has newly discovered conflicts; preview again":
+      "Die Aufgabe hat neu erkannte Konflikte. Erneut prüfen.",
     "Run cancelled. Completed operations remain committed. Create a fresh preview to continue.":
       "Lauf abgebrochen. Bereits abgeschlossene Aktionen bleiben erhalten. Erstellen Sie zum Fortsetzen eine neue Vorschau.",
     "Task configuration exported.": "Aufgabenkonfiguration exportiert.",

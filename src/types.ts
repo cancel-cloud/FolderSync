@@ -48,6 +48,8 @@ export interface Task {
   debounce_secs: number;
   retries: number;
   bandwidth_kib: number;
+  comparison: "Incremental" | "FullContent";
+  conflict_policy: "ContinueIndependent" | "RequireChoices";
   history_patterns: string[];
   history_cap: number;
   schedule: Schedule;
@@ -192,6 +194,8 @@ export function newTask(mode: Mode = "TwoWay"): Task {
     debounce_secs: 20,
     retries: 3,
     bandwidth_kib: 0,
+    comparison: "Incremental",
+    conflict_policy: "ContinueIndependent",
     history_patterns: [],
     history_cap: 10,
     schedule: {

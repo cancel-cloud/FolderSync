@@ -1,0 +1,13 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.19s
+     Running tests\task_policies.rs (target\debug\deps\task_policies-f8b5d75bf73084a9.exe)
+
+running 5 tests
+test strict_policy_survives_export_import_and_restart_without_enabling_automation ... ok
+test strict_hold_carries_known_conflicts_across_batches_and_rejects_older_partial_plans ... ok
+test conflict_hold_overrides_approved_automatic_deletion_until_explicit_decision ... ok
+test require_choices_holds_entire_run_without_baseline_or_file_changes_until_reviewed ... ok
+test full_content_policy_persists_and_detects_unnotified_timestamp_preserving_edit ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.65s
+
