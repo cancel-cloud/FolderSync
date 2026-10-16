@@ -1,0 +1,8 @@
+{
+  "install_exit_code": 0,
+  "state_preserved": true,
+  "installer_sha256": "BFB56E1C6D60274BDDF550FBB61BE10E50447CEA891C6CED2464977A94B39937",
+  "source_commit": "65f96b3",
+  "executable_present": true,
+  "installer_bytes": 3815108
+}
