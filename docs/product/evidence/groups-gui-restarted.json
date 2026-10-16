@@ -1,0 +1,13 @@
+{
+  "source_commit": "6784ab0",
+  "groups": {
+    "9b2d06d2-3805-4f2a-ba90-8498035bbb58": "GUI-Einzeln",
+    "cdd93674-6655-4d0e-9e62-c52a3ad2e9b4": "GUI-Gruppe"
+  },
+  "persisted_across_actual_quit_install_launch": true,
+  "groups_visible_in_actual_dashboard": true,
+  "automatic_triggers_off": true,
+  "fixture_hashes_unchanged": true,
+  "toolbar_labels_readable_at_observed_window_size": true,
+  "additional_resize_not_verified": true
+}

@@ -11,18 +11,18 @@ Checkpoint: 2026-10-16, after source `88c18c2` and the subsequent progress/cance
 | Original references/assets/privacy | reference-matrix.md; research untouched and untracked; original application left untouched | Markdown and transcript research read; not every screenshot separately inspected; no proprietary assets used |
 | Persistent named tasks, native picker, duplicate, delete confirmation | management tests; Computer Use create/pick/save/restart/import | Verified principal workflows; deletion GUI matrix incomplete |
 | Editable task IDs | UUIDs remain internal immutable identities | Missing user-editable IDs |
-| Task grouping | Group label, filter/collapse and transactional bulk reassignment; backend restart/stale-review tests and UI selection regressions | Automated principal paths verified; installed group GUI verification pending |
+| Task grouping | Group label, filter/collapse and transactional bulk reassignment; backend restart/stale-review tests and UI selection regressions | Verified atomic restart/stale-review tests, hidden-selection UI regressions and installed filtering/collapse/bulk reassignment/restart |
 | Local/USB/UNC root validation and identity | filesystem/windows_paths/windows_safety tests; native identity checks | Local/junction/Unicode/long paths verified; physical USB and real SMB pending |
 | Unsafe pair/task overlap rejection | validate_roots/save_task guards and tests, including login-only triggers in either save order | Automatic intersecting roots rejected; exhaustive alias/reparse races pending |
 | Four real modes | planner/integration/windows_paths tests with actual files | Verified local modes; broader GUI per-mode matrix pending |
-| Two-way edit/edit, delete/edit, concurrent creates and deletion baseline | integration/automation/review_safety tests, actual GUI conflict preservation | Verified tested cases; explicit ambiguous rename/out-of-order event regressions still needed |
+| Two-way edit/edit, delete/edit, concurrent creates and deletion baseline | integration/automation/review_safety tests, actual GUI conflict preservation | Verified tested cases; simple rename and delayed/duplicate queued-event regressions pass; ambiguous rename detection remains incomplete |
 | Immutable Preview/Apply and stale inputs | filesystem tests, frontend confirmation tests, installed 300-file Preview proof | Verified principal boundary |
 | Distinct typed operations and reasons/directions | Action enum, PlanSummary, paged operation table and per-side totals | Create/update/mkdir share copy action with entry metadata; explicit Ignore UI choice missing |
 | Destructive review and mass-delete protection | Every removal requires exact-plan approval | Conservative review implemented; threshold controls and approved-baseline automatic deletion policy still missing |
 | Protected replacement/deletion, restore, selective retention | transfer/recovery/retention tests; actual GUI restore | Verified local file-byte recovery; deleting a task currently strands its version catalog from task UI |
 | Stage/verify/atomic Windows replacement and crash recovery | real killed subprocess, disk-full injection, displaced recovery, expected-destination race tests | Verified covered boundaries; exhaustive crash/power-loss/AV/adversarial junction testing pending |
 | Inaccessible/partial/offline roots cannot infer deletion | missing/offline/reconnect tests and actual nested ACL denial test | Local/fault paths verified; real SMB outage/partial listing pending |
-| Shared filters/scope/attributes | shared Matcher; scope/review_safety tests; GUI pattern tester | Principal filters verified; actual system-attribute and selected-folder GUI matrix needs coverage |
+| Shared filters/scope/attributes | shared Matcher; scope/review_safety tests; GUI pattern tester | Principal filters and actual Windows SYSTEM full/incremental scope verified; selected-folder GUI matrix needs coverage |
 | Case/Unicode/long paths/mtime policy | fs.rs, semantics; windows_paths/windows_safety/paging tests | Tested Unicode, long paths, case spelling and file mtime; full Windows ordinal casing/ACL/ADS/EFS parity not promised |
 | Native both-root monitoring and incremental index/Merkle | watcher/incremental/index/automation tests; hidden-window real copies; 10k benchmark | Verified local event path; real SMB notifications pending |
 | Overflow/missed events/restart recovery scan | injected overflow flag, durable uncertainty/restart/reconnect tests | Verified injected/local cases; native OS buffer exhaustion untested |
@@ -40,7 +40,7 @@ Checkpoint: 2026-10-16, after source `88c18c2` and the subsequent progress/cance
 
 ## Mandatory test gaps to close
 
-- Add explicit rename/ambiguous rename, out-of-order event and timestamp-preserving event regressions; confirm actual system-attribute scope behavior.
+- Complete ambiguous/concurrent rename detection and regressions beyond the verified simple rename, delayed queued notifications and timestamp-preserving edit cases. Actual Windows SYSTEM matching is verified.
 - Exercise additional installed failure modes beyond the verified progress/Stop/cancel and successful retry workflow.
 - Verify every required task-management control and recovery after task deletion; do not equate internal UUIDs or group labels with completed management features.
 - Cover baseline-approved automatic deletion with reviewed opt-in and mass-deletion thresholds; current all-removals-review policy does not satisfy the requested unattended deletion workflow.
