@@ -41,6 +41,7 @@ impl From<&Plan> for PlanHeader {
             metrics: p.metrics.clone(),
             created_at: p.created_at,
             status: p.status.clone(),
+            deletion_review: p.deletion_review.clone(),
             summary,
         }
     }

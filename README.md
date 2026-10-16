@@ -6,7 +6,7 @@ A Windows x64 desktop folder synchronizer built with Rust and Tauri 2. React pre
 
 Run `target\release\bundle\nsis\FolderSync_0.1.0_x64-setup.exe`. The NSIS installer targets the current user, with no service or administrator requirement. Microsoft Edge WebView2 Runtime is required; the Tauri installer can provision it when missing. This machine already has it. No signing certificate is configured.
 
-Create a task with two existing writable folders, choose the direction, then Preview. Different pre-existing bytes produce a conflict. Selecting a conflict direction only revises the preview. Apply requires a separate confirmation; every removal also needs approval of the exact plan. Existing file contents are protected in `%APPDATA%\dev.foldersync.desktop\versions`.
+Create a task with two existing writable folders, choose the direction, then Preview. Different pre-existing bytes produce a conflict. Selecting a conflict direction only revises the preview. Apply requires a separate confirmation; every manual removal also needs approval of the exact plan. Existing file contents are protected in `%APPDATA%\dev.foldersync.desktop\versions`.
 
 Closing the window leaves the process running in the tray. Reopen with the shortcut or executable; single-instance handling shows the existing window. Quit from Settings or the tray stops the process. Triggers are off on new/imported/duplicated tasks. Only enable monitoring after checking the first manual result.
 
@@ -20,7 +20,7 @@ Closing the window leaves the process running in the tray. Reopen with the short
 - Calendar/periodic schedules, bounded retries/debounce/bandwidth, pause/cancel, close-to-tray.
 - English/German principal screens, local optional operation logs, no telemetry/account/cloud service.
 
-Automatic destructive plans stop for manual review. Roots and mode of an established task require a new task; this prevents carrying a baseline into a different folder pair. Recovery copies are ordinary file content, not an ACL/alternate-stream backup system. Real SMB, notification activation/deep links, high-DPI and comprehensive fault coverage remain pending; see QA for the full list.
+Automatic deletion defaults off. After a successful full manual reconciliation, two-way/mirror tasks can explicitly opt into proven baseline deletion within both per-run entry and percentage limits. Unknown deletions and Move still stop for review; see [policy details](docs/product/automatic-deletion.md). Roots and mode of an established task require a new task; this prevents carrying a baseline into a different folder pair. Recovery copies are ordinary file content, not an ACL/alternate-stream backup system. Real SMB, notification activation/deep links, high-DPI and comprehensive fault coverage remain pending; see QA for the full list.
 
 ![Installed FolderSync dashboard](docs/product/evidence/installed-dashboard.png)
 

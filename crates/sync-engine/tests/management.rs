@@ -62,7 +62,7 @@ fn legacy_index_migration_preserves_task_configuration() {
     let version: i64 = db
         .query_row("PRAGMA user_version", [], |r| r.get(0))
         .unwrap();
-    assert_eq!(version, 2);
+    assert_eq!(version, 3);
 }
 #[test]
 fn import_is_atomic_and_disables_triggers() {

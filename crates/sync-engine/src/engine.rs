@@ -137,6 +137,7 @@ impl Engine {
         syncfs::Matcher::new(&t.scope)?;
         crate::scheduler::next_due(&t.schedule, chrono::Local::now())?;
         let (a, b) = validate_roots(t, self.storage())?;
+        self.validate_deletion_policy(t, &a, &b)?;
         if let Ok(old) = self.index.task(&t.id) {
             if old.schedule != t.schedule {
                 self.index.db.execute(
@@ -206,7 +207,7 @@ impl Engine {
             let last:Option<String>=self.index.db.query_row("SELECT id FROM runs WHERE task=? AND status!='Preview' ORDER BY rowid DESC LIMIT 1",[&t.id],|r|r.get(0)).optional()?;
             let last_run=last.map(|id|self.plan_header(&id)).transpose()?;
             let pending_conflicts:i64=self.index.db.query_row("SELECT COUNT(*) FROM conflicts WHERE task=?",[&t.id],|r|r.get(0))?;
-            Ok(TaskStatus{task_id:t.id.clone(),last_run,pending_conflicts:pending_conflicts as u64,next_run:self.setting(&format!("next/{}",t.id))?.and_then(|s|s.parse().ok())})
+            Ok(TaskStatus{task_id:t.id.clone(),last_run,pending_conflicts:pending_conflicts as u64,next_run:self.setting(&format!("next/{}",t.id))?.and_then(|s|s.parse().ok()),deletion_baseline_run:self.deletion_baseline_run(&t)?})
         }).collect()
     }
     pub(crate) fn validate(&self, t: &Task) -> Result<(String, String)> {
@@ -367,6 +368,7 @@ impl Engine {
             metrics,
             created_at: now(),
             status: "Preview".into(),
+            deletion_review: None,
         };
         self.index.put_plan(&p)?;
         Ok(p)
@@ -394,6 +396,14 @@ impl Engine {
         Ok(p)
     }
     pub fn apply(&mut self, id: &str, destructive: bool) -> Result<Plan> {
+        self.apply_internal(id, destructive, true)
+    }
+    pub(crate) fn apply_internal(
+        &mut self,
+        id: &str,
+        destructive: bool,
+        manual: bool,
+    ) -> Result<Plan> {
         self.cancel.store(false, Ordering::Relaxed);
         let mut p = self.index.plan(id)?;
         let _progress = self.progress.begin(
@@ -535,6 +545,7 @@ impl Engine {
                         &o.path,
                         "A",
                         o.a.as_ref().context("Missing delete input")?,
+                        true,
                         &mut p.metrics,
                     )?,
                     Action::DeleteB => self.remove(
@@ -542,6 +553,7 @@ impl Engine {
                         &o.path,
                         "B",
                         o.b.as_ref().context("Missing delete input")?,
+                        true,
                         &mut p.metrics,
                     )?,
                     _ => {}
@@ -559,7 +571,14 @@ impl Engine {
                         .0 == o.a.as_ref().unwrap().digest,
                         "Move destination changed; source preserved"
                     );
-                    self.remove(&p.task, &o.path, "A", o.a.as_ref().unwrap(), &mut p.metrics)?;
+                    self.remove(
+                        &p.task,
+                        &o.path,
+                        "A",
+                        o.a.as_ref().unwrap(),
+                        false,
+                        &mut p.metrics,
+                    )?;
                 }
                 self.index.db.execute(
                     "UPDATE journal SET status='Complete' WHERE run=? AND path=?",
@@ -644,14 +663,22 @@ impl Engine {
             p.status
                 .push_str(&format!("; retention cleanup pending: {error}"));
         }
-        self.index.db.execute(
+        let transaction = self.index.db.transaction()?;
+        transaction.execute(
             "UPDATE tasks SET generation=generation+1 WHERE id=?",
             [&p.task.id],
         )?;
-        self.index.db.execute(
+        transaction.execute(
             "UPDATE runs SET json=?,status=? WHERE id=?",
             params![serde_json::to_string(&p)?, p.status, p.id],
         )?;
+        if manual && result.is_ok() && p.status == "Applied" && p.metrics.reconciliations == 1 {
+            transaction.execute(
+                "INSERT OR REPLACE INTO baseline_reviews VALUES(?,?)",
+                params![p.task.id, crate::deletion::manual_review_json(&p)?],
+            )?;
+        }
+        transaction.commit()?;
         let keys = p.operations.iter().map(|o| path_key(&o.path)).collect();
         self.index.update_ancestors(&p.task.id, "A", &keys)?;
         self.index.update_ancestors(&p.task.id, "B", &keys)?;
@@ -738,9 +765,23 @@ impl Engine {
         path: &str,
         side: &str,
         expected: &Entry,
+        require_other_absent: bool,
         m: &mut Metrics,
     ) -> Result<()> {
         let root = if side == "A" { &t.a } else { &t.b };
+        let check_absence = || -> Result<()> {
+            if !require_other_absent {
+                return Ok(());
+            }
+            self.validate(t)?;
+            let other = if side == "A" { &t.b } else { &t.a };
+            match fs::symlink_metadata(syncfs::safe_path(other, path)?) {
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+                Err(error) => Err(error.into()),
+                Ok(_) => bail!("Deleted side reappeared; originals preserved; preview again"),
+            }
+        };
+        check_absence()?;
         let actual = self
             .read_entry(root, path, &t.scope, m)?
             .context("Delete input vanished")?;
@@ -769,6 +810,7 @@ impl Engine {
                 self.read_entry(root, path, &t.scope, m)?.as_ref() == Some(expected),
                 "Delete input changed during backup"
             );
+            check_absence()?;
             #[cfg(windows)]
             {
                 use std::os::windows::io::AsRawHandle;
@@ -831,6 +873,7 @@ impl Engine {
             t.monitor = false;
             t.login = false;
             t.schedule = Schedule::default();
+            t.deletion_policy.enabled = false;
             validate_roots(t, self.storage())?;
             syncfs::Matcher::new(&t.scope)?;
         }

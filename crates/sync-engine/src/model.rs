@@ -48,6 +48,7 @@ pub struct Task {
     pub history_cap: u32,
     pub schedule: Schedule,
     pub login: bool,
+    pub deletion_policy: DeletionPolicy,
 }
 impl Default for Task {
     fn default() -> Self {
@@ -67,8 +68,44 @@ impl Default for Task {
             history_cap: 10,
             schedule: Schedule::default(),
             login: false,
+            deletion_policy: DeletionPolicy::default(),
         }
     }
+}
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(default)]
+pub struct DeletionPolicy {
+    pub enabled: bool,
+    pub max_entries: u32,
+    pub max_percent: u32,
+}
+impl Default for DeletionPolicy {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            max_entries: 20,
+            max_percent: 10,
+        }
+    }
+}
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub enum DeletionReason {
+    Approved,
+    Disabled,
+    BaselineApprovalRequired,
+    UnprovenDeletion,
+    EntryLimit,
+    PercentLimit,
+    MoveRequiresReview,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct DeletionReview {
+    pub reason: DeletionReason,
+    pub entries: u64,
+    pub baseline_entries: u64,
+    pub max_entries: u32,
+    pub max_percent: u32,
+    pub baseline_run: Option<String>,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Schedule {
@@ -130,6 +167,8 @@ pub struct Plan {
     pub baseline_generation: i64,
     pub created_at: u64,
     pub status: String,
+    #[serde(default)]
+    pub deletion_review: Option<DeletionReview>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Version {
@@ -161,6 +200,7 @@ pub struct TaskStatus {
     pub last_run: Option<PlanHeader>,
     pub pending_conflicts: u64,
     pub next_run: Option<i64>,
+    pub deletion_baseline_run: Option<String>,
 }
 /// Presentation boundary: never includes the potentially large operation list.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -170,6 +210,8 @@ pub struct PlanHeader {
     pub metrics: Metrics,
     pub created_at: u64,
     pub status: String,
+    #[serde(default)]
+    pub deletion_review: Option<DeletionReview>,
     #[serde(default)]
     pub summary: PlanSummary,
 }

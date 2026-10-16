@@ -1,0 +1,15 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.15s
+     Running tests\automatic_deletion.rs (target\debug\deps\automatic_deletion-a525456698c26db3.exe)
+
+running 7 tests
+test automatic_baselines_do_not_substitute_for_explicit_manual_approval ... ok
+test mirror_extras_without_a_common_baseline_remain_manual ... ok
+test percentage_boundary_uses_known_baseline_and_whole_tree_loss_stops ... ok
+test policy_and_manual_approval_persist_but_imports_cannot_enable_deletion ... ok
+test entry_and_percentage_limits_stop_batches_before_any_mutation ... ok
+test native_both_side_deletions_are_protected_and_conflicts_still_preserve_edits ... ok
+test scope_changes_require_new_manual_review_and_move_cannot_opt_in ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.01s
+

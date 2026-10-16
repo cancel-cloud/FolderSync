@@ -47,7 +47,7 @@ Renames initially remain an explicitly reported create plus protected deletion. 
 | B-only file | Retain | Propose protected deletion with explicit review | Retain |
 | A deleted after baseline | Retain B | Propose protected deletion | Retain B |
 
-Mirror deletion on first run always requires explicit review. Move always requires destructive confirmation. Automatic jobs cannot silently approve a first-run conflict, new destructive plan, or mass-deletion threshold. Every removal requires the checkbox and separate confirmation bound to the exact plan and root identities; no additional numeric mass-delete threshold is implemented. Background plans with any removal wait for review.
+Mirror deletion on first run always requires explicit review. Move always requires destructive confirmation. Manual removals require the checkbox and separate confirmation bound to the exact plan and root identities. Background deletion defaults off. Two-way/mirror tasks may explicitly opt in after a successful full manual reconciliation for the same roots/mode/scope. Only unchanged common-baseline removals within both configured entry and percentage limits then execute automatically; unproven removals and exceeded limits wait for exact-plan review. Limits count files and directories per run and do not accumulate across runs. See automatic-deletion.md for the index-derived denominator, approval persistence and revalidation rules.
 
 ## Preview and Apply
 

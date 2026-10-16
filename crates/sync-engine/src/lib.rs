@@ -1,5 +1,6 @@
 //! Rust-owned filesystem synchronization and persistent state.
 mod automation;
+mod deletion;
 mod engine;
 pub mod fs;
 mod index;
