@@ -16,6 +16,7 @@ mod notification_status;
 mod presentation;
 mod progress_runtime;
 mod startup;
+mod storage_location;
 fn command_error(error: &anyhow::Error) -> String {
     if error.is::<foldersync_engine::Cancelled>() {
         "[FolderSync:Cancelled]".into()
@@ -213,6 +214,25 @@ async fn storage(r: State<'_, Runtime>) -> Result<String, String> {
     work(r.inner().clone(), |e| Ok(e.storage().display().to_string())).await
 }
 #[tauri::command]
+async fn open_storage(r: State<'_, Runtime>, task_id: Option<String>) -> Result<(), String> {
+    let path = work(r.inner().clone(), move |e| {
+        if let Some(ref id) = task_id {
+            anyhow::ensure!(
+                e.tasks()?.iter().any(|t| &t.id == id)
+                    || e.recovery_tasks()?.iter().any(|t| &t.task.id == id),
+                "Unknown saved task"
+            );
+        }
+        storage_location::directory(e.storage(), task_id.as_deref())
+    })
+    .await?;
+    std::process::Command::new("explorer.exe")
+        .arg(path)
+        .spawn()
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+#[tauri::command]
 fn stop(r: State<'_, Runtime>) {
     r.cancel.store(true, Ordering::Relaxed);
 }
@@ -380,6 +400,8 @@ fn main() {
             startup::set_startup,
             notification_status::notification_status,
             notification_status::send_test_notification,
+            notification_status::open_notification_settings,
+            open_storage,
             disable_tasks,
             delete_tasks,
             tasks,

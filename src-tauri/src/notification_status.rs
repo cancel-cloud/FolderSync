@@ -12,6 +12,7 @@ pub struct NotificationStatus {
     windows_error: Option<String>,
     // ToastNotifier.Setting does not report these independent OS preferences.
     banners: Option<bool>,
+    presentation: String,
     sound: Option<bool>,
     do_not_disturb: Option<bool>,
 }
@@ -30,15 +31,56 @@ pub fn notification_status(
     drop(engine);
     let app_id = notification_app_id(&app)?;
     let (windows_setting, windows_error) = system_setting(&app_id);
+    let banners = configured_banners(&app_id);
     Ok(NotificationStatus {
         app_enabled,
         app_id,
         windows_setting,
         windows_error,
-        banners: None,
+        banners,
+        presentation: presentation_state().into(),
         sound: None,
         do_not_disturb: None,
     })
+}
+
+fn configured_banners(app_id: &str) -> Option<bool> {
+    windows_registry::CURRENT_USER
+        .open(format!(
+            r"Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\{app_id}"
+        ))
+        .ok()?
+        .get_u32("ShowBanner")
+        .ok()
+        .map(|value| value != 0)
+}
+
+fn presentation_state() -> &'static str {
+    use windows_sys::Win32::UI::Shell::*;
+    let mut state = 0;
+    // Read only: never changes Windows notification or focus preferences.
+    if unsafe { SHQueryUserNotificationState(&mut state) } < 0 {
+        return "unknown";
+    }
+    match state {
+        QUNS_ACCEPTS_NOTIFICATIONS => "available",
+        QUNS_NOT_PRESENT => "away",
+        QUNS_BUSY => "busy",
+        QUNS_RUNNING_D3D_FULL_SCREEN => "fullscreen",
+        QUNS_PRESENTATION_MODE => "presentation",
+        QUNS_QUIET_TIME => "quiet_time",
+        QUNS_APP => "app",
+        _ => "unknown",
+    }
+}
+
+#[tauri::command]
+pub fn open_notification_settings() -> Result<(), String> {
+    std::process::Command::new("explorer.exe")
+        .arg("ms-settings:notifications")
+        .spawn()
+        .map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 // Match the current plugin's Windows app-ID choice, including development builds.

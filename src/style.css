@@ -530,6 +530,40 @@ label small {
   color: #64788b;
   border-radius: 5px;
 }
+.storage-location {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px;
+  background: #f5f7f9;
+  border: 1px solid #e2e7ed;
+  border-radius: 5px;
+}
+.storage-location > div {
+  min-width: 0;
+}
+.storage-location strong,
+.storage-location code {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.storage-location code {
+  color: #64788b;
+  margin-top: 4px;
+}
+.storage-location button {
+  flex-shrink: 0;
+}
+textarea:placeholder-shown {
+  overflow: hidden;
+}
+.notification-feedback {
+  color: #167e6f;
+}
+.local-data-actions {
+  margin-bottom: 0;
+}
 .back {
   display: flex;
   gap: 6px;

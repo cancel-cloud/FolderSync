@@ -160,7 +160,7 @@ fn is_reparse(metadata: &fs::Metadata) -> bool {
     }
 }
 
-fn reject_reparse_ancestors(path: &Path) -> Result<()> {
+pub(crate) fn reject_reparse_ancestors(path: &Path) -> Result<()> {
     for ancestor in path.ancestors() {
         let m = fs::symlink_metadata(ancestor)?;
         ensure!(

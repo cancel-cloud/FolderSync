@@ -2,11 +2,11 @@ import { useEffect, useRef } from "react";
 import { Button } from "./ui/button";
 
 export const filterExamples = {
-  include: "*.step\n*.stp",
-  exclude: "*.tmp\n~$*",
-  folder_include: "Projects\nDrawings",
-  folder_exclude: ".git\nnode_modules\nArchive",
-  selected_folders: "Projects\nDrawings",
+  include: "*.step, *.stp",
+  exclude: "*.tmp, ~$*",
+  folder_include: "Projects, Drawings",
+  folder_exclude: ".git, node_modules, Archive",
+  selected_folders: "Projects, Drawings",
 };
 
 export function FilterHelp({
