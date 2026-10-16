@@ -1,0 +1,33 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.03s
+     Running tests\operation_review.rs (target\debug\deps\operation_review-40d8a8da4f3f9a4b.exe)
+
+running 2 tests
+test review_exposes_creation_update_and_directory_types_through_persistence_and_paging ... FAILED
+test ignore_skips_only_this_review_preserves_baseline_and_keeps_conflict_attention ... FAILED
+
+failures:
+
+---- review_exposes_creation_update_and_directory_types_through_persistence_and_paging stdout ----
+
+thread 'review_exposes_creation_update_and_directory_types_through_persistence_and_paging' (3324) panicked at crates\sync-engine\tests\operation_review.rs:13:5:
+assertion `left == right` failed
+  left: Null
+ right: "Create"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- ignore_skips_only_this_review_preserves_baseline_and_keeps_conflict_attention stdout ----
+
+thread 'ignore_skips_only_this_review_preserves_baseline_and_keeps_conflict_attention' (33052) panicked at crates\sync-engine\tests\operation_review.rs:25:5:
+assertion `left == right` failed
+  left: String("Conflict")
+ right: "Ignore"
+
+
+failures:
+    ignore_skips_only_this_review_preserves_baseline_and_keeps_conflict_attention
+    review_exposes_creation_update_and_directory_types_through_persistence_and_paging
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+
+error: test failed, to rerun pass `-p foldersync-engine --test operation_review`

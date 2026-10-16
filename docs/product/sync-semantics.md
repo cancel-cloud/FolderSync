@@ -78,3 +78,9 @@ There is no reset control. Deleting a task configuration requires confirmation a
 Root/mode edits require a fresh task. Included/excluded presence is distinguished before planning: hidden/system objects or ancestors on either side suppress operations for that path, rather than masquerading as deletion. Explicit restore inspects current contents independently of sync filters and protects them before restoring.
 
 Directory case spelling is preserved for display, while comparison uses normalized lookup keys. Unicode lowercasing is conservative rather than a complete Windows ordinal case-fold implementation; ambiguous collisions fail. Renames are create plus delete, not an atomic cross-root rename. Mtime is preserved for copied file content; ACL/alternate-stream/directory-time parity is not guaranteed.
+
+## Review operation types and explicit deferral
+
+Each operation records its executor direction/action plus a typed review kind: Create (new destination file), Update (existing destination file), Mkdir (directory transfer), DeleteToTrash (protected removal), Move, Conflict, Ignore or Unchanged. Kind is derived from the action and immutable input metadata whenever serialized, so older plans without a kind and stale supplied kind fields cannot misclassify execution. File copying remains the same verified executor operation for Create and Update.
+
+Keep both originals leaves the conflict unresolved and performs no file changes. Ignore for this run records an explicit skipped operation; it does not establish a common baseline, clear conflict attention or create a permanent exclusion. Other independent operations can still apply. Both choices only revise immutable Preview; Apply still requires separate confirmation. A new preview evaluates both originals again. An ignored conflict can be changed back to Keep both or a copy direction before Apply. Ignored conflicts count in unresolved totals, with an additional ignored subset count.

@@ -1,4 +1,4 @@
-import type { Action, Entry, Task } from "./types";
+import type { Action, Entry, Task, Operation, OperationKind } from "./types";
 export const locale = (language: string) =>
   language === "de" ? "de-DE" : "en-GB";
 export const formatDate = (seconds: number, language: string) =>
@@ -17,9 +17,25 @@ const actions: Record<Action, [string, string]> = {
   DeleteB: ["Remove from B", "Aus B entfernen"],
   MoveToB: ["Move A → B", "Verschieben A → B"],
   Conflict: ["Conflict", "Konflikt"],
+  Ignore: ["Ignore this run", "Diesen Lauf überspringen"],
 };
 export const actionLabel = (action: Action, language: string) =>
   actions[action][language === "de" ? 1 : 0];
+export function operationLabel(operation: Operation, language: string) {
+  const labels: Record<OperationKind, [string, string]> = {
+    Create: ["Create file", "Datei erstellen"],
+    Update: ["Update file", "Datei aktualisieren"],
+    Mkdir: ["Create folder", "Ordner erstellen"],
+    DeleteToTrash: ["Protected removal", "Geschützt entfernen"],
+    Move: ["Verified move", "Geprüft verschieben"],
+    Conflict: ["Conflict", "Konflikt"],
+    Ignore: ["Ignore this run", "Diesen Lauf überspringen"],
+    Unchanged: ["Unchanged", "Unverändert"],
+  };
+  return operation.kind
+    ? labels[operation.kind][language === "de" ? 1 : 0]
+    : actionLabel(operation.action, language);
+}
 const statuses: Record<string, string> = {
   Preview: "Vorschau",
   "Review required": "Prüfung erforderlich",
@@ -32,6 +48,7 @@ const statuses: Record<string, string> = {
   Failed: "Fehlgeschlagen",
   Planned: "Geplant",
   Conflict: "Konflikt",
+  Ignored: "Übersprungen",
   Unchanged: "Unverändert",
 };
 export function statusLabel(status: string, language: string): string {
@@ -45,6 +62,10 @@ export function statusLabel(status: string, language: string): string {
   return statuses[status] || status;
 }
 const reasons: Record<string, string> = {
+  "Explicit ignore for this run; conflict remains unresolved":
+    "Für diesen Lauf ausdrücklich übersprungen; der Konflikt bleibt offen.",
+  "Both originals preserved; conflict remains unresolved":
+    "Beide Originale bleiben erhalten; der Konflikt bleibt offen.",
   "Both sides differ from a common baseline, or there is no safe baseline":
     "Beide Seiten weichen vom gemeinsamen Ausgangszustand ab, oder es fehlt ein sicherer Ausgangszustand.",
   "Reviewed deletion; a protected version will be kept":

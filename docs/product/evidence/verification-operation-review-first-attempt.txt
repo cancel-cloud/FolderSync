@@ -1,0 +1,22 @@
+    Checking foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Checking foldersync v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\src-tauri)
+error: the borrowed expression implements the required traits
+  --> crates\sync-engine\tests\operation_review.rs:60:30
+   |
+60 |         serde_json::to_value(&p.operations.iter().find(|o| o.path == "new").unwrap()).unwrap()["kind"],
+   |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: change this to: `p.operations.iter().find(|o| o.path == "new").unwrap()`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_borrows_for_generic_args
+   = note: `-D clippy::needless-borrows-for-generic-args` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::needless_borrows_for_generic_args)]`
+
+error: the borrowed expression implements the required traits
+  --> crates\sync-engine\tests\operation_review.rs:67:30
+   |
+67 |         serde_json::to_value(&p.operations.iter().find(|o| o.path == "new").unwrap()).unwrap()["kind"],
+   |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: change this to: `p.operations.iter().find(|o| o.path == "new").unwrap()`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_borrows_for_generic_args
+
+error: could not compile `foldersync-engine` (test "operation_review") due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...

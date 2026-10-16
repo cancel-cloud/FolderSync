@@ -7,7 +7,10 @@ export function summarize(ops: Operation[]) {
     deletes: ops.filter((o) =>
       ["DeleteA", "DeleteB", "MoveToB"].includes(o.action),
     ).length,
-    conflicts: ops.filter((o) => o.action === "Conflict").length,
+    conflicts: ops.filter(
+      (o) => o.action === "Conflict" || o.action === "Ignore",
+    ).length,
+    ignored: ops.filter((o) => o.action === "Ignore").length,
     unchanged: ops.filter((o) => o.action === "Unchanged").length,
   };
 }

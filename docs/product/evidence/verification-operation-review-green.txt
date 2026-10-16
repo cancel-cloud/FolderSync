@@ -1,0 +1,10 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.23s
+     Running tests\operation_review.rs (target\debug\deps\operation_review-40d8a8da4f3f9a4b.exe)
+
+running 2 tests
+test ignore_skips_only_this_review_preserves_baseline_and_keeps_conflict_attention ... ok
+test review_exposes_creation_update_and_directory_types_through_persistence_and_paging ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
+

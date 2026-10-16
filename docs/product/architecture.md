@@ -52,3 +52,7 @@ Deleting configuration transactionally removes its active baseline, conflicts, q
 ## Task identifiers
 
 Each task keeps its immutable UUID for database relations, history, watcher queues and recovery. A separate editable identifier is displayed in the dashboard and editor, falling back to the UUID when blank. Active effective identifiers are unique under Unicode lowercase comparison; custom identifiers have at most 64 Unicode characters, no controls and no surrounding whitespace. Saving an identifier advances task generation, invalidating reviews without resetting baselines or rewriting historical snapshots. Existing JSON defaults to a blank identifier. Duplication uses an automatic identifier; import retains custom identifiers when unique and assigns automatic IDs to colliding copies. Archived identifiers do not reserve active user-facing names.
+
+## Typed review and ignored conflicts
+
+Operation serialization adds a computed OperationKind from action/metadata, retaining legacy deserialization and avoiding a second mutable source of operation truth. Plan summaries from memory and bounded SQLite queries count Ignore as unresolved plus an ignored subset. The executor skips Ignore without journaling or baseline advancement, keeps Attention and preserves persistent conflicts. No schema migration is needed for the additive review-kind field or the new action enum variant; earlier application versions cannot read newly ignored runs and should not be used to downgrade this build.

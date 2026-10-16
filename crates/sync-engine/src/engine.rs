@@ -414,15 +414,23 @@ impl Engine {
         let o = p
             .operations
             .iter_mut()
-            .find(|o| o.path == path && o.action == Action::Conflict)
+            .find(|o| o.path == path && matches!(o.action, Action::Conflict | Action::Ignore))
             .context("Conflict not found")?;
         o.action = match choice {
             "a" if o.a.is_some() => Action::CopyToB,
             "b" if o.b.is_some() => Action::CopyToA,
-            "ignore" => Action::Conflict,
+            "ignore" => Action::Ignore,
+            "keep" => Action::Conflict,
             _ => bail!("Choose an existing side or leave unresolved"),
         };
-        o.reason = "Explicit conflict choice; Apply is still required".into();
+        o.reason = if o.action == Action::Ignore {
+            "Explicit ignore for this run; conflict remains unresolved"
+        } else if choice == "keep" {
+            "Both originals preserved; conflict remains unresolved"
+        } else {
+            "Explicit conflict choice; Apply is still required"
+        }
+        .into();
         p.id = uuid::Uuid::new_v4().to_string();
         self.index.put_plan(&p)?;
         Ok(p)
@@ -540,8 +548,13 @@ impl Engine {
                     s.file_bytes = 0;
                     s.file_total = 0;
                 });
-                if matches!(o.action, Action::Conflict | Action::Unchanged) {
-                    o.status = if o.action == Action::Conflict {
+                if matches!(
+                    o.action,
+                    Action::Conflict | Action::Ignore | Action::Unchanged
+                ) {
+                    o.status = if o.action == Action::Ignore {
+                        "Ignored".into()
+                    } else if o.action == Action::Conflict {
                         "Conflict".into()
                     } else {
                         "Unchanged".into()
@@ -682,7 +695,10 @@ impl Engine {
         };
         p.status = match &result {
             Ok(_) => {
-                if p.operations.iter().any(|o| o.action == Action::Conflict) {
+                if p.operations
+                    .iter()
+                    .any(|o| matches!(o.action, Action::Conflict | Action::Ignore))
+                {
                     "Attention".into()
                 } else {
                     "Applied".into()
