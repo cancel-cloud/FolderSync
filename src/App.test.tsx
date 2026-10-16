@@ -100,7 +100,16 @@ test("nested conflict choice only revises preview; Apply requires its separate c
       case "tasks":
         return [task];
       case "statuses":
-        return [];
+        return current.status === "Applied"
+          ? [
+              {
+                task_id: task.id,
+                last_run: header(current),
+                pending_conflicts: 0,
+                next_run: null,
+              },
+            ]
+          : [];
       case "storage":
         return "state";
       case "preview":
@@ -124,7 +133,8 @@ test("nested conflict choice only revises preview; Apply requires its separate c
         };
         return header(current);
       case "apply":
-        return header({ ...current, status: "Applied" });
+        current = { ...current, status: "Applied" };
+        return header(current);
       default:
         return null;
     }
@@ -158,6 +168,11 @@ test("nested conflict choice only revises preview; Apply requires its separate c
       destructive: true,
     }),
   );
+  await screen.findByText(
+    "Run finished. See the actual result and protected versions.",
+  );
+  await user.click(screen.getByRole("button", { name: "All tasks" }));
+  expect(await screen.findByText("Applied")).toBeTruthy();
 });
 
 test("saved German preference localizes dashboard, conflict review and metadata", async () => {

@@ -1,0 +1,24 @@
+$ tauri "build"
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `pnpm build`
+$ tsc --noEmit && vite build
+vite v7.3.7 building client environment for production...
+transforming...
+✓ 1593 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.35 kB │ gzip:  0.26 kB
+dist/assets/index-CqbIwpmE.css   17.29 kB │ gzip:  5.00 kB
+dist/assets/index-B8JRQwwr.js   297.83 kB │ gzip: 93.40 kB
+✓ built in 7.82s
+   Compiling rusqlite v0.40.2
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+   Compiling foldersync v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\src-tauri)
+    Finished `release` profile [optimized] target(s) in 1m 22s
+       Built application at: C:\Users\Lukas\Developer\SyncFolders\target\release\foldersync.exe
+        Info Patching C:\Users\Lukas\Developer\SyncFolders\target\release\foldersync.exe with bundle type information: nsis
+        Info Target: x64
+     Running makensis to produce C:\Users\Lukas\Developer\SyncFolders\target\release\bundle\nsis\FolderSync_0.1.0_x64-setup.exe
+    Finished 1 bundle at:
+        C:\Users\Lukas\Developer\SyncFolders\target\release\bundle\nsis\FolderSync_0.1.0_x64-setup.exe (3.64 MiB)
+

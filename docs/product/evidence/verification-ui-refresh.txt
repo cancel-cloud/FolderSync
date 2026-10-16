@@ -1,0 +1,27 @@
+$ tsc --noEmit
+$ eslint src vite.config.ts
+$ vitest run
+
+ RUN  v3.2.7 C:/Users/Lukas/Developer/SyncFolders
+
+ ✓ src/review.test.ts (2 tests) 4ms
+ ✓ src/i18n.test.ts (2 tests) 36ms
+ ✓ src/App.test.tsx (3 tests) 1884ms
+   ✓ nested conflict choice only revises preview; Apply requires its separate confirmation  848ms
+   ✓ review requests bounded pages and resets paging when filters change  873ms
+
+ Test Files  3 passed (3)
+      Tests  7 passed (7)
+   Start at  12:53:33
+   Duration  9.34s (transform 3.52s, setup 0ms, collect 4.45s, tests 1.92s, environment 2.07s, prepare 1.08s)
+
+$ tsc --noEmit && vite build
+vite v7.3.7 building client environment for production...
+transforming...
+✓ 1593 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.35 kB │ gzip:  0.26 kB
+dist/assets/index-CqbIwpmE.css   17.29 kB │ gzip:  5.00 kB
+dist/assets/index-BQvZu0BF.js   298.13 kB │ gzip: 93.54 kB
+✓ built in 7.58s
