@@ -22,7 +22,7 @@ impl Index {
         )?;
         let version: i64 = db.query_row("PRAGMA user_version", [], |r| r.get(0))?;
         anyhow::ensure!(
-            version <= 3,
+            version <= 4,
             "Database schema is newer than this application; refusing downgrade"
         );
         db.busy_timeout(std::time::Duration::from_secs(5))?;
@@ -42,11 +42,12 @@ impl Index {
  CREATE TABLE IF NOT EXISTS displaced(path TEXT PRIMARY KEY,task TEXT NOT NULL,relative TEXT NOT NULL,side TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS conflicts(task TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,path TEXT NOT NULL,json TEXT NOT NULL,PRIMARY KEY(task,path));
  CREATE TABLE IF NOT EXISTS baseline_reviews(task TEXT PRIMARY KEY REFERENCES tasks(id) ON DELETE CASCADE,json TEXT NOT NULL);
+ CREATE TABLE IF NOT EXISTS recovery_tasks(id TEXT PRIMARY KEY,json TEXT NOT NULL,root_a TEXT NOT NULL,root_b TEXT NOT NULL,generation INTEGER NOT NULL,archived_at INTEGER NOT NULL);
  ")?;
         if version < 2 {
             db.execute_batch("ALTER TABLE entries ADD COLUMN index_generation INTEGER NOT NULL DEFAULT 0; ALTER TABLE entries ADD COLUMN file_id TEXT;")?;
         }
-        db.execute_batch("PRAGMA user_version=3; COMMIT; UPDATE runs SET status='Interrupted' WHERE status='Applying';")?;
+        db.execute_batch("PRAGMA user_version=4; COMMIT; UPDATE runs SET status='Interrupted' WHERE status='Applying';")?;
         Ok(Self {
             db,
             storage: storage.to_path_buf(),
@@ -70,6 +71,11 @@ impl Index {
             .query_row("SELECT generation FROM tasks WHERE id=?", [id], |r| {
                 r.get(0)
             })?)
+    }
+    pub fn recovery_context(&self, id: &str) -> Result<(Task, bool, i64, String, String)> {
+        let (json,archived,generation,a,b):(String,bool,i64,String,String)=self.db.query_row(
+            "SELECT json,0,generation,root_a,root_b FROM tasks WHERE id=?1 UNION ALL SELECT json,1,generation,root_a,root_b FROM recovery_tasks WHERE id=?1 LIMIT 1",[id],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?)))?;
+        Ok((serde_json::from_str(&json)?, archived, generation, a, b))
     }
     pub fn roots(&self, id: &str) -> Result<(String, String)> {
         Ok(self

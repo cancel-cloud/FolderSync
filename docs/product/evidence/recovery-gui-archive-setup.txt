@@ -1,0 +1,47 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.99s
+     Running `target\debug\examples\archive_gui_fixture.exe C:/Users/Lukas/AppData/Roaming/dev.foldersync.desktop`
+[
+  {
+    "task": {
+      "id": "d849e90f-ec00-4b67-93b5-c09bfc8dca1f",
+      "name": "FolderSync automatic deletion acceptance",
+      "a": "C:/Users/Lukas/Developer/SyncFolders/.tools/FolderSync-AutoDelete-GUI/A",
+      "b": "C:/Users/Lukas/Developer/SyncFolders/.tools/FolderSync-AutoDelete-GUI/B",
+      "mode": "TwoWay",
+      "group": "GUI-Automatic",
+      "scope": {
+        "include": [],
+        "exclude": [],
+        "folder_include": [],
+        "folder_exclude": [],
+        "selected_folders": [],
+        "exclude_root_files": false,
+        "skip_hidden": false,
+        "skip_system": false
+      },
+      "monitor": false,
+      "debounce_secs": 1,
+      "retries": 3,
+      "bandwidth_kib": 0,
+      "history_patterns": [],
+      "history_cap": 10,
+      "schedule": {
+        "kind": "",
+        "interval_minutes": 0,
+        "hour": 0,
+        "minute": 0,
+        "weekdays": [],
+        "month_day": 0
+      },
+      "login": false,
+      "deletion_policy": {
+        "enabled": false,
+        "max_entries": 20,
+        "max_percent": 10
+      }
+    },
+    "versions": 1,
+    "archived_at": 1792153952
+  }
+]

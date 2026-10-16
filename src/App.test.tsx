@@ -66,6 +66,80 @@ afterEach(() => {
   vi.clearAllMocks();
   api.listeners.clear();
 });
+test("deleted-task recovery stays separate from synchronization and restore requires confirmation", async () => {
+  const task = {
+    ...newTask(),
+    name: "Deleted pair",
+    a: "C:/owned/A",
+    b: "C:/owned/B",
+  };
+  const version = {
+    id: "version",
+    task_id: task.id,
+    side: "B",
+    path: "recover.txt",
+    digest: "old",
+    stored: "state/versions/version",
+    created_at: 1,
+  };
+  let applied = false;
+  const oldPlan = header({
+    id: "archived-plan",
+    task,
+    created_at: 1,
+    status: "Preview",
+    operations: [],
+    metrics: {
+      scanned_entries: 0,
+      hashed_bytes: 0,
+      copied_bytes: 0,
+      queued_paths: 0,
+      reconciliations: 0,
+      watch_events: 0,
+    },
+  });
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks" || command === "statuses") return [];
+    if (command === "history") return [oldPlan];
+    if (command === "operation_page") return { total: 0, operations: [] };
+    if (command === "recovery_tasks")
+      return [{ task, versions: 1, archived_at: 2 }];
+    if (command === "versions") return [version];
+    if (command === "restore_preview")
+      return {
+        id: "review",
+        version,
+        current: null,
+        archived: true,
+        target_root: task.b,
+      };
+    if (command === "restore_apply") applied = true;
+    return null;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "Recovery" }));
+  await user.click(
+    await screen.findByRole("button", {
+      name: "Open recovery for Deleted pair",
+    }),
+  );
+  expect(screen.queryByRole("button", { name: "New preview" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Delete task" })).toBeNull();
+  await user.click(screen.getByRole("button", { name: "Review restore" }));
+  const dialog = await screen.findByRole("dialog", {
+    name: "Restore protected version?",
+  });
+  expect(dialog.textContent).toContain("C:/owned/B/recover.txt");
+  expect(applied).toBe(false);
+  await user.click(screen.getByRole("button", { name: "Confirm" }));
+  await waitFor(() => expect(applied).toBe(true));
+  await user.click(screen.getByRole("button", { name: /archived-plan/ }));
+  expect(
+    screen.queryByRole("button", { name: "Apply reviewed plan" }),
+  ).toBeNull();
+  expect(screen.queryByRole("button", { name: "Fresh preview" })).toBeNull();
+});
 test("enabling automatic deletion requires a separate policy confirmation before saving", async () => {
   let saved = { ...newTask(), name: "Approved baseline", a: "A", b: "B" };
   api.invoke.mockImplementation(

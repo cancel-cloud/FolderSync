@@ -1,0 +1,11 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.49s
+     Running tests\deleted_task_recovery.rs (target\debug\deps\deleted_task_recovery-e2e5ca34fdc083db.exe)
+
+running 3 tests
+test archived_restore_rejects_replaced_root_but_does_not_require_other_side_online ... ok
+test deleted_task_versions_remain_reviewable_and_restorable_without_reactivating_sync ... ok
+test legacy_orphan_catalog_is_recovered_from_recorded_run_roots ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.95s
+

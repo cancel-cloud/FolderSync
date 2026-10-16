@@ -187,6 +187,16 @@ pub struct RestorePreview {
     pub current: Option<Entry>,
     pub root_identity: String,
     pub generation: i64,
+    #[serde(default)]
+    pub archived: bool,
+    #[serde(default)]
+    pub target_root: PathBuf,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct RecoveryTask {
+    pub task: Task,
+    pub versions: u64,
+    pub archived_at: u64,
 }
 pub fn now() -> u64 {
     std::time::SystemTime::now()

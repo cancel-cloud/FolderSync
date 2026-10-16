@@ -1,0 +1,52 @@
+$ vitest run
+
+ RUN  v3.2.7 C:/Users/Lukas/Developer/SyncFolders
+
+ ✓ src/review.test.ts (2 tests) 5ms
+ ✓ src/i18n.test.ts (2 tests) 37ms
+ ❯ src/App.test.tsx (11 tests | 1 failed) 5125ms
+   × deleted-task recovery stays separate from synchronization and restore requires confirmation 717ms
+     → expected <button class="button primary"></button> to be null
+   ✓ enabling automatic deletion requires a separate policy confirmation before saving  412ms
+   ✓ group filtering clears hidden selections and bulk reassignment refreshes collapsible groups  792ms
+   ✓ saving a selected task into another group clears its hidden bulk selection  596ms
+   ✓ nested conflict choice only revises preview; Apply requires its separate confirmation  637ms
+   ✓ saved German preference localizes dashboard, conflict review and metadata 168ms
+   ✓ review requests bounded pages and resets paging when filters change  872ms
+   ✓ terminal Apply result Failed: destination locked updates the dashboard and requires a fresh preview  341ms
+   ✓ terminal Apply result Cancelled updates the dashboard and requires a fresh preview  328ms
+   ✓ latest progress is visible during background work and Cancel reaches the native stop command 136ms
+   ✓ cancelled discovery refreshes persisted status and shows a localized cancellation message 124ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/App.test.tsx > deleted-task recovery stays separate from synchronization and restore requires confirmation
+AssertionError: expected <button class="button primary"></button> to be null
+
+- Expected: 
+null
+
++ Received: 
+<button
+  class="button primary"
+>
+  Apply reviewed plan
+</button>
+
+ ❯ src/App.test.tsx:125:69
+    123|   await waitFor(() => expect(applied).toBe(true));
+    124|   await user.click(screen.getByRole("button",{name:/archived-plan/}));
+    125|   expect(screen.queryByRole("button",{name:"Apply reviewed plan"})).to…
+       |                                                                     ^
+    126|   expect(screen.queryByRole("button",{name:"Fresh preview"})).toBeNull…
+    127| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 14 passed (15)
+   Start at  14:31:20
+   Duration  12.69s (transform 3.87s, setup 0ms, collect 4.64s, tests 5.17s, environment 2.06s, prepare 1.11s)
+
+[ELIFECYCLE] Test failed. See above for more details.
