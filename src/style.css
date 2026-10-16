@@ -863,3 +863,173 @@ footer span {
     flex-basis: calc(100% - 30px);
   }
 }
+
+/* Reserve the scrollbar so preference changes do not shift the workspace. */
+html {
+  scrollbar-gutter: stable;
+}
+header {
+  min-height: 66px;
+  height: auto;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.preference-status {
+  display: inline-block;
+  min-width: 85px;
+  text-align: right;
+}
+.settings-main {
+  max-width: 1150px;
+}
+.settings-main > .alert {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  max-width: min(480px, 80vw);
+  z-index: 15;
+  margin: 0;
+}
+.settings-main > .working {
+  position: fixed;
+  right: 24px;
+  bottom: 90px;
+  max-width: 600px;
+}
+.settings-tabs {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid #dce3eb;
+  margin-bottom: 24px;
+}
+.settings-tabs button {
+  padding: 12px 20px;
+  color: #627086;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+}
+.settings-tabs button[aria-selected="true"] {
+  color: #126757;
+  border-bottom-color: #187e6d;
+  font-weight: 600;
+}
+.settings-shell > .panel > label + label {
+  margin-top: 18px;
+}
+.notification-status {
+  border-left: 3px solid #d1e9e2;
+  padding-left: 14px;
+  margin-bottom: 20px;
+}
+.notification-status p {
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.panel-heading h2 {
+  margin: 0;
+}
+.filter-help {
+  width: min(960px, 94vw);
+  max-height: 88vh;
+  overflow: auto;
+}
+.filter-help table {
+  margin: 18px 0;
+}
+.filter-help td:first-child {
+  min-width: 130px;
+}
+.filter-help th {
+  position: sticky;
+  top: -28px;
+}
+.filter-help code {
+  white-space: nowrap;
+}
+.selection-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-right: 1px solid #dce3eb;
+  padding-right: 12px;
+  margin-right: 6px;
+}
+.selection-actions span {
+  white-space: nowrap;
+}
+.dashboard-toolbar select {
+  width: auto;
+  min-width: 130px;
+}
+.view-switch {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.task-title {
+  min-width: 0;
+}
+.task-title h2,
+.task-title small {
+  overflow-wrap: anywhere;
+}
+.task-group-items {
+  display: grid;
+  gap: 16px;
+}
+.task-view-tiles .task-group-items {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr));
+}
+.task-view-tiles .task-card {
+  max-width: 650px;
+}
+.task-view-tiles .task-bottom {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 14px;
+}
+.task-view-tiles .task-bottom > div {
+  flex-wrap: wrap;
+}
+.task-view-list .task-card {
+  display: grid;
+  grid-template-columns: minmax(230px, 1fr) minmax(240px, 1.3fr);
+  align-items: center;
+}
+.task-view-list .task-bottom {
+  grid-column: 1 / -1;
+}
+.task-view-list .task-icon {
+  display: none;
+}
+.task-view-list .task-top {
+  padding-bottom: 19px;
+}
+.task-view-list .paths {
+  padding: 12px 20px;
+}
+@media (max-width: 1050px) {
+  .task-view-list .task-card {
+    grid-template-columns: 1fr;
+  }
+  .task-view-list .task-bottom {
+    grid-column: auto;
+  }
+  .selection-actions {
+    border: 0;
+    flex-wrap: wrap;
+  }
+  .header-actions {
+    flex-wrap: wrap;
+  }
+}

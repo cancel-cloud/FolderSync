@@ -6,6 +6,7 @@ pub mod fs;
 mod index;
 mod lineage;
 mod logging;
+mod management;
 mod model;
 mod parallel;
 mod progress;

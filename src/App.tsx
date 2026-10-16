@@ -49,6 +49,8 @@ import {
   deletionReasonLabel,
 } from "./i18n";
 import "./style.css";
+import packageInfo from "../package.json";
+import { FilterHelp, filterExamples } from "./components/filter-help";
 const englishModeLabels: Record<Mode, string> = {
   TwoWay: "Two-way sync",
   Mirror: "Mirror A → B",
@@ -99,6 +101,15 @@ export default function App() {
     [sampleResult, setSampleResult] = useState(""),
     [operationPage, setOperationPage] = useState(0),
     [sort, setSort] = useState("path");
+  const [settingsTab, setSettingsTab] = useState("general");
+  const [taskView, setTaskView] = useState("tiles");
+  const [showFilterHelp, setShowFilterHelp] = useState(false);
+  const [notificationStatus, setNotificationStatus] = useState<{
+    app_enabled: boolean;
+    app_id: string;
+    windows_setting: string;
+    windows_error?: string | null;
+  } | null>(null);
   const [progress, setProgress] = useState<RunProgress | null>(null);
   const [failedPlanId, setFailedPlanId] = useState("");
   const [recoveryTasks, setRecoveryTasks] = useState<RecoveryTask[]>([]);
@@ -214,6 +225,13 @@ export default function App() {
           Move: "Jede Übertragung nach B prüfen, bevor die Quelle entfernt wird.",
         }
       : englishModeDescriptions;
+  useEffect(() => {
+    if (page === "settings") {
+      void invoke<typeof notificationStatus>("notification_status")
+        .then(setNotificationStatus)
+        .catch(() => setNotificationStatus(null));
+    }
+  }, [page, notifications]);
   async function refresh() {
     const [t, s] = await Promise.all([
       invoke<Task[]>("tasks"),
@@ -236,6 +254,7 @@ export default function App() {
       invoke<string | null>("setting", { key: "notifications" }),
       invoke<string | null>("setting", { key: "log_level" }),
       invoke<string | null>("setting", { key: "close_behavior" }),
+      invoke<string | null>("setting", { key: "task_view" }),
     ])
       .then(
         ([
@@ -247,6 +266,7 @@ export default function App() {
           notifications,
           logging,
           closing,
+          view,
         ]) => {
           if (mounted) {
             setTasks(tasks);
@@ -257,6 +277,7 @@ export default function App() {
             setNotifications(notifications !== "off");
             setLogLevel(logging || "off");
             setCloseBehavior(closing === "quit" ? "quit" : "tray");
+            setTaskView(view === "list" ? "list" : "tiles");
           }
         },
       )
@@ -555,6 +576,62 @@ export default function App() {
                     : tr("Settings", "Einstellungen")}
           </div>
           <div className="header-actions">
+            {page === "dashboard" && selected.length > 0 && (
+              <div
+                className="selection-actions"
+                aria-label={tr(
+                  "Selected task actions",
+                  "Aktionen für ausgewählte Aufgaben",
+                )}
+              >
+                <span>
+                  {selected.length} {tr("selected", "ausgewählt")}
+                </span>
+                <Button
+                  variant="outline"
+                  disabled={busy}
+                  onClick={() =>
+                    void perform(async () => {
+                      await invoke("disable_tasks", { ids: [...selected] });
+                      setSelected([]);
+                      await refresh();
+                    })
+                  }
+                >
+                  {tr("Disable selected", "Auswahl deaktivieren")}
+                </Button>
+                <Button
+                  variant="destructive"
+                  disabled={busy}
+                  onClick={() => {
+                    const ids = [...selected];
+                    setConfirm({
+                      title: tr(
+                        "Delete selected tasks?",
+                        "Ausgewählte Aufgaben löschen?",
+                      ),
+                      body: tr(
+                        `Remove ${ids.length} task configurations and their sync baselines? Files in A/B and protected backups stay intact.`,
+                        `${ids.length} Aufgabenkonfigurationen und ihre Sync-Ausgangszustände entfernen? Dateien in A/B und geschützte Sicherungen bleiben erhalten.`,
+                      ),
+                      action: () =>
+                        perform(async () => {
+                          await invoke("delete_tasks", { ids });
+                          setSelected([]);
+                          await refresh();
+                        }),
+                    });
+                  }}
+                >
+                  {tr("Delete selected", "Auswahl löschen")}
+                </Button>
+              </div>
+            )}
+            {page === "settings" && (
+              <span className="preference-status" role="status">
+                {busy ? tr("Saving…", "Speichern…") : ""}
+              </span>
+            )}
             <span className="status-dot" />
             {paused
               ? tr("Automation paused", "Automatik pausiert")
@@ -583,7 +660,10 @@ export default function App() {
             </Button>
           </div>
         </header>
-        <main aria-busy={busy}>
+        <main
+          aria-busy={busy}
+          className={page === "settings" ? "settings-main" : undefined}
+        >
           {error && (
             <div className="alert error" role="alert">
               <strong>
@@ -610,7 +690,7 @@ export default function App() {
               {messageLabel(message, lang)}
             </div>
           )}
-          {(busy || progress) && (
+          {(progress || (busy && page !== "settings")) && (
             <div className="working" role="status">
               <RefreshCw size={16} className="spin" />
               {tr(
@@ -721,7 +801,7 @@ export default function App() {
               </div>
               {tasks.length > 0 && (
                 <>
-                  <div className="toolbar">
+                  <div className="toolbar dashboard-toolbar">
                     <label>
                       {tr("Filter by group", "Nach Gruppe filtern")}
                       <select
@@ -791,6 +871,32 @@ export default function App() {
                       <RefreshCw size={15} />
                       {tr("Refresh", "Aktualisieren")}
                     </Button>
+                    <div
+                      className="view-switch"
+                      aria-label={tr("Task view", "Aufgabenansicht")}
+                    >
+                      {(["tiles", "list"] as const).map((view) => (
+                        <Button
+                          key={view}
+                          variant={taskView === view ? "default" : "outline"}
+                          aria-pressed={taskView === view}
+                          disabled={busy}
+                          onClick={() =>
+                            void perform(async () => {
+                              await invoke("set_setting", {
+                                key: "task_view",
+                                value: view,
+                              });
+                              setTaskView(view);
+                            })
+                          }
+                        >
+                          {view === "tiles"
+                            ? tr("Tiles", "Kacheln")
+                            : tr("List", "Liste")}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
                   <div className="toolbar group-assignment">
                     <label>
@@ -849,11 +955,12 @@ export default function App() {
                       )}
                     </p>
                   )}
-                  <div className="task-list">
+                  <div className={`task-list task-view-${taskView}`}>
                     {taskGroups.map((group) => (
                       <section className="task-group" key={group.name}>
                         <Button
                           variant="ghost"
+                          disabled={busy}
                           aria-expanded={!collapsedGroups.includes(group.name)}
                           onClick={() => {
                             setCollapsedGroups((current) =>
@@ -871,110 +978,113 @@ export default function App() {
                           {group.name || tr("Ungrouped", "Ohne Gruppe")} (
                           {group.tasks.length})
                         </Button>
-                        {!collapsedGroups.includes(group.name) &&
-                          group.tasks.map((t) => (
-                            <article className="task-card" key={t.id}>
-                              <div className="task-top">
-                                <input
-                                  type="checkbox"
-                                  aria-label={tr(
-                                    `Select ${t.name}`,
-                                    `${t.name} auswählen`,
-                                  )}
-                                  checked={selected.includes(t.id)}
-                                  onChange={(e) =>
-                                    setSelected(
-                                      e.target.checked
-                                        ? [...selected, t.id]
-                                        : selected.filter((x) => x !== t.id),
-                                    )
-                                  }
-                                />
-                                <div className="task-icon">
-                                  {t.mode === "TwoWay" ? (
-                                    <ArrowLeftRight size={20} />
-                                  ) : t.mode === "Copy" ? (
-                                    <Copy size={20} />
-                                  ) : (
-                                    <ArrowRight size={20} />
-                                  )}
-                                </div>
-                                <div className="task-title">
-                                  <h2>{t.name}</h2>
-                                  <small>ID: {t.identifier || t.id}</small>
-                                  <span>
-                                    {modeLabels[t.mode]}
-                                    {t.group && ` · ${t.group}`}
+                        <div className="task-group-items">
+                          {!collapsedGroups.includes(group.name) &&
+                            group.tasks.map((t) => (
+                              <article className="task-card" key={t.id}>
+                                <div className="task-top">
+                                  <input
+                                    type="checkbox"
+                                    aria-label={tr(
+                                      `Select ${t.name}`,
+                                      `${t.name} auswählen`,
+                                    )}
+                                    disabled={busy}
+                                    checked={selected.includes(t.id)}
+                                    onChange={(e) =>
+                                      setSelected(
+                                        e.target.checked
+                                          ? [...selected, t.id]
+                                          : selected.filter((x) => x !== t.id),
+                                      )
+                                    }
+                                  />
+                                  <div className="task-icon">
+                                    {t.mode === "TwoWay" ? (
+                                      <ArrowLeftRight size={20} />
+                                    ) : t.mode === "Copy" ? (
+                                      <Copy size={20} />
+                                    ) : (
+                                      <ArrowRight size={20} />
+                                    )}
+                                  </div>
+                                  <div className="task-title">
+                                    <h2>{t.name}</h2>
+                                    <small>ID: {t.identifier || t.id}</small>
+                                    <span>
+                                      {modeLabels[t.mode]}
+                                      {t.group && ` · ${t.group}`}
+                                    </span>
+                                  </div>
+                                  <span className="badge">
+                                    {triggerLabel(t, lang)}
                                   </span>
                                 </div>
-                                <span className="badge">
-                                  {triggerLabel(t, lang)}
-                                </span>
-                              </div>
-                              <PathPair a={t.a} b={t.b} lang={lang} />
-                              <div className="task-bottom">
-                                <span>
-                                  {statusLabel(
-                                    statuses.find((s) => s.task_id === t.id)
-                                      ?.last_run?.status || "",
-                                    lang,
-                                  ) ||
-                                    tr(
-                                      "Awaiting first run",
-                                      "Wartet auf ersten Lauf",
-                                    )}
-                                  <small>
-                                    {statuses.find((s) => s.task_id === t.id)
-                                      ?.last_run
-                                      ? date(
-                                          statuses.find(
-                                            (s) => s.task_id === t.id,
-                                          )!.last_run!.created_at,
-                                        )
-                                      : "—"}{" "}
-                                    ·{" "}
-                                    {statuses.find((s) => s.task_id === t.id)
-                                      ?.pending_conflicts || 0}{" "}
-                                    {tr(
-                                      "pending conflicts",
-                                      "offene Konflikte",
-                                    )}
-                                  </small>
-                                  <small>
-                                    {tr("Next", "Nächster Lauf")}:{" "}
-                                    {statuses.find((s) => s.task_id === t.id)
-                                      ?.next_run
-                                      ? date(
-                                          statuses.find(
-                                            (s) => s.task_id === t.id,
-                                          )!.next_run!,
-                                        )
-                                      : "—"}
-                                  </small>
-                                </span>
-                                <div>
-                                  <Button
-                                    variant="ghost"
-                                    onClick={() => void details(t)}
-                                  >
-                                    {tr("Details", "Details")}
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    onClick={() => edit(t)}
-                                  >
-                                    {tr("Configure", "Konfigurieren")}
-                                  </Button>
-                                  <Button
-                                    disabled={busy}
-                                    onClick={() => void preview(t)}
-                                  >
-                                    {tr("Preview / Run", "Vorschau / Start")}
-                                  </Button>
+                                <PathPair a={t.a} b={t.b} lang={lang} />
+                                <div className="task-bottom">
+                                  <span>
+                                    {statusLabel(
+                                      statuses.find((s) => s.task_id === t.id)
+                                        ?.last_run?.status || "",
+                                      lang,
+                                    ) ||
+                                      tr(
+                                        "Awaiting first run",
+                                        "Wartet auf ersten Lauf",
+                                      )}
+                                    <small>
+                                      {statuses.find((s) => s.task_id === t.id)
+                                        ?.last_run
+                                        ? date(
+                                            statuses.find(
+                                              (s) => s.task_id === t.id,
+                                            )!.last_run!.created_at,
+                                          )
+                                        : "—"}{" "}
+                                      ·{" "}
+                                      {statuses.find((s) => s.task_id === t.id)
+                                        ?.pending_conflicts || 0}{" "}
+                                      {tr(
+                                        "pending conflicts",
+                                        "offene Konflikte",
+                                      )}
+                                    </small>
+                                    <small>
+                                      {tr("Next", "Nächster Lauf")}:{" "}
+                                      {statuses.find((s) => s.task_id === t.id)
+                                        ?.next_run
+                                        ? date(
+                                            statuses.find(
+                                              (s) => s.task_id === t.id,
+                                            )!.next_run!,
+                                          )
+                                        : "—"}
+                                    </small>
+                                  </span>
+                                  <div>
+                                    <Button
+                                      variant="ghost"
+                                      onClick={() => void details(t)}
+                                    >
+                                      {tr("Details", "Details")}
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      onClick={() => edit(t)}
+                                    >
+                                      {tr("Configure", "Konfigurieren")}
+                                    </Button>
+                                    <Button
+                                      disabled={busy}
+                                      onClick={() => void preview(t)}
+                                    >
+                                      {tr("Preview / Run", "Vorschau / Start")}
+                                    </Button>
+                                  </div>
                                 </div>
-                              </div>
-                            </article>
-                          ))}
+                              </article>
+                            ))}
+                        </div>
                       </section>
                     ))}
                   </div>
@@ -1136,7 +1246,15 @@ export default function App() {
                 </p>
               </section>
               <section className="panel">
-                <h2>{tr("Scope & filters", "Umfang & Filter")}</h2>
+                <div className="panel-heading">
+                  <h2>{tr("Scope & filters", "Umfang & Filter")}</h2>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowFilterHelp(true)}
+                  >
+                    {tr("Filter help & examples", "Filterhilfe & Beispiele")}
+                  </Button>
+                </div>
                 <p>
                   {tr(
                     "One glob per line. Exclusions win. Paths are relative to each root.",
@@ -1174,6 +1292,7 @@ export default function App() {
                       }
                       <textarea
                         rows={2}
+                        placeholder={filterExamples[k]}
                         value={task.scope[k].join("\n")}
                         onChange={(e) =>
                           patch({
@@ -1391,13 +1510,28 @@ export default function App() {
                 </p>
               </section>
               <section className="panel">
-                <h2>{tr("Automatic deletion", "Automatische Entfernung")}</h2>
+                <h2>{tr("Propagate deletions", "Löschungen übernehmen")}</h2>
                 <p>
                   {tr(
-                    "Off by default. First complete a successful full manual Preview and Apply. Scope changes require another manual reconciliation. Both limits apply per run; entries include files and directories. Limits do not accumulate across runs.",
-                    "Standardmäßig aus. Zuerst eine erfolgreiche vollständige manuelle Vorschau anwenden. Nach Umfangsänderungen erneut manuell abgleichen. Beide Grenzen gelten je Lauf; Einträge umfassen Dateien und Ordner. Grenzen werden nicht über Läufe aufsummiert.",
+                    "Propagates proven deletions after a successful manual baseline. If you delete an unchanged file on one side, automation can remove its counterpart. Both per-run limits apply; offline folders and conflicts never count as deletion proof.",
+                    "Übernimmt nachgewiesene Löschungen nach einem erfolgreichen manuellen Erstabgleich: Löschst du eine unveränderte Datei auf einer Seite, darf die Automatik ihr Gegenstück entfernen. Beide Grenzen gelten je Lauf. Offline-Ordner und Konflikte sind kein Löschbeweis.",
                   )}
                 </p>
+                <p>
+                  {tr(
+                    "Removed/replaced file contents are protected here, separately for this task. Restore them from Details → Protected versions. These are recovery copies, not a third synchronized folder.",
+                    "Entfernte/ersetzte Dateiinhalte werden hier je Aufgabe gesichert. Wiederherstellen unter Details → Geschützte Versionen. Dies sind Sicherungskopien, kein dritter Sync-Ordner.",
+                  )}
+                </p>
+                <code className="storage-path">
+                  {storage}\versions\{task.id}
+                </code>
+                <small>
+                  {tr(
+                    "Older flat backup files remain available through the recovery catalog. Retention applies: matching files keep the configured number of versions, others one; empty directories store no file content.",
+                    "Ältere Sicherungen ohne Aufgaben-Unterordner bleiben über die Wiederherstellung verfügbar. Aufbewahrung: passende Dateien behalten die eingestellte Versionszahl, andere eine; leere Ordner enthalten keine zu sichernden Dateiinhalte.",
+                  )}
+                </small>
                 <label className="check-row">
                   <input
                     type="checkbox"
@@ -1415,8 +1549,8 @@ export default function App() {
                     }
                   />
                   {tr(
-                    "Allow proven baseline deletions automatically",
-                    "Nachgewiesene Ausgangszustands-Entfernungen automatisch erlauben",
+                    "Propagate proven deletions automatically",
+                    "L�schungen automatisch �bernehmen",
                   )}
                 </label>
                 <div className="form-grid">
@@ -1621,7 +1755,9 @@ export default function App() {
                     "Ersetzte und gelöschte Dateien werden außerhalb beider Ordner geschützt.",
                   )}
                 </p>
-                <code className="storage-path">{storage}\versions</code>
+                <code className="storage-path">
+                  {storage}\versions\{task?.id}
+                </code>
                 <div className="form-grid">
                   <label>
                     {tr(
@@ -2178,7 +2314,9 @@ export default function App() {
                   <ShieldCheck size={20} />
                   {tr("Protected versions", "Geschützte Versionen")}
                 </h2>
-                <code className="storage-path">{storage}\versions</code>
+                <code className="storage-path">
+                  {storage}\versions\{task?.id}
+                </code>
                 {versions.length === 0 ? (
                   <p>
                     {tr(
@@ -2268,191 +2406,315 @@ export default function App() {
                   </p>
                 </div>
               </div>
-              <section className="panel">
-                <h2>{tr("Preferences", "Einstellungen")}</h2>
-                <label>
-                  {tr("Language", "Sprache")}
-                  <select
-                    value={lang}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setLang(value);
-                      void invoke("set_setting", { key: "language", value });
-                    }}
+              <div
+                className="settings-tabs"
+                role="tablist"
+                aria-label={tr("Settings sections", "Einstellungsbereiche")}
+              >
+                {(["general", "version"] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    role="tab"
+                    id={`settings-tab-${tab}`}
+                    aria-controls={`settings-panel-${tab}`}
+                    aria-selected={settingsTab === tab}
+                    onClick={() => setSettingsTab(tab)}
                   >
-                    <option value="en">English</option>
-                    <option value="de">Deutsch</option>
-                  </select>
-                </label>
-                <label className="check-row">
-                  <input
-                    type="checkbox"
-                    checked={startup}
-                    onChange={(e) =>
-                      void perform(async () => {
-                        await invoke("set_startup", { enabled: e.target.checked });
-                        setStartup(await invoke<boolean>("startup_enabled"));
-                      })
-                    }
-                  />
-                  {tr(
-                    "Start FolderSync when I sign in",
-                    "FolderSync bei der Anmeldung starten",
-                  )}
-                </label>
-                <label className="check-row">
-                  <input
-                    type="checkbox"
-                    checked={notifications}
-                    onChange={(e) => {
-                      const value = e.target.checked;
-                      void perform(async () => {
-                        await invoke("set_setting", {
-                          key: "notifications",
-                          value: value ? "on" : "off",
-                        });
-                        setNotifications(value);
-                      });
-                    }}
-                  />
-                  {tr("Windows notifications", "Windows-Benachrichtigungen")}
-                </label>
-                <label>
-                  {tr("Local operation logging", "Lokales Aktionsprotokoll")}
-                  <select
-                    value={logLevel}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      void perform(async () => {
-                        await invoke("set_setting", {
-                          key: "log_level",
-                          value,
-                        });
-                        setLogLevel(value);
-                      });
-                    }}
-                  >
-                    <option value="off">{tr("Disabled", "Aus")}</option>
-                    <option value="basic">
-                      {tr("Basic (no file paths)", "Einfach (ohne Dateipfade)")}
-                    </option>
-                    <option value="detailed">
-                      {tr(
-                        "Detailed (includes paths)",
-                        "Detailliert (mit Pfaden)",
-                      )}
-                    </option>
-                  </select>
-                </label>
-                <label>
-                  {tr("When I close the window", "Beim Schließen des Fensters")}
-                  <select
-                    aria-label={tr(
-                      "When I close the window",
-                      "Beim Schließen des Fensters",
-                    )}
-                    value={closeBehavior}
-                    disabled={busy}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      void perform(async () => {
-                        await invoke("set_setting", {
-                          key: "close_behavior",
-                          value,
-                        });
-                        setCloseBehavior(value);
-                      });
-                    }}
-                  >
-                    <option value="tray">
-                      {tr(
-                        "Keep running in the tray",
-                        "Im Infobereich weiterlaufen",
-                      )}
-                    </option>
-                    <option value="quit">
-                      {tr("Stop safely and quit", "Sicher stoppen und beenden")}
-                    </option>
-                  </select>
-                </label>
-                <p>
-                  {closeBehavior === "quit"
-                    ? tr(
-                        "Closing the window stops active work safely and quits FolderSync.",
-                        "Beim Schließen wird aktive Arbeit sicher gestoppt und FolderSync beendet.",
-                      )
-                    : tr(
-                        "Closing the window keeps the process in the tray. Choose Quit in the tray to stop it.",
-                        "Beim Schließen bleibt der Prozess im Infobereich. Beenden im Tray stoppt die Anwendung.",
-                      )}
-                </p>
-              </section>
-              <section className="panel">
-                <h2>{tr("Import & export", "Import & Export")}</h2>
-                <p>
-                  {tr(
-                    "FolderSync versioned JSON only. Imported automatic triggers are disabled. Duplicate task IDs receive a new automatic ID.",
-                    "Nur versioniertes FolderSync-JSON. Importierte automatische Auslöser werden deaktiviert. Doppelte Aufgaben-IDs erhalten eine neue automatische ID.",
-                  )}
-                </p>
-                <div className="toolbar">
-                  <Button variant="outline" onClick={() => void exportTasks()}>
-                    {tr("Export tasks…", "Aufgaben exportieren…")}
-                  </Button>
-                  <Button variant="outline" onClick={() => void importTasks()}>
-                    {tr("Import tasks…", "Aufgaben importieren…")}
-                  </Button>
-                </div>
-              </section>
-              <section className="panel">
-                <h2>{tr("Data & privacy", "Daten & Datenschutz")}</h2>
-                <code className="storage-path">{storage}</code>
-                <p>
-                  {tr(
-                    "SQLite state and protected versions are stored here. No telemetry or cloud services are used.",
-                    "SQLite-Zustand und geschützte Versionen liegen hier. Keine Telemetrie oder Cloud-Dienste.",
-                  )}
-                </p>
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    void perform(async () =>
-                      setLogText(await invoke<string>("logs")),
-                    )
-                  }
+                    {tab === "general" ? tr("General", "Allgemein") : "Version"}
+                  </button>
+                ))}
+              </div>
+              {settingsTab === "general" ? (
+                <div
+                  role="tabpanel"
+                  id="settings-panel-general"
+                  aria-labelledby="settings-tab-general"
+                  className="settings-shell"
                 >
-                  {tr(
-                    "View recent local log",
-                    "Letztes lokales Protokoll anzeigen",
-                  )}
-                </Button>
-                {logText !== null && (
-                  <pre className="local-log">
-                    {logText ||
-                      tr(
-                        "No operation log yet. Enable logging, then apply a plan.",
-                        "Noch kein Protokoll. Protokollierung aktivieren und einen Plan anwenden.",
+                  <section className="panel">
+                    <h2>{tr("Preferences", "Einstellungen")}</h2>
+                    <label>
+                      {tr("Language", "Sprache")}
+                      <select
+                        value={lang}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setLang(value);
+                          void invoke("set_setting", {
+                            key: "language",
+                            value,
+                          });
+                        }}
+                      >
+                        <option value="en">English</option>
+                        <option value="de">Deutsch</option>
+                      </select>
+                    </label>
+                    <label className="check-row">
+                      <input
+                        type="checkbox"
+                        checked={startup}
+                        disabled={busy}
+                        onChange={(e) =>
+                          void perform(async () => {
+                            await invoke("set_startup", {
+                              enabled: e.target.checked,
+                            });
+                            setStartup(
+                              await invoke<boolean>("startup_enabled"),
+                            );
+                          })
+                        }
+                      />
+                      {tr(
+                        "Start FolderSync when I sign in",
+                        "FolderSync bei der Anmeldung starten",
                       )}
-                  </pre>
-                )}
-                <Button variant="outline" onClick={() => void invoke("quit")}>
-                  {tr("Quit FolderSync", "FolderSync beenden")}
-                </Button>
-              </section>
+                    </label>
+                    <label className="check-row">
+                      <input
+                        type="checkbox"
+                        checked={notifications}
+                        disabled={busy}
+                        onChange={(e) => {
+                          const value = e.target.checked;
+                          void perform(async () => {
+                            await invoke("set_setting", {
+                              key: "notifications",
+                              value: value ? "on" : "off",
+                            });
+                            setNotifications(value);
+                          });
+                        }}
+                      />
+                      {tr(
+                        "Windows notifications",
+                        "Windows-Benachrichtigungen",
+                      )}
+                    </label>
+                    <div className="notification-status">
+                      <p>
+                        {tr("Windows delivery", "Windows-Zustellung")}:{" "}
+                        <strong>
+                          {notificationStatus?.windows_setting === "enabled"
+                            ? tr("Enabled", "Aktiviert")
+                            : notificationStatus?.windows_setting ||
+                              tr("Unknown", "Unbekannt")}
+                        </strong>
+                      </p>
+                      <p>
+                        {tr(
+                          "Banners and sound also depend on Windows notification settings and Do not disturb. FolderSync requests an audible notification; it cannot override Windows suppression.",
+                          "Banner und Ton hängen zusätzlich von den Windows-Benachrichtigungseinstellungen und „Nicht stören“ ab. FolderSync fordert eine hörbare Benachrichtigung an; Windows kann sie unterdrücken.",
+                        )}
+                      </p>
+                      <Button
+                        variant="outline"
+                        disabled={busy || !notifications}
+                        onClick={() =>
+                          void perform(async () => {
+                            await invoke("send_test_notification");
+                            setMessage(
+                              tr(
+                                "Test request sent to Windows. Check the notification center if no banner appears.",
+                                "Testbenachrichtigung gesendet. Falls kein Banner erscheint, das Windows-Benachrichtigungscenter prüfen.",
+                              ),
+                            );
+                          })
+                        }
+                      >
+                        {tr(
+                          "Send test notification",
+                          "Testbenachrichtigung senden",
+                        )}
+                      </Button>
+                    </div>
+                    <label>
+                      {tr(
+                        "Local operation logging",
+                        "Lokales Aktionsprotokoll",
+                      )}
+                      <select
+                        value={logLevel}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          void perform(async () => {
+                            await invoke("set_setting", {
+                              key: "log_level",
+                              value,
+                            });
+                            setLogLevel(value);
+                          });
+                        }}
+                      >
+                        <option value="off">{tr("Disabled", "Aus")}</option>
+                        <option value="basic">
+                          {tr(
+                            "Basic (no file paths)",
+                            "Einfach (ohne Dateipfade)",
+                          )}
+                        </option>
+                        <option value="detailed">
+                          {tr(
+                            "Detailed (includes paths)",
+                            "Detailliert (mit Pfaden)",
+                          )}
+                        </option>
+                      </select>
+                    </label>
+                    <label>
+                      {tr(
+                        "When I close the window",
+                        "Beim Schließen des Fensters",
+                      )}
+                      <select
+                        aria-label={tr(
+                          "When I close the window",
+                          "Beim Schließen des Fensters",
+                        )}
+                        value={closeBehavior}
+                        disabled={busy}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          void perform(async () => {
+                            await invoke("set_setting", {
+                              key: "close_behavior",
+                              value,
+                            });
+                            setCloseBehavior(value);
+                          });
+                        }}
+                      >
+                        <option value="tray">
+                          {tr(
+                            "Keep running in the tray",
+                            "Im Infobereich weiterlaufen",
+                          )}
+                        </option>
+                        <option value="quit">
+                          {tr(
+                            "Stop safely and quit",
+                            "Sicher stoppen und beenden",
+                          )}
+                        </option>
+                      </select>
+                    </label>
+                    <p>
+                      {closeBehavior === "quit"
+                        ? tr(
+                            "Closing the window stops active work safely and quits FolderSync.",
+                            "Beim Schließen wird aktive Arbeit sicher gestoppt und FolderSync beendet.",
+                          )
+                        : tr(
+                            "Closing the window keeps the process in the tray. Choose Quit in the tray to stop it.",
+                            "Beim Schließen bleibt der Prozess im Infobereich. Beenden im Tray stoppt die Anwendung.",
+                          )}
+                    </p>
+                  </section>
+                  <section className="panel">
+                    <h2>{tr("Import & export", "Import & Export")}</h2>
+                    <p>
+                      {tr(
+                        "FolderSync versioned JSON only. Imported automatic triggers are disabled. Duplicate task IDs receive a new automatic ID.",
+                        "Nur versioniertes FolderSync-JSON. Importierte automatische Auslöser werden deaktiviert. Doppelte Aufgaben-IDs erhalten eine neue automatische ID.",
+                      )}
+                    </p>
+                    <div className="toolbar">
+                      <Button
+                        variant="outline"
+                        onClick={() => void exportTasks()}
+                      >
+                        {tr("Export tasks…", "Aufgaben exportieren…")}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => void importTasks()}
+                      >
+                        {tr("Import tasks…", "Aufgaben importieren…")}
+                      </Button>
+                    </div>
+                  </section>
+                  <section className="panel">
+                    <h2>{tr("Local data", "Lokale Daten")}</h2>
+                    <code className="storage-path">{storage}</code>
+                    <p>
+                      {tr(
+                        "SQLite state and protected versions are stored here. No telemetry or cloud services are used.",
+                        "SQLite-Zustand und geschützte Versionen liegen hier. Keine Telemetrie oder Cloud-Dienste.",
+                      )}
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        void perform(async () =>
+                          setLogText(await invoke<string>("logs")),
+                        )
+                      }
+                    >
+                      {tr(
+                        "View recent local log",
+                        "Letztes lokales Protokoll anzeigen",
+                      )}
+                    </Button>
+                    {logText !== null && (
+                      <pre className="local-log">
+                        {logText ||
+                          tr(
+                            "No operation log yet. Enable logging, then apply a plan.",
+                            "Noch kein Protokoll. Protokollierung aktivieren und einen Plan anwenden.",
+                          )}
+                      </pre>
+                    )}
+                    <Button
+                      variant="outline"
+                      onClick={() => void invoke("quit")}
+                    >
+                      {tr("Quit FolderSync", "FolderSync beenden")}
+                    </Button>
+                  </section>
+                </div>
+              ) : (
+                <section
+                  className="panel settings-shell"
+                  role="tabpanel"
+                  id="settings-panel-version"
+                  aria-labelledby="settings-tab-version"
+                >
+                  <h2>FolderSync {packageInfo.version}</h2>
+                  <p>
+                    {tr(
+                      "Installed application version. Automatic updates are not configured yet; this section is reserved for future update integration.",
+                      "Installierte Anwendungsversion. Automatische Updates sind noch nicht eingerichtet; dieser Bereich ist für die spätere Integration vorgesehen.",
+                    )}
+                  </p>
+                  <p>
+                    {tr(
+                      "Windows x64 · Rust / Tauri 2 · unsigned build",
+                      "Windows x64 · Rust / Tauri 2 · unsignierter Build",
+                    )}
+                  </p>
+                </section>
+              )}
             </>
           )}
         </main>
-        <footer>
-          <span>
-            <CheckCircle2 size={13} />
-            {tr(
-              "Verified transfers · protected originals",
-              "Geprüfte Übertragungen · geschützte Originale",
-            )}
-          </span>
-          <span>FolderSync 0.1.1</span>
-        </footer>
+        {page !== "settings" && (
+          <footer>
+            <span>
+              <CheckCircle2 size={13} />
+              {tr(
+                "Verified transfers · protected originals",
+                "Geprüfte Übertragungen · geschützte Originale",
+              )}
+            </span>
+            <span>FolderSync {packageInfo.version}</span>
+          </footer>
+        )}
       </div>
+      {showFilterHelp && (
+        <FilterHelp lang={lang} onClose={() => setShowFilterHelp(false)} />
+      )}
       {confirm && (
         <Confirmation
           title={confirm.title}

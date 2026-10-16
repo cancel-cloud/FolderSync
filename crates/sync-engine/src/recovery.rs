@@ -2,6 +2,34 @@ use crate::*;
 use anyhow::{Context, Result, ensure};
 use rusqlite::{OptionalExtension, params};
 impl Engine {
+    pub(crate) fn new_version_path(&self, task: &str, id: &str) -> Result<std::path::PathBuf> {
+        ensure!(
+            uuid::Uuid::parse_str(task).is_ok() && uuid::Uuid::parse_str(id).is_ok(),
+            "Invalid protected version identity"
+        );
+        let path = crate::fs::safe_path(self.storage(), &format!("versions/{task}/{id}"))?;
+        std::fs::create_dir_all(path.parent().context("Missing protected version parent")?)?;
+        Ok(path)
+    }
+    fn checked_version_path(&self, version: &Version) -> Result<std::path::PathBuf> {
+        ensure!(
+            uuid::Uuid::parse_str(&version.task_id).is_ok()
+                && uuid::Uuid::parse_str(&version.id).is_ok(),
+            "Invalid protected version identity"
+        );
+        let nested = format!("versions/{}/{}", version.task_id, version.id);
+        let flat = format!("versions/{}", version.id);
+        let relative = if version.stored == self.storage().join(&nested) {
+            nested
+        } else {
+            ensure!(
+                version.stored == self.storage().join(&flat),
+                "Protected version path mismatch"
+            );
+            flat
+        };
+        crate::fs::safe_path(self.storage(), &relative)
+    }
     pub fn recovery_tasks(&self) -> Result<Vec<RecoveryTask>> {
         let mut statement=self.index.db.prepare("SELECT r.json,r.archived_at,count(v.id) FROM recovery_tasks r JOIN versions v ON v.task=r.id GROUP BY r.id ORDER BY r.archived_at DESC,r.id")?;
         let rows = statement.query_map([], |r| {
@@ -119,7 +147,7 @@ impl Engine {
                 return Ok(Some(digest.clone()));
             }
             let id = uuid::Uuid::new_v4().to_string();
-            let stored = self.storage().join("versions").join(&id);
+            let stored = self.new_version_path(&t.id, &id)?;
             self.transfer(path, &stored, digest, None, t, &mut m)?;
             let v = Version {
                 id,
@@ -198,16 +226,7 @@ impl Engine {
             if *count <= cap {
                 continue;
             }
-            ensure!(
-                uuid::Uuid::parse_str(&version.id).is_ok(),
-                "Invalid protected version identity"
-            );
-            let expected = self.storage().join("versions").join(&version.id);
-            ensure!(
-                version.stored == expected,
-                "Protected version path mismatch"
-            );
-            let target = crate::fs::safe_path(self.storage(), &format!("versions/{}", version.id))?;
+            let target = self.checked_version_path(&version)?;
             // Remove the catalog reference first: interruption can leave an
             // orphaned protected file, never a dangling restore entry.
             self.index
@@ -328,10 +347,7 @@ impl Engine {
             self.read_entry(root, &p.version.path, &Scope::default(), &mut metrics)? == p.current,
             "Restore destination changed; review again"
         );
-        ensure!(
-            p.version.stored.parent() == Some(self.storage().join("versions").as_path()),
-            "Invalid protected version path"
-        );
+        self.checked_version_path(&p.version)?;
         ensure!(
             crate::fs::hash_file_controlled(
                 &p.version.stored,

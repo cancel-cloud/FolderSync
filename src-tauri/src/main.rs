@@ -9,8 +9,10 @@ use std::sync::{
 };
 use tauri::{Emitter, Manager, State};
 use tauri_plugin_notification::NotificationExt;
+mod app_storage;
 mod background;
 mod lifecycle;
+mod notification_status;
 mod presentation;
 mod progress_runtime;
 mod startup;
@@ -62,6 +64,14 @@ async fn assign_group(
     group: String,
 ) -> Result<(), String> {
     work(r.inner().clone(), move |e| e.assign_group(&ids, &group)).await
+}
+#[tauri::command]
+async fn disable_tasks(r: State<'_, Runtime>, ids: Vec<String>) -> Result<(), String> {
+    work(r.inner().clone(), move |e| e.disable_tasks(&ids)).await
+}
+#[tauri::command]
+async fn delete_tasks(r: State<'_, Runtime>, ids: Vec<String>) -> Result<(), String> {
+    work(r.inner().clone(), move |e| e.delete_tasks(&ids)).await
 }
 #[tauri::command]
 async fn preview(r: State<'_, Runtime>, id: String) -> Result<PlanHeader, String> {
@@ -160,6 +170,7 @@ async fn set_setting(
         "notifications" | "paused" => ["on", "off"].contains(&value.as_str()),
         "log_level" => ["off", "basic", "detailed"].contains(&value.as_str()),
         "close_behavior" => ["tray", "quit"].contains(&value.as_str()),
+        "task_view" => ["tiles", "list"].contains(&value.as_str()),
         _ => false,
     };
     if !allowed {
@@ -258,6 +269,15 @@ fn tray_menu(app: &tauri::AppHandle, de: bool) -> tauri::Result<tauri::menu::Men
     Ok(menu)
 }
 fn main() {
+    // Invoked only by the uninstaller after its explicit delete-data choice.
+    // Resolve the Windows known folder instead of trusting an environment path.
+    let args: Vec<_> = std::env::args().collect();
+    if args.len() == 2 && args[1] == "--remove-local-data" {
+        let result = dirs::data_dir()
+            .ok_or_else(|| anyhow::anyhow!("Cannot resolve Windows application data"))
+            .and_then(|parent| app_storage::cleanup_storage(&parent));
+        std::process::exit(if result.is_ok() { 0 } else { 1 });
+    }
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
             if !lifecycle::should_open_window(&args) {
@@ -272,7 +292,8 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
         .setup(|app| {
-            let engine = Engine::open(&app.path().app_data_dir()?)?;
+            let storage = app_storage::resolve_storage(&app.path().app_data_dir()?)?;
+            let engine = Engine::open(&storage)?;
             let de = engine.setting("language")?.as_deref() == Some("de");
             let cancel = engine.cancel.clone();
             let progress = engine.progress.clone();
@@ -357,6 +378,10 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             startup::startup_enabled,
             startup::set_startup,
+            notification_status::notification_status,
+            notification_status::send_test_notification,
+            disable_tasks,
+            delete_tasks,
             tasks,
             statuses,
             save_task,
