@@ -1,0 +1,12 @@
+{
+  "source_commit": "6e5b430",
+  "run_id": "39551273-0e95-41f2-b63a-ab3ad4cfafa1",
+  "status": "Attention",
+  "sha256": {
+    "A/rename-left.txt": "40feb3a40fca177a449569eb406e13c1c76f64a1886c91e9612ea251d512b3d9",
+    "A/rename-right.txt": "40feb3a40fca177a449569eb406e13c1c76f64a1886c91e9612ea251d512b3d9",
+    "B/rename-left.txt": "40feb3a40fca177a449569eb406e13c1c76f64a1886c91e9612ea251d512b3d9",
+    "B/rename-right.txt": "40feb3a40fca177a449569eb406e13c1c76f64a1886c91e9612ea251d512b3d9"
+  },
+  "old_baseline_preserved": true
+}

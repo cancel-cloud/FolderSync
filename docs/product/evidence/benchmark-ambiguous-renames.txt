@@ -1,0 +1,43 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.05s
+{
+  "bytes_per_file": 1024,
+  "files_per_side": 10000,
+  "fixture": "C:\\Users\\Lukas\\AppData\\Local\\Temp\\FolderSync-benchmark-edc3ad32-e2b6-4ffa-880e-6d820cd03be0",
+  "forced_full_discovery": {
+    "metrics": {
+      "copied_bytes": 0,
+      "hashed_bytes": 20480000,
+      "queued_paths": 0,
+      "reconciliations": 1,
+      "scanned_entries": 20200,
+      "watch_events": 0
+    },
+    "wall_ms": 23828
+  },
+  "incremental_discovery": {
+    "metrics": {
+      "copied_bytes": 0,
+      "hashed_bytes": 2048,
+      "queued_paths": 1,
+      "reconciliations": 0,
+      "scanned_entries": 2,
+      "watch_events": 0
+    },
+    "wall_ms": 141
+  },
+  "initial_discovery": {
+    "metrics": {
+      "copied_bytes": 0,
+      "hashed_bytes": 20480000,
+      "queued_paths": 0,
+      "reconciliations": 1,
+      "scanned_entries": 20200,
+      "watch_events": 0
+    },
+    "wall_ms": 23413
+  },
+  "native_event_through_apply_ms": 318,
+  "native_events": 2,
+  "peak_memory": "Measured separately by process PeakWorkingSet64"
+}
