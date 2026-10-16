@@ -7,6 +7,7 @@ use std::sync::{
 use tauri::{Emitter, Manager, State};
 use tauri_plugin_notification::NotificationExt;
 mod background;
+mod presentation;
 #[derive(Clone)]
 struct Runtime {
     engine: Arc<Mutex<Engine>>,
@@ -96,7 +97,12 @@ async fn setting(r: State<'_, Runtime>, key: String) -> Result<Option<String>, S
     work(r.inner().clone(), move |e| e.setting(&key)).await
 }
 #[tauri::command]
-async fn set_setting(r: State<'_, Runtime>, key: String, value: String) -> Result<(), String> {
+async fn set_setting(
+    app: tauri::AppHandle,
+    r: State<'_, Runtime>,
+    key: String,
+    value: String,
+) -> Result<(), String> {
     let allowed = match key.as_str() {
         "language" => ["en", "de"].contains(&value.as_str()),
         "notifications" | "paused" => ["on", "off"].contains(&value.as_str()),
@@ -106,7 +112,25 @@ async fn set_setting(r: State<'_, Runtime>, key: String, value: String) -> Resul
     if !allowed {
         return Err("Unsupported preference or value".into());
     }
-    work(r.inner().clone(), move |e| e.set_setting(&key, &value)).await
+    let language = if key == "language" {
+        Some(value == "de")
+    } else {
+        None
+    };
+    work(r.inner().clone(), move |e| e.set_setting(&key, &value)).await?;
+    if let Some(de) = language
+        && let Some(tray) = app.tray_by_id("main-tray")
+    {
+        let menu = tray_menu(&app, de).map_err(|e| e.to_string())?;
+        tray.set_menu(Some(menu)).map_err(|e| e.to_string())?;
+        tray.set_tooltip(Some(if de {
+            "FolderSync — Ordnersynchronisation"
+        } else {
+            "FolderSync — folder synchronization"
+        }))
+        .map_err(|e| e.to_string())?;
+    }
+    Ok(())
 }
 #[tauri::command]
 async fn logs(r: State<'_, Runtime>) -> Result<String, String> {
@@ -159,6 +183,19 @@ fn notification_task(action: &tauri_plugin_notification::ActionPerformed) -> Opt
         .as_str()
         .map(str::to_owned)
 }
+fn tray_menu(app: &tauri::AppHandle, de: bool) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> {
+    let menu = tauri::menu::Menu::new(app)?;
+    for (id, label) in presentation::menu_labels(de) {
+        menu.append(&tauri::menu::MenuItem::with_id(
+            app,
+            id,
+            label,
+            true,
+            None::<&str>,
+        )?)?;
+    }
+    Ok(menu)
+}
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
@@ -173,6 +210,7 @@ fn main() {
         .plugin(tauri_plugin_autostart::Builder::new().build())
         .setup(|app| {
             let engine = Engine::open(&app.path().app_data_dir()?)?;
+            let de = engine.setting("language")?.as_deref() == Some("de");
             let cancel = engine.cancel.clone();
             app.manage(Runtime {
                 engine: Arc::new(Mutex::new(engine)),
@@ -191,35 +229,13 @@ fn main() {
                 }
             })?;
             background::start(app.handle().clone(), app.state::<Runtime>().inner().clone());
-            let menu = tauri::menu::Menu::with_items(
-                app,
-                &[
-                    &tauri::menu::MenuItem::with_id(
-                        app,
-                        "open",
-                        "Open FolderSync",
-                        true,
-                        None::<&str>,
-                    )?,
-                    &tauri::menu::MenuItem::with_id(
-                        app,
-                        "pause",
-                        "Pause / Resume automation",
-                        true,
-                        None::<&str>,
-                    )?,
-                    &tauri::menu::MenuItem::with_id(
-                        app,
-                        "stop",
-                        "Stop active work",
-                        true,
-                        None::<&str>,
-                    )?,
-                    &tauri::menu::MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?,
-                ],
-            )?;
-            let mut tray = tauri::tray::TrayIconBuilder::new()
-                .tooltip("FolderSync — folder synchronization")
+            let menu = tray_menu(app.handle(), de)?;
+            let mut tray = tauri::tray::TrayIconBuilder::with_id("main-tray")
+                .tooltip(if de {
+                    "FolderSync — Ordnersynchronisation"
+                } else {
+                    "FolderSync — folder synchronization"
+                })
                 .menu(&menu);
             if let Some(icon) = app.default_window_icon() {
                 tray = tray.icon(icon.clone());
