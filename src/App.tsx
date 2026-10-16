@@ -31,7 +31,18 @@ import type {
   TaskStatus,
 } from "./types";
 import { newTask } from "./types";
-import { summarize } from "./review";
+import { summarize, directions } from "./review";
+import {
+  actionLabel,
+  statusLabel,
+  reasonLabel,
+  entryLabel,
+  formatDate,
+  formatBytes,
+  modifiedLabel,
+  triggerLabel,
+  messageLabel,
+} from "./i18n";
 import "./style.css";
 const englishModeLabels: Record<Mode, string> = {
   TwoWay: "Two-way sync",
@@ -50,18 +61,6 @@ const lines = (s: string) =>
     .split("\n")
     .map((x) => x.trim())
     .filter(Boolean);
-const date = (n: number) => new Date(n * 1000).toLocaleString();
-const bytes = (n: number) =>
-  n < 1024
-    ? `${n} B`
-    : n < 1048576
-      ? `${(n / 1024).toFixed(1)} KiB`
-      : `${(n / 1048576).toFixed(1)} MiB`;
-function meta(e: Entry | null) {
-  return e
-    ? `${e.directory ? "Folder" : bytes(e.size)} · ${e.digest.slice(0, 12)}`
-    : "Absent";
-}
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>([]),
     [statuses, setStatuses] = useState<TaskStatus[]>([]),
@@ -95,6 +94,9 @@ export default function App() {
     [operationPage, setOperationPage] = useState(0),
     [sort, setSort] = useState("path");
   const tr = (en: string, de: string) => (lang === "de" ? de : en);
+  const date = (seconds: number) => formatDate(seconds, lang);
+  const bytes = (value: number) => formatBytes(value, lang);
+  const meta = (entry: Entry | null) => entryLabel(entry, lang);
   const modeLabels: Record<Mode, string> =
     lang === "de"
       ? {
@@ -238,7 +240,10 @@ export default function App() {
     const path = await open({
       directory: true,
       multiple: false,
-      title: `Select folder ${side.toUpperCase()}`,
+      title: tr(
+        `Select folder ${side.toUpperCase()}`,
+        `Ordner ${side.toUpperCase()} auswählen`,
+      ),
     });
     if (typeof path === "string" && task) setTask({ ...task, [side]: path });
   }
@@ -273,7 +278,10 @@ export default function App() {
           "Restore protected version?",
           "Geschützte Version wiederherstellen?",
         ),
-        body: `${v.side} / ${v.path}. Current: ${meta(p.current)}. Restore: ${v.digest.slice(0, 16)}. The current version will also be protected.`,
+        body: tr(
+          `${v.side} / ${v.path}. Current: ${meta(p.current)}. Restore: ${v.digest.slice(0, 16)}. The current version will also be protected.`,
+          `${v.side} / ${v.path}. Aktuell: ${meta(p.current)}. Wiederherstellen: ${v.digest.slice(0, 16)}. Die aktuelle Version wird ebenfalls geschützt.`,
+        ),
         action: async () => {
           await perform(async () => {
             await invoke("restore_apply", { id: p.id });
@@ -291,6 +299,7 @@ export default function App() {
     if (task) setTask({ ...task, ...p });
   }
   const summary = plan ? summarize(plan.operations) : null;
+  const direction = plan ? directions(plan.operations) : null;
   return (
     <div className="app">
       <aside>
@@ -299,10 +308,10 @@ export default function App() {
             <ArrowLeftRight size={22} />
           </div>
           <div>
-            FolderSync<small>LOCAL WORKSPACE</small>
+            FolderSync<small>{tr("LOCAL WORKSPACE", "LOKALER ARBEITSBEREICH")}</small>
           </div>
         </div>
-        <nav aria-label="Main navigation">
+        <nav aria-label={tr("Main navigation", "Hauptnavigation")}>
           <button
             className={page === "dashboard" ? "active" : ""}
             onClick={() => navigate("dashboard")}
@@ -393,7 +402,7 @@ export default function App() {
           )}
           {message && (
             <div className="alert success" role="status">
-              {message}
+              {messageLabel(message, lang)}
             </div>
           )}
           {busy && (
@@ -434,7 +443,10 @@ export default function App() {
                     <label>
                       <input
                         type="checkbox"
-                        aria-label="Select all tasks"
+                        aria-label={tr(
+                          "Select all tasks",
+                          "Alle Aufgaben auswählen",
+                        )}
                         checked={selected.length === tasks.length}
                         onChange={(e) =>
                           setSelected(
@@ -474,7 +486,10 @@ export default function App() {
                         <div className="task-top">
                           <input
                             type="checkbox"
-                            aria-label={`Select ${t.name}`}
+                            aria-label={tr(
+                              `Select ${t.name}`,
+                              `${t.name} auswählen`,
+                            )}
                             checked={selected.includes(t.id)}
                             onChange={(e) =>
                               setSelected(
@@ -500,11 +515,7 @@ export default function App() {
                               {t.group && ` · ${t.group}`}
                             </span>
                           </div>
-                          <span className="badge">
-                            {t.monitor
-                              ? tr("Monitoring", "Überwacht")
-                              : tr("Manual", "Manuell")}
-                          </span>
+                          <span className="badge">{triggerLabel(t, lang)}</span>
                         </div>
                         <div className="paths">
                           <div>
@@ -518,8 +529,11 @@ export default function App() {
                         </div>
                         <div className="task-bottom">
                           <span>
-                            {statuses.find((s) => s.task_id === t.id)?.last_run
-                              ?.status ||
+                            {statusLabel(
+                              statuses.find((s) => s.task_id === t.id)?.last_run
+                                ?.status || "",
+                              lang,
+                            ) ||
                               tr(
                                 "Awaiting first run",
                                 "Wartet auf ersten Lauf",
@@ -664,7 +678,10 @@ export default function App() {
                     <input
                       value={task.name}
                       onChange={(e) => patch({ name: e.target.value })}
-                      placeholder="Engineering workspace"
+                      placeholder={tr(
+                        "Engineering workspace",
+                        "Entwicklungsarbeitsplatz",
+                      )}
                     />
                   </label>
                   <label>
@@ -698,7 +715,10 @@ export default function App() {
                     </span>
                     <div>
                       <input
-                        aria-label={`Folder ${side.toUpperCase()} path`}
+                        aria-label={tr(
+                          `Folder ${side.toUpperCase()} path`,
+                          `Pfad von Ordner ${side.toUpperCase()}`,
+                        )}
                         value={task[side]}
                         onChange={(e) => patch({ [side]: e.target.value })}
                         placeholder="C:\workspace or \\server\share\folder"
@@ -999,29 +1019,30 @@ export default function App() {
                 </div>
                 {task.schedule.kind === "weekly" && (
                   <div className="checks">
-                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
-                      (day, i) => (
-                        <label key={day}>
-                          <input
-                            type="checkbox"
-                            checked={task.schedule.weekdays.includes(i)}
-                            onChange={(e) =>
-                              patch({
-                                schedule: {
-                                  ...task.schedule,
-                                  weekdays: e.target.checked
-                                    ? [...task.schedule.weekdays, i]
-                                    : task.schedule.weekdays.filter(
-                                        (n) => n !== i,
-                                      ),
-                                },
-                              })
-                            }
-                          />
-                          {day}
-                        </label>
-                      ),
-                    )}
+                    {(lang === "de"
+                      ? ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"]
+                      : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+                    ).map((day, i) => (
+                      <label key={day}>
+                        <input
+                          type="checkbox"
+                          checked={task.schedule.weekdays.includes(i)}
+                          onChange={(e) =>
+                            patch({
+                              schedule: {
+                                ...task.schedule,
+                                weekdays: e.target.checked
+                                  ? [...task.schedule.weekdays, i]
+                                  : task.schedule.weekdays.filter(
+                                      (n) => n !== i,
+                                    ),
+                              },
+                            })
+                          }
+                        />
+                        {day}
+                      </label>
+                    ))}
                   </div>
                 )}
                 <p className="hint">
@@ -1095,7 +1116,7 @@ export default function App() {
                           "PREVIEW — NO FILE CHANGES",
                           "VORSCHAU — KEINE DATEIÄNDERUNGEN",
                         )
-                      : plan.status}
+                      : statusLabel(plan.status, lang)}
                   </div>
                   <h1>{plan.task.name}</h1>
                   <p>
@@ -1157,6 +1178,15 @@ export default function App() {
                   <span>{tr("Unchanged", "Unverändert")}</span>
                 </div>
               </div>
+              {direction && (
+                <p className="hint" role="status">
+                  A → B: {direction.toB} · B → A: {direction.toA} ·{" "}
+                  {tr("Removals from A", "Entfernungen aus A")}:{" "}
+                  {direction.removeA} ·{" "}
+                  {tr("Removals from B", "Entfernungen aus B")}:{" "}
+                  {direction.removeB}
+                </p>
+              )}
               <div className="panel">
                 <div className="paths">
                   <div>
@@ -1168,7 +1198,9 @@ export default function App() {
                     <code>{plan.task.b}</code>
                   </div>
                 </div>
-                <small>Run ID: {plan.id}</small>
+                <small>
+                  {tr("Run ID", "Lauf-ID")}: {plan.id}
+                </small>
               </div>
               {summary.deletes > 0 &&
                 ["Preview", "Review required"].includes(plan.status) && (
@@ -1227,8 +1259,8 @@ export default function App() {
                     <tr>
                       <th>{tr("Relative path", "Relativer Pfad")}</th>
                       <th>{tr("Action", "Aktion")}</th>
-                      <th>Folder A</th>
-                      <th>Folder B</th>
+                      <th>{tr("Folder A", "Ordner A")}</th>
+                      <th>{tr("Folder B", "Ordner B")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1249,19 +1281,28 @@ export default function App() {
                         <tr key={o.path}>
                           <td>
                             <strong>{o.path}</strong>
-                            <small>{o.reason}</small>
+                            <small>{reasonLabel(o.reason, lang)}</small>
                           </td>
                           <td>
-                            <span className={`op ${o.action}`}>{o.action}</span>
+                            <span className={`op ${o.action}`}>
+                              {actionLabel(o.action, lang)}
+                            </span>
                             {!["Preview", "Review required"].includes(
                               plan.status,
-                            ) && <small>{o.status || plan.status}</small>}
+                            ) && (
+                              <small>
+                                {statusLabel(o.status || plan.status, lang)}
+                              </small>
+                            )}
                             {o.action === "Conflict" &&
                               ["Preview", "Review required"].includes(
                                 plan.status,
                               ) && (
                                 <select
-                                  aria-label={`Resolve ${o.path}`}
+                                  aria-label={tr(
+                                    `Resolve ${o.path}`,
+                                    `${o.path} auflösen`,
+                                  )}
                                   value=""
                                   onChange={(e) =>
                                     void perform(async () => {
@@ -1300,8 +1341,24 @@ export default function App() {
                                 </select>
                               )}
                           </td>
-                          <td title={o.a?.digest}>{meta(o.a)}</td>
-                          <td title={o.b?.digest}>{meta(o.b)}</td>
+                          <td title={o.a?.digest}>
+                            {meta(o.a)}
+                            {o.a && (
+                              <small>
+                                {tr("Modified", "Geändert")}:{" "}
+                                {modifiedLabel(o.a, lang)}
+                              </small>
+                            )}
+                          </td>
+                          <td title={o.b?.digest}>
+                            {meta(o.b)}
+                            {o.b && (
+                              <small>
+                                {tr("Modified", "Geändert")}:{" "}
+                                {modifiedLabel(o.b, lang)}
+                              </small>
+                            )}
+                          </td>
                         </tr>
                       ))}
                   </tbody>
@@ -1335,10 +1392,12 @@ export default function App() {
                 </Button>
               </div>
               <p className="hint">
-                {plan.metrics.scanned_entries} entries examined ·{" "}
-                {bytes(plan.metrics.hashed_bytes)} hashed ·{" "}
-                {bytes(plan.metrics.copied_bytes)} copied ·{" "}
-                {plan.metrics.reconciliations} reconciliations
+                {plan.metrics.scanned_entries}{" "}
+                {tr("entries examined", "Einträge geprüft")} ·{" "}
+                {bytes(plan.metrics.hashed_bytes)} {tr("hashed", "gehasht")} ·{" "}
+                {bytes(plan.metrics.copied_bytes)} {tr("copied", "kopiert")} ·{" "}
+                {plan.metrics.reconciliations}{" "}
+                {tr("reconciliations", "Vollabgleiche")}
               </p>
             </>
           )}
@@ -1388,10 +1447,13 @@ export default function App() {
                         {date(p.created_at)}
                         <small>{p.id}</small>
                       </span>
-                      <span className="badge">{p.status}</span>
+                      <span className="badge">
+                        {statusLabel(p.status, lang)}
+                      </span>
                       <span>
-                        {summarize(p.operations).conflicts} conflicts ·{" "}
-                        {p.operations.length} entries
+                        {summarize(p.operations).conflicts}{" "}
+                        {tr("conflicts", "Konflikte")} · {p.operations.length}{" "}
+                        {tr("entries", "Einträge")}
                       </span>
                     </button>
                   ))
@@ -1432,7 +1494,7 @@ export default function App() {
                     const t = {
                       ...structuredClone(task),
                       id: crypto.randomUUID(),
-                      name: `${task.name} (copy)`,
+                      name: `${task.name} ${tr("(copy)", "(Kopie)")}`,
                       monitor: false,
                       login: false,
                       schedule: newTask().schedule,

@@ -176,20 +176,29 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
                                 changed
                             });
                             if enabled && changed {
-                                let title = if attention {
-                                    "FolderSync — review required"
-                                } else {
-                                    "FolderSync — synchronized"
-                                };
+                                let de = r
+                                    .engine
+                                    .lock()
+                                    .ok()
+                                    .and_then(|e| e.setting("language").ok().flatten())
+                                    .as_deref()
+                                    == Some("de");
+                                let (title, body) = crate::presentation::notice(
+                                    de,
+                                    if attention {
+                                        crate::presentation::NoticeKind::Review
+                                    } else {
+                                        crate::presentation::NoticeKind::Success
+                                    },
+                                    &t.name,
+                                    pending,
+                                );
                                 let _ = app
                                     .notification()
                                     .builder()
                                     .extra("task_id", &t.id)
                                     .title(title)
-                                    .body(format!(
-                                        "{}: {} · {} pending conflicts",
-                                        t.name, plan.status, pending
-                                    ))
+                                    .body(body)
                                     .show();
                             }
                         }
@@ -210,15 +219,25 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
                             .as_deref()
                             != Some("off")
                         {
+                            let de = r
+                                .engine
+                                .lock()
+                                .ok()
+                                .and_then(|e| e.setting("language").ok().flatten())
+                                .as_deref()
+                                == Some("de");
+                            let (title, body) = crate::presentation::notice(
+                                de,
+                                crate::presentation::NoticeKind::Failure,
+                                &t.name,
+                                0,
+                            );
                             let _ = app
                                 .notification()
                                 .builder()
                                 .extra("task_id", &t.id)
-                                .title("FolderSync — synchronization failed")
-                                .body(format!(
-                                    "{}: retries exhausted. Open Details and preview again.",
-                                    t.name
-                                ))
+                                .title(title)
+                                .body(body)
                                 .show();
                         }
                     }

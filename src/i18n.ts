@@ -1,0 +1,115 @@
+import type { Action, Entry, Task } from "./types";
+export const locale = (language: string) =>
+  language === "de" ? "de-DE" : "en-GB";
+export const formatDate = (seconds: number, language: string) =>
+  new Date(seconds * 1000).toLocaleString(locale(language));
+export function formatBytes(bytes: number, language: string) {
+  const unit = bytes < 1024 ? "B" : bytes < 1048576 ? "KiB" : "MiB";
+  const value =
+    unit === "B" ? bytes : unit === "KiB" ? bytes / 1024 : bytes / 1048576;
+  return `${value.toLocaleString(locale(language), { maximumFractionDigits: unit === "B" ? 0 : 1, minimumFractionDigits: unit === "B" ? 0 : 1 })} ${unit}`;
+}
+const actions: Record<Action, [string, string]> = {
+  Unchanged: ["Unchanged", "Unverändert"],
+  CopyToA: ["Copy B → A", "Kopieren B → A"],
+  CopyToB: ["Copy A → B", "Kopieren A → B"],
+  DeleteA: ["Remove from A", "Aus A entfernen"],
+  DeleteB: ["Remove from B", "Aus B entfernen"],
+  MoveToB: ["Move A → B", "Verschieben A → B"],
+  Conflict: ["Conflict", "Konflikt"],
+};
+export const actionLabel = (action: Action, language: string) =>
+  actions[action][language === "de" ? 1 : 0];
+const statuses: Record<string, string> = {
+  Preview: "Vorschau",
+  "Review required": "Prüfung erforderlich",
+  Applying: "Wird angewendet",
+  Applied: "Angewendet",
+  Attention: "Aufmerksamkeit erforderlich",
+  Interrupted: "Unterbrochen",
+  Planned: "Geplant",
+  Conflict: "Konflikt",
+  Unchanged: "Unverändert",
+};
+export function statusLabel(status: string, language: string): string {
+  if (language !== "de") return status;
+  if (status.startsWith("Failed:")) return `Fehlgeschlagen:${status.slice(7)}`;
+  const retention = status.indexOf("; retention cleanup pending:");
+  if (retention >= 0)
+    return `${statusLabel(status.slice(0, retention), language)}; Bereinigung ausstehend:${status.slice(retention + "; retention cleanup pending:".length)}`;
+  return statuses[status] || status;
+}
+const reasons: Record<string, string> = {
+  "Both sides differ from a common baseline, or there is no safe baseline":
+    "Beide Seiten weichen vom gemeinsamen Ausgangszustand ab, oder es fehlt ein sicherer Ausgangszustand.",
+  "Reviewed deletion; a protected version will be kept":
+    "Geprüfte Entfernung; eine geschützte Version bleibt erhalten.",
+  "Verify destination before removing source":
+    "Zieldatei prüfen, bevor die Quelle entfernt wird.",
+  "No transfer required": "Keine Übertragung erforderlich.",
+  "One-sided creation or change": "Einseitig erstellt oder geändert.",
+  "Directory deletion conflicts with changed descendants; originals preserved":
+    "Ordnerentfernung kollidiert mit geänderten Inhalten. Originale bleiben erhalten.",
+  "Explicit conflict choice; Apply is still required":
+    "Ausdrückliche Konfliktauswahl; Anwenden ist weiterhin erforderlich.",
+};
+export function reasonLabel(reason: string, language: string) {
+  return language === "de"
+    ? reasons[reason] || `Technische Details: ${reason}`
+    : reason;
+}
+export function entryLabel(entry: Entry | null, language: string) {
+  if (!entry) return language === "de" ? "Nicht vorhanden" : "Absent";
+  return `${entry.directory ? (language === "de" ? "Ordner" : "Folder") : formatBytes(entry.size, language)} · ${entry.digest.slice(0, 12)}`;
+}
+export function modifiedLabel(entry: Entry | null, language: string) {
+  if (!entry) return "";
+  try {
+    return new Date(Number(BigInt(entry.mtime_ns) / 1000000n)).toLocaleString(
+      locale(language),
+    );
+  } catch {
+    return "—";
+  }
+}
+export function triggerLabel(task: Task, language: string) {
+  const de = language === "de";
+  const schedules: Record<string, [string, string]> = {
+    periodic: ["Periodic", "Periodisch"],
+    daily: ["Daily", "Täglich"],
+    weekly: ["Weekly", "Wöchentlich"],
+    monthly: ["Monthly", "Monatlich"],
+  };
+  return (
+    [
+      task.monitor ? (de ? "Überwacht" : "Monitoring") : null,
+      task.schedule.kind
+        ? schedules[task.schedule.kind]?.[de ? 1 : 0] || task.schedule.kind
+        : null,
+      task.login ? (de ? "Beim App-Start" : "At app startup") : null,
+    ]
+      .filter(Boolean)
+      .join(" · ") || (de ? "Manuell" : "Manual")
+  );
+}
+export function messageLabel(message: string, language: string) {
+  if (language !== "de") return message;
+  const messages: Record<string, string> = {
+    "Task configuration exported.": "Aufgabenkonfiguration exportiert.",
+    "Run finished. See the actual result and protected versions.":
+      "Lauf abgeschlossen. Prüfen Sie das Ergebnis und die geschützten Versionen.",
+    "Protected version restored. Preview the task to reconcile this change.":
+      "Geschützte Version wiederhergestellt. Prüfen Sie die Aufgabe erneut, um diese Änderung abzugleichen.",
+  };
+  const imported = message.match(
+    /^Imported (\d+) tasks\. All automatic triggers are disabled\.$/,
+  );
+  if (imported)
+    return `${imported[1]} Aufgaben importiert. Alle automatischen Auslöser sind deaktiviert.`;
+  const previews = message.match(
+    /^(\d+) previews saved\. Open Details to review each before applying\.$/,
+  );
+  if (previews)
+    return `${previews[1]} Vorschauen gespeichert. Öffnen Sie Details, um jede vor dem Anwenden zu prüfen.`;
+  return messages[message] || statusLabel(message, language);
+}

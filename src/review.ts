@@ -11,3 +11,14 @@ export function summarize(ops: Operation[]) {
     unchanged: ops.filter((o) => o.action === "Unchanged").length,
   };
 }
+
+export function directions(ops: Operation[]) {
+  return {
+    toA: ops.filter((o) => o.action === "CopyToA").length,
+    toB: ops.filter((o) => o.action === "CopyToB" || o.action === "MoveToB")
+      .length,
+    removeA: ops.filter((o) => o.action === "DeleteA" || o.action === "MoveToB")
+      .length,
+    removeB: ops.filter((o) => o.action === "DeleteB").length,
+  };
+}
