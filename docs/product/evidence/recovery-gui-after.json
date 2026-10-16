@@ -1,0 +1,14 @@
+{
+  "source_commit": "5a8d0d8",
+  "restored_sha256": "81cd295a78578734286b8e84932a0b155bbfa4491dcf175e2f4f68dfeca6c936",
+  "original_source_still_absent": true,
+  "active_task_count": 2,
+  "archived_task_still_inactive": true,
+  "baseline_entries": 0,
+  "queued_paths": 0,
+  "archive_generation": 8,
+  "after_actual_quit_and_relaunch": true,
+  "active_tasks_still_two": true,
+  "all_automation_off": true,
+  "restored_bytes_persist": true
+}
