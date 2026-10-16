@@ -10,6 +10,8 @@ After initial indexing, Windows file events drive incremental discovery. A norma
 
 Release 0.1.8 compares file contents with up to 10 readers and defaults new tasks to 4 verified transfers (1–16 selectable). Comparison workers are independent of the transfer setting. Small-file copying still includes durable journals, staged-file verification and Windows flush/atomic commit costs; it is not equivalent to a raw SSD bandwidth test. Preview and Apply each check content so changed inputs cannot execute an obsolete review. See the [35,000-file investigation and measured transfer comparison](docs/product/release-0.1.8.md), including why 10 copying workers were slower than 4 on this machine.
 
+On this machine's SATA SSD, release-build full Preview of 35,000 mixed-size files (834.3 MiB, initially empty counterpart) improved from **57.5 s to 24.7 s**. The filesystem scan alone improved from **24.8 s to 4.6 s**. A 1,000-small-file copy sample (2.05 MiB) took **24.5 s with 4 workers**, including review revalidation, staged verification and durable commits. The full 35,000-file copy has not been benchmarked. These cached-file measurements show why tiny-file counts and flush latency matter more than bulk MB/s for this workload.
+
 Measured on this machine with the debug engine, 10,000 files per side (1 KiB each), release 0.1.1 source f13b9bc:
 
 | Discovery | Time | Entries examined | Bytes hashed |
