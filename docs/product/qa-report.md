@@ -10,6 +10,7 @@
 - Neither `cl.exe` nor `link.exe` resolved. Standard Visual Studio and Windows Kits installation paths were absent.
 - C++ Build Tools provisioning command rejected before execution by automatic approval review: `rejected: blocked by policy`. No detailed reason was returned. The attempted command would download the official VS 2022 Build Tools bootstrapper and install the VCTools workload with recommended components. It did not execute. No bypass attempted.
 - Computer Use: initialized official `@oai/sky` through node_repl and successfully enumerated installed apps/windows. No product GUI exists to launch. Existing research tasks and other application state were not modified.
+- Git initialized on `main`. Initial commit `ab57468` records the specification, plan, reference matrix and this checkpoint. Adding the existing research collection failed on a Git object write with `Permission denied` while indexing `screenshots/57-copy-advanced-settings.jpg`; the research remains untouched and untracked. No permissions or security settings were changed. Product documents were committed successfully.
 
 ## Not executed
 
