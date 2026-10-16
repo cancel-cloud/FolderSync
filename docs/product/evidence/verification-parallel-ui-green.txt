@@ -1,0 +1,28 @@
+$ vitest run
+
+ RUN  v3.2.7 C:/Users/Lukas/Developer/SyncFolders
+
+ ✓ src/review.test.ts (2 tests) 4ms
+ ✓ src/i18n.test.ts (2 tests) 38ms
+ ✓ src/components/path-pair.test.tsx (2 tests) 423ms
+ ✓ src/App.test.tsx (17 tests) 8079ms
+   ✓ quit-on-close immediately requests safe quit when there is no draft  321ms
+   ✓ quit-on-close asks before discarding an unsaved task draft  704ms
+   ✓ close behavior persists and failed preference saves do not change the selection  380ms
+   ✓ required conflict decisions block Apply until Ignore and leave attention after confirmed Apply  482ms
+   ✓ comparison and conflict policies save and reload through the actual editor  697ms
+   ✓ editable task identifiers save without replacing internal task identity  741ms
+   ✓ deleted-task recovery stays separate from synchronization and restore requires confirmation  426ms
+   ✓ enabling automatic deletion requires a separate policy confirmation before saving  409ms
+   ✓ group filtering clears hidden selections and bulk reassignment refreshes collapsible groups  704ms
+   ✓ saving a selected task into another group clears its hidden bulk selection  548ms
+   ✓ nested conflict choice only revises preview; Apply requires its separate confirmation  595ms
+   ✓ review requests bounded pages and resets paging when filters change  860ms
+   ✓ terminal Apply result Failed: destination locked updates the dashboard and requires a fresh preview  398ms
+   ✓ terminal Apply result Cancelled updates the dashboard and requires a fresh preview  363ms
+
+ Test Files  4 passed (4)
+      Tests  23 passed (23)
+   Start at  16:26:44
+   Duration  16.73s (transform 4.68s, setup 0ms, collect 6.16s, tests 8.54s, environment 4.29s, prepare 1.65s)
+

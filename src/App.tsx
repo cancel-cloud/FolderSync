@@ -648,6 +648,13 @@ export default function App() {
                     }
                   </strong>
                   {progress.path && <code>{progress.path}</code>}
+                  {(progress.max_transfers ?? 1) > 1 && (
+                    <small>
+                      {progress.active_transfers ?? 0} /{" "}
+                      {progress.max_transfers}{" "}
+                      {tr("active transfers", "aktive Übertragungen")}
+                    </small>
+                  )}
                   {progress.total_entries > 0 && (
                     <small>
                       {progress.completed_entries} / {progress.total_entries}{" "}
@@ -1295,7 +1302,28 @@ export default function App() {
                       }
                     />
                   </label>
+                  <label>
+                    {tr(
+                      "Parallel transfers (1–4)",
+                      "Parallele Übertragungen (1–4)",
+                    )}
+                    <input
+                      type="number"
+                      min={1}
+                      max={4}
+                      value={task.transfer_concurrency}
+                      onChange={(e) =>
+                        patch({ transfer_concurrency: Number(e.target.value) })
+                      }
+                    />
+                  </label>
                 </div>
+                <p className="hint">
+                  {tr(
+                    "Default: one file at a time. Parallel transfers share the total bandwidth limit. Folders and removals run in order; task runs remain serialized. File progress shows one active transfer.",
+                    "Standard: eine Datei zur Zeit. Parallele Übertragungen teilen die gesamte Bandbreite. Ordner und Entfernungen laufen geordnet; Aufgabenläufe bleiben nacheinander. Der Dateifortschritt zeigt eine aktive Übertragung.",
+                  )}
+                </p>
               </section>
               <section className="panel">
                 <h2>{tr("Comparison & conflicts", "Vergleich & Konflikte")}</h2>
@@ -2005,6 +2033,16 @@ export default function App() {
                 {bytes(plan.metrics.copied_bytes)} {tr("copied", "kopiert")} ·{" "}
                 {plan.metrics.reconciliations}{" "}
                 {tr("reconciliations", "Vollabgleiche")}
+                {(plan.metrics.peak_workers ?? 0) > 1 && (
+                  <>
+                    {" "}
+                    · {plan.metrics.peak_workers}{" "}
+                    {tr(
+                      "peak concurrent transfers",
+                      "maximal gleichzeitige Übertragungen",
+                    )}
+                  </>
+                )}
               </p>
             </>
           )}

@@ -1,0 +1,41 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.99s
+     Running tests\parallel_transfers.rs (target\debug\deps\parallel_transfers-678d1d9ec2bae039.exe)
+
+running 4 tests
+test invalid_worker_counts_are_rejected_without_changing_saved_task ... FAILED
+test parallel_workers_share_the_task_bandwidth_budget ... ok
+test bounded_parallel_transfers_preserve_all_modes_and_directory_order ... FAILED
+test two_real_partial_stages_cancel_cleanly_without_worker_startup_recovery ... FAILED
+
+failures:
+
+---- invalid_worker_counts_are_rejected_without_changing_saved_task stdout ----
+
+thread 'invalid_worker_counts_are_rejected_without_changing_saved_task' (33272) panicked at crates\sync-engine\tests\parallel_transfers.rs:63:152:
+assertion failed: e.save_task(&bad).is_err()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- bounded_parallel_transfers_preserve_all_modes_and_directory_order stdout ----
+
+thread 'bounded_parallel_transfers_preserve_all_modes_and_directory_order' (32000) panicked at crates\sync-engine\tests\parallel_transfers.rs:45:9:
+assertion `left == right` failed
+  left: Null
+ right: 2
+
+---- two_real_partial_stages_cancel_cleanly_without_worker_startup_recovery stdout ----
+
+thread 'two_real_partial_stages_cancel_cleanly_without_worker_startup_recovery' (25724) panicked at crates\sync-engine\tests\parallel_transfers.rs:30:5:
+assertion `left == right` failed: two actual destination stages must overlap
+  left: 0
+ right: 2
+
+
+failures:
+    bounded_parallel_transfers_preserve_all_modes_and_directory_order
+    invalid_worker_counts_are_rejected_without_changing_saved_task
+    two_real_partial_stages_cancel_cleanly_without_worker_startup_recovery
+
+test result: FAILED. 1 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.29s
+
+error: test failed, to rerun pass `-p foldersync-engine --test parallel_transfers`

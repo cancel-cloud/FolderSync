@@ -48,6 +48,7 @@ export interface Task {
   debounce_secs: number;
   retries: number;
   bandwidth_kib: number;
+  transfer_concurrency: number;
   comparison: "Incremental" | "FullContent";
   conflict_policy: "ContinueIndependent" | "RequireChoices";
   history_patterns: string[];
@@ -77,6 +78,7 @@ export interface Operation {
   b: Entry | null;
 }
 export interface Metrics {
+  peak_workers?: number;
   scanned_entries: number;
   hashed_bytes: number;
   copied_bytes: number;
@@ -128,6 +130,8 @@ export interface ApplyOutcome {
   error: string | null;
 }
 export interface RunProgress {
+  active_transfers?: number;
+  max_transfers?: number;
   task_id: string;
   run_id: string | null;
   phase:
@@ -194,6 +198,7 @@ export function newTask(mode: Mode = "TwoWay"): Task {
     debounce_secs: 20,
     retries: 3,
     bandwidth_kib: 0,
+    transfer_concurrency: 1,
     comparison: "Incremental",
     conflict_policy: "ContinueIndependent",
     history_patterns: [],

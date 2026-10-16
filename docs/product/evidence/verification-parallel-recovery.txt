@@ -1,0 +1,16 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.41s
+     Running tests\parallel_transfers.rs (target\debug\deps\parallel_transfers-678d1d9ec2bae039.exe)
+
+running 8 tests
+test parallel_crash_child ... ok
+test invalid_worker_counts_are_rejected_without_changing_saved_task ... ok
+test two_real_partial_stages_cancel_cleanly_without_worker_startup_recovery ... ok
+test killed_parallel_process_recovers_both_stages_and_retries ... ok
+test concurrent_replacements_keep_each_old_version_and_commit_each_baseline ... ok
+test parallel_workers_share_the_task_bandwidth_budget ... ok
+test a_parallel_destination_race_preserves_external_bytes_and_prevents_following_deletes ... ok
+test bounded_parallel_transfers_preserve_all_modes_and_directory_order ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.76s
+

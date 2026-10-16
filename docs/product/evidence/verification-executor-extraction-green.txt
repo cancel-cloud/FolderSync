@@ -1,0 +1,23 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.77s
+     Running tests\integration.rs (target\debug\deps\integration-db7c382522e69963.exe)
+
+running 5 tests
+test stale_and_offline_never_delete ... ok
+test delete_edit_preserves_survivor ... ok
+test folder_delete_edit_is_attention_instead_of_partial_directory_removal ... ok
+test modes_copy_mirror_move ... ok
+test two_way_preview_conflict_deletion_and_restart ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.23s
+
+     Running tests\progress.rs (target\debug\deps\progress-cf299cef46f364d7.exe)
+
+running 4 tests
+test rejected_preview_reports_error_without_changing_any_file ... ok
+test background_validation_cancellation_is_persisted_and_keeps_durable_work ... ok
+test preview_and_apply_validation_can_cancel_inside_streaming_hashes ... ok
+test cancellation_reports_actual_run_and_preserves_destination_during_staging ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.98s
+

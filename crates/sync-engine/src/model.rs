@@ -59,6 +59,7 @@ pub struct Task {
     pub debounce_secs: u64,
     pub retries: u32,
     pub bandwidth_kib: u64,
+    pub transfer_concurrency: u32,
     pub comparison: Comparison,
     pub conflict_policy: ConflictPolicy,
     pub history_patterns: Vec<String>,
@@ -82,6 +83,7 @@ impl Default for Task {
             debounce_secs: 20,
             retries: 3,
             bandwidth_kib: 0,
+            transfer_concurrency: 1,
             comparison: Comparison::default(),
             conflict_policy: ConflictPolicy::default(),
             history_patterns: vec![],
@@ -159,6 +161,8 @@ impl PartialEq for Entry {
 pub type Tree = BTreeMap<String, Entry>;
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Metrics {
+    #[serde(default)]
+    pub peak_workers: u32,
     pub scanned_entries: u64,
     pub hashed_bytes: u64,
     pub copied_bytes: u64,
