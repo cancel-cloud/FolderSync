@@ -1,0 +1,19 @@
+{
+  "source_commit": "2575c0f",
+  "task_id": "d849e90f-ec00-4b67-93b5-c09bfc8dca1f",
+  "run_id": "0f54b2ed-0781-4a89-bae5-516ff8377afc",
+  "status": "Review required",
+  "deletion_review": {
+    "reason": "PercentLimit",
+    "entries": 2,
+    "baseline_entries": 9,
+    "max_entries": 20,
+    "max_percent": 10,
+    "baseline_run": "0d40a139-cb7b-4119-8fbb-79a1812442c5"
+  },
+  "protected_b_hashes": {
+    "proof-01.txt": "6284504304c2ea7152255d0e6a9fba4f40ee90772e1a8bfdbaa8c17473ae4441",
+    "proof-02.txt": "06799ed65fc424eaabf9360912b510fa83a0eeee0b0489a7f8c276bca2e5cd08"
+  },
+  "remaining_b_files": 9
+}

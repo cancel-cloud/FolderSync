@@ -1,0 +1,22 @@
+{
+  "task_id": "d849e90f-ec00-4b67-93b5-c09bfc8dca1f",
+  "manual_review": {
+    "run": "0d40a139-cb7b-4119-8fbb-79a1812442c5",
+    "mode": "TwoWay",
+    "scope": {
+      "include": [],
+      "exclude": [],
+      "folder_include": [],
+      "folder_exclude": [],
+      "selected_folders": [],
+      "exclude_root_files": false,
+      "skip_hidden": false,
+      "skip_system": false
+    },
+    "root_a": "\\\\?\\C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-AutoDelete-GUI\\A|4241541576|1769472|1369597",
+    "root_b": "\\\\?\\C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-AutoDelete-GUI\\B|4241541576|1638400|1375971"
+  },
+  "files_match": 10,
+  "policy_off": true,
+  "monitor_off": true
+}
