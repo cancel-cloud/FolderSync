@@ -215,7 +215,8 @@ impl Index {
         Ok(plan)
     }
     pub fn put_plan(&self, p: &Plan) -> Result<()> {
-        self.db.execute(
+        let tx = self.db.unchecked_transaction()?;
+        tx.execute(
             "INSERT INTO runs VALUES(?,?,?,?,?)",
             params![
                 p.id,
@@ -225,6 +226,11 @@ impl Index {
                 p.created_at as i64
             ],
         )?;
+        // Retain the latest 100 ordinary plans plus every recovery/in-flight run.
+        // This never prunes baselines, dirty work or protected version catalogs.
+        tx.execute("DELETE FROM journal WHERE run IN (SELECT id FROM runs WHERE task=? AND status NOT IN ('Applying','Interrupted') ORDER BY rowid DESC LIMIT -1 OFFSET 100)",[&p.task.id])?;
+        tx.execute("DELETE FROM runs WHERE id IN (SELECT id FROM runs WHERE task=? AND status NOT IN ('Applying','Interrupted') ORDER BY rowid DESC LIMIT -1 OFFSET 100)",[&p.task.id])?;
+        tx.commit()?;
         Ok(())
     }
     pub fn history(&self, task: &str) -> Result<Vec<Plan>> {
