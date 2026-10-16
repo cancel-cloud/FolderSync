@@ -1,0 +1,11 @@
+{
+  "source_commit": "65f96b3",
+  "run_id": "f764c34a-0896-4c22-b303-5a07a33731fa",
+  "status": "Attention",
+  "created_at": 1792148190,
+  "copied_fixture_equal": true,
+  "task_count": 2,
+  "all_automatic_triggers_off": true,
+  "dashboard_time_observed": "16.10.2026, 12:56:30",
+  "manual_refresh_clicked": false
+}
