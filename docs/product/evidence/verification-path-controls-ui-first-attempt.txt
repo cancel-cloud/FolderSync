@@ -1,0 +1,88 @@
+$ vitest run
+
+ RUN  v3.2.7 C:/Users/Lukas/Developer/SyncFolders
+
+ ✓ src/review.test.ts (2 tests) 5ms
+ ✓ src/i18n.test.ts (2 tests) 38ms
+ ❯ src/components/path-pair.test.tsx (2 tests | 2 failed) 326ms
+   × copies the selected side's complete UNC path without normalization 227ms
+     → expected "writeText" to be called with arguments: [ '\\server\share\東京\trailing space ' ]
+
+Received: 
+
+  1st writeText call:
+
+  [
+-   "\\\\server\\share\\東京\\trailing space ",
++   "\\\\\\\\server\\\\share\\\\東京\\\\trailing space ",
+  ]
+
+
+Number of calls: 1
+
+   × failed clipboard access exposes a selectable full path and never reports success 98ms
+     → expected 'C:\\owned\\東京' to be 'C:\owned\東京' // Object.is equality
+ ✓ src/App.test.tsx (16 tests) 7169ms
+   ✓ quit-on-close asks before discarding an unsaved task draft  643ms
+   ✓ close behavior persists and failed preference saves do not change the selection  384ms
+   ✓ Ignore revises preview only and leaves conflict attention visible after confirmed Apply  448ms
+   ✓ editable task identifiers save without replacing internal task identity  676ms
+   ✓ deleted-task recovery stays separate from synchronization and restore requires confirmation  410ms
+   ✓ enabling automatic deletion requires a separate policy confirmation before saving  375ms
+   ✓ group filtering clears hidden selections and bulk reassignment refreshes collapsible groups  715ms
+   ✓ saving a selected task into another group clears its hidden bulk selection  593ms
+   ✓ nested conflict choice only revises preview; Apply requires its separate confirmation  562ms
+   ✓ review requests bounded pages and resets paging when filters change  865ms
+   ✓ terminal Apply result Failed: destination locked updates the dashboard and requires a fresh preview  396ms
+   ✓ terminal Apply result Cancelled updates the dashboard and requires a fresh preview  394ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/path-pair.test.tsx > copies the selected side's complete UNC path without normalization
+AssertionError: expected "writeText" to be called with arguments: [ '\\server\share\東京\trailing space ' ]
+
+Received: 
+
+  1st writeText call:
+
+  [
+-   "\\\\server\\share\\東京\\trailing space ",
++   "\\\\\\\\server\\\\share\\\\東京\\\\trailing space ",
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/components/path-pair.test.tsx:25:21
+     23|   );
+     24|   await user.click(screen.getByRole("button", { name: "Copy folder B p…
+     25|   expect(clipboard).toHaveBeenCalledWith(
+       |                     ^
+     26|     "\\\\server\\share\\東京\\trailing space ",
+     27|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/components/path-pair.test.tsx > failed clipboard access exposes a selectable full path and never reports success
+AssertionError: expected 'C:\\owned\\東京' to be 'C:\owned\東京' // Object.is equality
+
+Expected: "C:\owned\東京"
+Received: "C:\\owned\\東京"
+
+ ❯ src/components/path-pair.test.tsx:44:23
+     42|     name: "Vollständiger Pfad von Ordner A",
+     43|   }) as HTMLTextAreaElement;
+     44|   expect(input.value).toBe("C:\\owned\\東京");
+       |                       ^
+     45|   expect(input.readOnly).toBe(true);
+     46|   expect(screen.getByRole("status").textContent).toContain("manuell ko…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  2 failed | 20 passed (22)
+   Start at  15:30:10
+   Duration  15.62s (transform 4.73s, setup 0ms, collect 6.25s, tests 7.54s, environment 4.44s, prepare 1.41s)
+
+[ELIFECYCLE] Test failed. See above for more details.

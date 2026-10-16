@@ -332,7 +332,7 @@ input[type="checkbox"] {
   display: grid;
   gap: 7px;
 }
-.paths div {
+.paths .path-line {
   display: flex;
   align-items: flex-start;
   gap: 11px;
@@ -827,4 +827,39 @@ footer span {
 .run-progress progress {
   width: 100%;
   accent-color: #148677;
+}
+
+.paths .path-row {
+  min-width: 0;
+}
+.path-line code {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.path-line .button {
+  flex-shrink: 0;
+  padding: 0 5px;
+  min-height: 24px;
+  font-size: 11px;
+}
+.path-row textarea {
+  width: 100%;
+  margin-top: 7px;
+  font:
+    12px Consolas,
+    monospace;
+  overflow-wrap: anywhere;
+  resize: vertical;
+}
+@media (max-width: 680px) {
+  .paths .path-line {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .path-line code {
+    flex-basis: calc(100% - 30px);
+  }
 }

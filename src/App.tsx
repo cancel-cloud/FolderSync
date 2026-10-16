@@ -19,6 +19,7 @@ import {
   FileClock,
   CheckCircle2,
 } from "lucide-react";
+import { PathPair } from "./components/path-pair";
 import { Confirmation } from "./components/ui/confirmation";
 import { Button } from "./components/ui/button";
 import type {
@@ -900,16 +901,7 @@ export default function App() {
                                   {triggerLabel(t, lang)}
                                 </span>
                               </div>
-                              <div className="paths">
-                                <div>
-                                  <b>A</b>
-                                  <code title={t.a}>{t.a}</code>
-                                </div>
-                                <div>
-                                  <b>B</b>
-                                  <code title={t.b}>{t.b}</code>
-                                </div>
-                              </div>
+                              <PathPair a={t.a} b={t.b} lang={lang} />
                               <div className="task-bottom">
                                 <span>
                                   {statusLabel(
@@ -1681,16 +1673,7 @@ export default function App() {
                 </p>
               )}
               <div className="panel">
-                <div className="paths">
-                  <div>
-                    <b>A</b>
-                    <code>{plan.task.a}</code>
-                  </div>
-                  <div>
-                    <b>B</b>
-                    <code>{plan.task.b}</code>
-                  </div>
-                </div>
+                <PathPair a={plan.task.a} b={plan.task.b} lang={lang} />
                 <small>
                   {tr("Run ID", "Lauf-ID")}: {plan.id}
                 </small>
@@ -1982,16 +1965,7 @@ export default function App() {
                       {tr("protected versions", "geschützte Versionen")} ·{" "}
                       {date(r.archived_at)}
                     </p>
-                    <div className="paths">
-                      <div>
-                        <b>A</b>
-                        <code>{r.task.a}</code>
-                      </div>
-                      <div>
-                        <b>B</b>
-                        <code>{r.task.b}</code>
-                      </div>
-                    </div>
+                    <PathPair a={r.task.a} b={r.task.b} lang={lang} />
                     <Button
                       variant="outline"
                       aria-label={tr(
@@ -2046,16 +2020,7 @@ export default function App() {
                       "Sync-Ausgangszustand und Auslöser wurden entfernt. Ursprüngliche Ordneridentitäten bleiben nur für geprüfte Wiederherstellung erhalten. Für erneute Synchronisation eine neue Aufgabe erstellen.",
                     )}
                   </p>
-                  <div className="paths">
-                    <div>
-                      <b>A</b>
-                      <code>{task.a}</code>
-                    </div>
-                    <div>
-                      <b>B</b>
-                      <code>{task.b}</code>
-                    </div>
-                  </div>
+                  <PathPair a={task.a} b={task.b} lang={lang} />
                 </section>
               )}
               <section className="panel">

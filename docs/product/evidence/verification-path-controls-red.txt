@@ -1,0 +1,203 @@
+$ vitest run "src/components/path-pair.test.tsx"
+
+ RUN  v3.2.7 C:/Users/Lukas/Developer/SyncFolders
+
+ ❯ src/components/path-pair.test.tsx (2 tests | 2 failed) 200ms
+   × copies the selected side's complete UNC path without normalization 185ms
+     → Unable to find an accessible element with the role "button" and name "Copy folder B path"
+
+Here are the accessible roles:
+
+  code:
+
+  Name "":
+  [36m<code />[39m
+
+  Name "":
+  [36m<code />[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"paths"[39m
+    [36m>[39m
+      [36m<div>[39m
+        [36m<b>[39m
+          [0mA[0m
+        [36m</b>[39m
+        [36m<code>[39m
+          [0mC:\\owned\\A[0m
+        [36m</code>[39m
+      [36m</div>[39m
+      [36m<div>[39m
+        [36m<b>[39m
+          [0mB[0m
+        [36m</b>[39m
+        [36m<code>[39m
+          [0m\\\\server\\share\\東京\\trailing space [0m
+        [36m</code>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+   × failed clipboard access exposes a selectable full path and never reports success 14ms
+     → Unable to find an accessible element with the role "button" and name "Pfad von Ordner A kopieren"
+
+Here are the accessible roles:
+
+  code:
+
+  Name "":
+  [36m<code />[39m
+
+  Name "":
+  [36m<code />[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"paths"[39m
+    [36m>[39m
+      [36m<div>[39m
+        [36m<b>[39m
+          [0mA[0m
+        [36m</b>[39m
+        [36m<code>[39m
+          [0mC:\\owned\\東京[0m
+        [36m</code>[39m
+      [36m</div>[39m
+      [36m<div>[39m
+        [36m<b>[39m
+          [0mB[0m
+        [36m</b>[39m
+        [36m<code>[39m
+          [0mC:\\owned\\B[0m
+        [36m</code>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/path-pair.test.tsx > copies the selected side's complete UNC path without normalization
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Copy folder B path"
+
+Here are the accessible roles:
+
+  code:
+
+  Name "":
+  <code />
+
+  Name "":
+  <code />
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="paths"
+    >
+      <div>
+        <b>
+          A
+        </b>
+        <code>
+          C:\\owned\\A
+        </code>
+      </div>
+      <div>
+        <b>
+          B
+        </b>
+        <code>
+          \\\\server\\share\\東京\\trailing space 
+        </code>
+      </div>
+    </div>
+  </div>
+</body>
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/path-pair.test.tsx:13:27
+     11|   const clipboard = vi.spyOn(navigator.clipboard, "writeText").mockRes…
+     12|   render(<PathPair a="C:\\owned\\A" b="\\\\server\\share\\東京\\trailing…
+     13|   await user.click(screen.getByRole("button", { name: "Copy folder B p…
+       |                           ^
+     14|   expect(clipboard).toHaveBeenCalledWith("\\\\server\\share\\東京\\trail…
+     15|   expect(screen.getByRole("status").textContent).toBe("Path copied");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/components/path-pair.test.tsx > failed clipboard access exposes a selectable full path and never reports success
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Pfad von Ordner A kopieren"
+
+Here are the accessible roles:
+
+  code:
+
+  Name "":
+  <code />
+
+  Name "":
+  <code />
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="paths"
+    >
+      <div>
+        <b>
+          A
+        </b>
+        <code>
+          C:\\owned\\東京
+        </code>
+      </div>
+      <div>
+        <b>
+          B
+        </b>
+        <code>
+          C:\\owned\\B
+        </code>
+      </div>
+    </div>
+  </div>
+</body>
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/path-pair.test.tsx:23:27
+     21|   vi.spyOn(navigator.clipboard, "writeText").mockRejectedValue(new Err…
+     22|   render(<PathPair a="C:\\owned\\東京" b="C:\\owned\\B" lang="de" />);
+     23|   await user.click(screen.getByRole("button", { name: "Pfad von Ordner…
+       |                           ^
+     24|   const input = screen.getByRole("textbox", { name: "Vollständiger Pfa…
+     25|   expect(input.value).toBe("C:\\owned\\東京");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  15:29:30
+   Duration  3.65s (transform 68ms, setup 0ms, collect 563ms, tests 200ms, environment 1.92s, prepare 379ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
