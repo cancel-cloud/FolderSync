@@ -1,0 +1,9 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.03s
+     Running tests\rename_lineage.rs (target\debug\deps\rename_lineage-90b89404742c632a.exe)
+
+running 1 test
+test restoring_the_old_name_allows_later_unrelated_copies_with_the_historical_content ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.31s
+

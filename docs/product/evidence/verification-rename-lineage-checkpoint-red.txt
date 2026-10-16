@@ -1,0 +1,24 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.11s
+     Running tests\rename_lineage.rs (target\debug\deps\rename_lineage-90b89404742c632a.exe)
+
+running 1 test
+test successive_unique_automatic_renames_advance_the_common_identity_checkpoint ... FAILED
+
+failures:
+
+---- successive_unique_automatic_renames_advance_the_common_identity_checkpoint stdout ----
+
+thread 'successive_unique_automatic_renames_advance_the_common_identity_checkpoint' (26824) panicked at crates\sync-engine\tests\rename_lineage.rs:352:9:
+assertion `left == right` failed: middle.txt -> final.txt
+  left: "Attention"
+ right: "Applied"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    successive_unique_automatic_renames_advance_the_common_identity_checkpoint
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 12 filtered out; finished in 0.38s
+
+error: test failed, to rerun pass `-p foldersync-engine --test rename_lineage`

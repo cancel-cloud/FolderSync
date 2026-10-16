@@ -1,0 +1,48 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.05s
+     Running tests\ambiguous_renames.rs (target\debug\deps\ambiguous_renames-bbefb23ddc6b80f7.exe)
+
+running 5 tests
+test native_opposing_rename_notifications_reach_incremental_conflict_planning ... ok
+test coalesced_incremental_events_hold_ambiguous_creates_and_removals_even_with_delete_approval ... ok
+test matching_rename_on_both_sides_and_unrelated_duplicate_are_not_ambiguous ... ok
+test identical_content_multiple_origins_never_guess_rename_pairing ... ok
+test opposing_renames_preserve_baseline_and_attention_while_independent_files_sync ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.93s
+
+     Running tests\automatic_deletion.rs (target\debug\deps\automatic_deletion-3cb572460aaa0f1b.exe)
+
+running 10 tests
+test automatic_baselines_do_not_substitute_for_explicit_manual_approval ... ok
+test directory_deletion_counts_descendants_against_limits ... ok
+test mirror_extras_without_a_common_baseline_remain_manual ... ok
+test enabled_policy_never_turns_an_unavailable_root_into_deletion_evidence ... ok
+test percentage_boundary_uses_known_baseline_and_whole_tree_loss_stops ... ok
+test policy_and_manual_approval_persist_but_imports_cannot_enable_deletion ... ok
+test entry_and_percentage_limits_stop_batches_before_any_mutation ... ok
+test native_both_side_deletions_are_protected_and_conflicts_still_preserve_edits ... ok
+test scope_changes_require_new_manual_review_and_move_cannot_opt_in ... ok
+test reappearing_deleted_side_during_backup_preserves_both_files ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.78s
+
+     Running tests\rename_lineage.rs (target\debug\deps\rename_lineage-90b89404742c632a.exe)
+
+running 13 tests
+test a_late_native_rename_hint_invalidates_an_older_independent_create_preview ... ok
+test native_rename_pair_survives_a_subsequent_atomic_editor_replacement ... ok
+test rename_then_edit_vs_opposing_edit_holds_both_paths_from_target_only_event ... ok
+test a_later_identical_copy_joins_the_unresolved_rename_group ... ok
+test excluding_all_rename_targets_clears_attention_without_touching_excluded_originals ... ok
+test a_normal_atomic_editor_save_is_an_edit_without_a_phantom_backup_conflict ... ok
+test unrelated_history_is_not_loaded_for_a_single_file_edit ... ok
+test old_name_events_before_targets_do_not_erase_persistent_rename_identity ... ok
+test split_opposing_targets_survive_restart_without_copying_either_original ... ok
+test restoring_the_old_name_allows_later_unrelated_copies_with_the_historical_content ... ok
+test successive_unique_automatic_renames_advance_the_common_identity_checkpoint ... ok
+test version_four_migration_retains_rename_evidence_and_invalidates_older_reviews ... ok
+test reviewed_split_rename_choices_retire_old_identity_without_future_phantom_conflicts ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.55s
+

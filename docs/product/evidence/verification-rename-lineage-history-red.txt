@@ -1,0 +1,24 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.32s
+     Running tests\rename_lineage.rs (target\debug\deps\rename_lineage-90b89404742c632a.exe)
+
+running 1 test
+test unrelated_history_is_not_loaded_for_a_single_file_edit ... FAILED
+
+failures:
+
+---- unrelated_history_is_not_loaded_for_a_single_file_edit stdout ----
+
+thread 'unrelated_history_is_not_loaded_for_a_single_file_edit' (26856) panicked at crates\sync-engine\tests\rename_lineage.rs:310:5:
+assertion `left == right` failed: A narrow edit must not materialize disconnected historical links
+  left: 2000
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    unrelated_history_is_not_loaded_for_a_single_file_edit
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.22s
+
+error: test failed, to rerun pass `-p foldersync-engine --test rename_lineage`

@@ -62,6 +62,8 @@ export function statusLabel(status: string, language: string): string {
   return statuses[status] || status;
 }
 const reasons: Record<string, string> = {
+  "Rename identity connects divergent paths; originals preserved until explicit review":
+    "Eine Umbenennung verbindet unterschiedlich geänderte Pfade. Originale bleiben bis zur ausdrücklichen Prüfung erhalten.",
   "Ambiguous rename candidates share baseline content; originals preserved until explicit review":
     "Mehrdeutige Umbenennungen haben denselben Ausgangsinhalt. Originale bleiben bis zur ausdrücklichen Prüfung erhalten.",
   "Explicit ignore for this run; conflict remains unresolved":

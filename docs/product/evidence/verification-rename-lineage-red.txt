@@ -1,0 +1,36 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.85s
+     Running tests\rename_lineage.rs (target\debug\deps\rename_lineage-90b89404742c632a.exe)
+
+running 3 tests
+test rename_then_edit_vs_opposing_edit_holds_both_paths_from_target_only_event ... FAILED
+test split_opposing_targets_survive_restart_without_copying_either_original ... FAILED
+test old_name_events_before_targets_do_not_erase_persistent_rename_identity ... FAILED
+
+failures:
+
+---- rename_then_edit_vs_opposing_edit_holds_both_paths_from_target_only_event stdout ----
+
+thread 'rename_then_edit_vs_opposing_edit_holds_both_paths_from_target_only_event' (13000) panicked at crates\sync-engine\tests\rename_lineage.rs:16:58:
+called `Option::unwrap()` on a `None` value
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- split_opposing_targets_survive_restart_without_copying_either_original stdout ----
+
+thread 'split_opposing_targets_survive_restart_without_copying_either_original' (12008) panicked at crates\sync-engine\tests\rename_lineage.rs:16:58:
+called `Option::unwrap()` on a `None` value
+
+---- old_name_events_before_targets_do_not_erase_persistent_rename_identity stdout ----
+
+thread 'old_name_events_before_targets_do_not_erase_persistent_rename_identity' (33224) panicked at crates\sync-engine\tests\rename_lineage.rs:16:58:
+called `Option::unwrap()` on a `None` value
+
+
+failures:
+    old_name_events_before_targets_do_not_erase_persistent_rename_identity
+    rename_then_edit_vs_opposing_edit_holds_both_paths_from_target_only_event
+    split_opposing_targets_survive_restart_without_copying_either_original
+
+test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.87s
+
+error: test failed, to rerun pass `-p foldersync-engine --test rename_lineage`

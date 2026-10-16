@@ -1,0 +1,24 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.01s
+     Running tests\rename_lineage.rs (target\debug\deps\rename_lineage-90b89404742c632a.exe)
+
+running 1 test
+test native_rename_pair_survives_a_subsequent_atomic_editor_replacement ... FAILED
+
+failures:
+
+---- native_rename_pair_survives_a_subsequent_atomic_editor_replacement stdout ----
+
+thread 'native_rename_pair_survives_a_subsequent_atomic_editor_replacement' (29420) panicked at crates\sync-engine\tests\rename_lineage.rs:25:5:
+assertion `left == right` failed: renamed.txt
+  left: CopyToB
+ right: Conflict
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    native_rename_pair_survives_a_subsequent_atomic_editor_replacement
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.26s
+
+error: test failed, to rerun pass `-p foldersync-engine --test rename_lineage`

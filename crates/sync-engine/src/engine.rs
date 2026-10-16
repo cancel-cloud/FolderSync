@@ -112,6 +112,7 @@ impl Engine {
                     }
                 }
             }
+            self.expand_lineage(&t, &mut a, &mut b, &mut keys, &mut m)?;
             self.index.update_ancestors(id, "A", &keys)?;
             self.index.update_ancestors(id, "B", &keys)?;
             self.make_plan(t.clone(), &a, &b, keys, m.clone())
@@ -272,14 +273,14 @@ impl Engine {
         };
         let result = (|| {
             self.validate(&t)?;
-            let a = syncfs::scan_controlled(
+            let mut a = syncfs::scan_controlled(
                 &t.a,
                 &t.scope,
                 &mut m,
                 Some(&self.cancel),
                 Some(&self.progress),
             )?;
-            let b = syncfs::scan_controlled(
+            let mut b = syncfs::scan_controlled(
                 &t.b,
                 &t.scope,
                 &mut m,
@@ -289,13 +290,14 @@ impl Engine {
             self.index.put_tree(id, "A", &a)?;
             self.index.put_tree(id, "B", &b)?;
             let pending = self.index.conflict_paths(id)?;
-            let keys = a
+            let mut keys = a
                 .keys()
                 .chain(b.keys())
                 .chain(self.index.baseline(id)?.keys())
                 .chain(pending.iter())
                 .cloned()
                 .collect();
+            self.expand_lineage(&t, &mut a, &mut b, &mut keys, &mut m)?;
             self.make_plan(t.clone(), &a, &b, keys, m.clone())
         })();
         if let Err(error) = &result {
@@ -309,7 +311,7 @@ impl Engine {
         a: &Tree,
         b: &Tree,
         keys: BTreeSet<String>,
-        metrics: Metrics,
+        mut metrics: Metrics,
     ) -> Result<Plan> {
         let roots = self.validate(&t)?;
         let mut operations = Vec::new();
@@ -384,8 +386,11 @@ impl Engine {
             });
         }
         crate::renames::protect_ambiguous(t.mode, &mut operations, &baselines);
+        self.protect_lineage(&t, &mut operations, &baselines, &mut metrics)?;
         for operation in &operations {
-            if operation.reason == crate::renames::AMBIGUOUS_RENAME {
+            if operation.reason == crate::renames::AMBIGUOUS_RENAME
+                || operation.reason == crate::lineage::LINEAGE_RENAME
+            {
                 self.index.db.execute(
                     "INSERT OR REPLACE INTO conflicts VALUES(?,?,?)",
                     params![
@@ -568,6 +573,13 @@ impl Engine {
                         "DELETE FROM conflicts WHERE task=? AND path=?",
                         params![p.task.id, path_key(&o.path)],
                     )?;
+                    Index::remember_common(
+                        &tx,
+                        &p.task.id,
+                        &path_key(&o.path),
+                        o.a.as_ref(),
+                        o.b.as_ref(),
+                    )?;
                 }
             }
             tx.commit()?;
@@ -644,6 +656,9 @@ impl Engine {
         if let Some(error) = cleanup_error {
             p.status
                 .push_str(&format!("; retention cleanup pending: {error}"));
+        }
+        if result.is_ok() {
+            self.retire_lineage(&p, manual)?;
         }
         let transaction = self.index.db.transaction()?;
         transaction.execute(
@@ -982,6 +997,7 @@ impl Engine {
             "DELETE FROM conflicts WHERE task=? AND path=?",
             params![task.id, path_key(&o.path)],
         )?;
+        Index::remember_common(&tx, &task.id, &path_key(&o.path), a.as_ref(), b.as_ref())?;
         tx.commit()?;
         self.index
             .put_entry(&task.id, "A", &path_key(&o.path), a.as_ref())?;
