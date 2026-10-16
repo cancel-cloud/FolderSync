@@ -1,0 +1,12 @@
+{
+  "installation_did_not_launch": true,
+  "installer_bytes": 4145936,
+  "exit_code": 0,
+  "source_commit": "5b65a1d",
+  "installed_exe_sha256": "D1764AC244C4130EF00BDBA2201A22C2701B0B56A08372B3FE87E6929B54A391",
+  "version": "0.1.8",
+  "startup_enabled": true,
+  "startup_preference_preserved": true,
+  "elevated": false,
+  "installer_sha256": "B6D042D99CFD7B48486032D5957112E24E716BA5995FDEC77AAB381CE987C266"
+}

@@ -1,0 +1,77 @@
+{
+  "build": "release",
+  "bytes": 874806229,
+  "durable_sqlite": {
+    "individual_1000_ms": 3210,
+    "transaction_1000_ms": 8
+  },
+  "files": 35000,
+  "fixture": "C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools/FolderSync-35000-Test/Quelle",
+  "full_preview": {
+    "metrics": {
+      "copied_bytes": 0,
+      "hashed_bytes": 874806229,
+      "lineage_links": 0,
+      "peak_workers": 0,
+      "queued_paths": 0,
+      "reconciliations": 1,
+      "scanned_entries": 35350,
+      "watch_events": 0
+    },
+    "operations": 35350,
+    "wall_ms": 24732
+  },
+  "output": "C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-Perf-40692d2a-becb-48d5-a23d-98736c45e09b",
+  "raw_hash": [
+    {
+      "hashed_bytes": 874806229,
+      "wall_ms": 1663,
+      "workers": 10
+    },
+    {
+      "hashed_bytes": 874806229,
+      "wall_ms": 6466,
+      "workers": 1
+    }
+  ],
+  "safe_scan": {
+    "entries": 35350,
+    "metrics": {
+      "copied_bytes": 0,
+      "hashed_bytes": 874806229,
+      "lineage_links": 0,
+      "peak_workers": 0,
+      "queued_paths": 0,
+      "reconciliations": 0,
+      "scanned_entries": 35350,
+      "watch_events": 0
+    },
+    "wall_ms": 4615
+  },
+  "samples": [
+    {
+      "apply_ms": 24509,
+      "metrics": {
+        "copied_bytes": 2150831,
+        "hashed_bytes": 12904986,
+        "lineage_links": 0,
+        "peak_workers": 4,
+        "queued_paths": 0,
+        "reconciliations": 1,
+        "scanned_entries": 5050,
+        "watch_events": 0
+      },
+      "phase_samples_ms": {
+        "Applying": 3793,
+        "Starting": 5,
+        "Transferring": 218,
+        "Validating": 2517,
+        "Verifying": 15974
+      },
+      "preview_ms": 257,
+      "verified_files": 1000,
+      "workers": 4
+    }
+  ],
+  "version": "0.1.8"
+}
