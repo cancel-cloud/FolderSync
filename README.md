@@ -8,7 +8,7 @@ Run `target\release\bundle\nsis\FolderSync_0.1.0_x64-setup.exe`. The NSIS instal
 
 Create a task with two existing writable folders, choose the direction, then Preview. Different pre-existing bytes produce a conflict. Selecting a conflict direction only revises the preview. Apply requires a separate confirmation; every manual removal also needs approval of the exact plan. Existing file contents are protected in `%APPDATA%\dev.foldersync.desktop\versions`.
 
-Closing the window leaves the process running in the tray. Reopen with the shortcut or executable; single-instance handling shows the existing window. Quit from Settings or the tray stops the process. Triggers are off on new/imported/duplicated tasks. Only enable monitoring after checking the first manual result.
+Closing the window leaves the process running in the tray by default. Settings can instead make Close stop work safely and quit; unsaved task drafts require confirmation. Reopen with the shortcut or executable; single-instance handling shows the existing window. Quit from Settings or the tray stops the process. Triggers are off on new/imported/duplicated tasks. Only enable monitoring after checking the first manual result.
 
 ## Implemented
 

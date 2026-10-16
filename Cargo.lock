@@ -1102,6 +1102,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "foldersync-engine",
+ "rusqlite",
  "serde",
  "serde_json",
  "tauri",
@@ -1110,6 +1111,7 @@ dependencies = [
  "tauri-plugin-dialog",
  "tauri-plugin-notification",
  "tauri-plugin-single-instance",
+ "tempfile",
 ]
 
 [[package]]

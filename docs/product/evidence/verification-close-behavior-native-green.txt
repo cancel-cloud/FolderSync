@@ -1,0 +1,10 @@
+   Compiling foldersync v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.00s
+     Running unittests src\main.rs (target\debug\deps\foldersync-defcc8b4f4d855d3.exe)
+
+running 2 tests
+test lifecycle::tests::close_choice_defaults_to_tray_and_persists_without_changing_automation ... ok
+test lifecycle::tests::failed_persistence_keeps_native_close_action_and_saved_preference ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 5.64s
+
