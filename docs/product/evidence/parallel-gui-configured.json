@@ -1,0 +1,157 @@
+{
+  "task": {
+    "id": "9b2d06d2-3805-4f2a-ba90-8498035bbb58",
+    "identifier": "GUI-CAD-\u6771\u4eac-01",
+    "name": "FolderSync GUI acceptance",
+    "a": "C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\A",
+    "b": "C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\B",
+    "mode": "TwoWay",
+    "group": "GUI-Einzeln",
+    "scope": {
+      "include": [],
+      "exclude": [],
+      "folder_include": [],
+      "folder_exclude": [],
+      "selected_folders": [],
+      "exclude_root_files": false,
+      "skip_hidden": false,
+      "skip_system": false
+    },
+    "monitor": false,
+    "debounce_secs": 20,
+    "retries": 3,
+    "bandwidth_kib": 128,
+    "transfer_concurrency": 2,
+    "comparison": "FullContent",
+    "conflict_policy": "RequireChoices",
+    "history_patterns": [],
+    "history_cap": 10,
+    "schedule": {
+      "kind": "",
+      "interval_minutes": 15,
+      "hour": 23,
+      "minute": 0,
+      "weekdays": [
+        1
+      ],
+      "month_day": 1
+    },
+    "login": false,
+    "deletion_policy": {
+      "enabled": false,
+      "max_entries": 20,
+      "max_percent": 10
+    }
+  },
+  "runs": [
+    {
+      "id": "84e8cc5f-3dc3-45cf-9c53-b4e39e7b7e2f",
+      "status": "Attention",
+      "plan": {
+        "id": "84e8cc5f-3dc3-45cf-9c53-b4e39e7b7e2f",
+        "task": {
+          "id": "9b2d06d2-3805-4f2a-ba90-8498035bbb58",
+          "identifier": "GUI-CAD-\u6771\u4eac-01",
+          "name": "FolderSync GUI acceptance",
+          "a": "C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\A",
+          "b": "C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\B",
+          "mode": "TwoWay",
+          "group": "GUI-Einzeln",
+          "scope": {
+            "include": [],
+            "exclude": [],
+            "folder_include": [],
+            "folder_exclude": [],
+            "selected_folders": [],
+            "exclude_root_files": false,
+            "skip_hidden": false,
+            "skip_system": false
+          },
+          "monitor": false,
+          "debounce_secs": 20,
+          "retries": 3,
+          "bandwidth_kib": 0,
+          "comparison": "FullContent",
+          "conflict_policy": "RequireChoices",
+          "history_patterns": [],
+          "history_cap": 10,
+          "schedule": {
+            "kind": "",
+            "interval_minutes": 15,
+            "hour": 23,
+            "minute": 0,
+            "weekdays": [
+              1
+            ],
+            "month_day": 1
+          },
+          "login": false,
+          "deletion_policy": {
+            "enabled": false,
+            "max_entries": 20,
+            "max_percent": 10
+          }
+        },
+        "root_a": "\\\\?\\C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\A|4241541576|131072|2726252",
+        "root_b": "\\\\?\\C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\B|4241541576|65536|2726253",
+        "operations": [
+          {
+            "path": "from-a.txt",
+            "action": "Ignore",
+            "kind": "Ignore",
+            "reason": "Explicit ignore for this run; conflict remains unresolved",
+            "status": "Ignored",
+            "a": {
+              "path": "from-a.txt",
+              "digest": "4a86984ee4e8b69c4c514b6d54187f74262cc8ffaa0dfe63f96d8e2c92447118",
+              "directory": false,
+              "size": 26,
+              "mtime_ns": "1792143174629695000",
+              "file_id": "4241541576:393216:2784149"
+            },
+            "b": {
+              "path": "from-a.txt",
+              "digest": "b67532c9c042722755413f1dbf5d9258c1c68f2903e6e30ec7d0c832434b6bdf",
+              "directory": false,
+              "size": 35,
+              "mtime_ns": "1792143174631696300",
+              "file_id": "4241541576:65536:2772226"
+            }
+          }
+        ],
+        "metrics": {
+          "scanned_entries": 1249,
+          "hashed_bytes": 83928956,
+          "copied_bytes": 47,
+          "queued_paths": 0,
+          "reconciliations": 1,
+          "watch_events": 0
+        },
+        "baseline_generation": 33,
+        "created_at": 1792159657,
+        "status": "Attention",
+        "deletion_review": null,
+        "operation_count": 313
+      }
+    }
+  ],
+  "stages": [],
+  "staging_rows": 0,
+  "conflicts": [
+    [
+      "from-a.txt"
+    ]
+  ],
+  "hashes": {
+    "A": {
+      "parallel-ui-0.bin": "7bb39758eb9552403145c6c3029496c302433b0a4115d446d76c7b3ea04eb4be",
+      "parallel-ui-1.bin": "d84d3e2769174cebd8eded541eabd811a048fb05ba196a715caa042205786b21",
+      "from-a.txt": "f70e0cad47a9aaeb66999c6395012f2a9b2e266f0e79456d2f6bc1374ea11488"
+    },
+    "B": {
+      "parallel-ui-0.bin": null,
+      "parallel-ui-1.bin": null,
+      "from-a.txt": "95b498713c7dfdc8a8dc1a970a6c19e66f6a57354da800c751223817c648b870"
+    }
+  }
+}

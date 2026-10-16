@@ -1,0 +1,191 @@
+{
+  "task": {
+    "id": "9b2d06d2-3805-4f2a-ba90-8498035bbb58",
+    "identifier": "GUI-CAD-\u6771\u4eac-01",
+    "name": "FolderSync GUI acceptance",
+    "a": "C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\A",
+    "b": "C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\B",
+    "mode": "TwoWay",
+    "group": "GUI-Einzeln",
+    "scope": {
+      "include": [],
+      "exclude": [],
+      "folder_include": [],
+      "folder_exclude": [],
+      "selected_folders": [],
+      "exclude_root_files": false,
+      "skip_hidden": false,
+      "skip_system": false
+    },
+    "monitor": false,
+    "debounce_secs": 20,
+    "retries": 3,
+    "bandwidth_kib": 128,
+    "transfer_concurrency": 2,
+    "comparison": "FullContent",
+    "conflict_policy": "RequireChoices",
+    "history_patterns": [],
+    "history_cap": 10,
+    "schedule": {
+      "kind": "",
+      "interval_minutes": 15,
+      "hour": 23,
+      "minute": 0,
+      "weekdays": [
+        1
+      ],
+      "month_day": 1
+    },
+    "login": false,
+    "deletion_policy": {
+      "enabled": false,
+      "max_entries": 20,
+      "max_percent": 10
+    }
+  },
+  "runs": [
+    {
+      "id": "2034c6eb-0176-478e-a015-c4fe3ad4e434",
+      "status": "Preview",
+      "plan": {
+        "id": "2034c6eb-0176-478e-a015-c4fe3ad4e434",
+        "task": {
+          "id": "9b2d06d2-3805-4f2a-ba90-8498035bbb58",
+          "identifier": "GUI-CAD-\u6771\u4eac-01",
+          "name": "FolderSync GUI acceptance",
+          "a": "C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\A",
+          "b": "C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\B",
+          "mode": "TwoWay",
+          "group": "GUI-Einzeln",
+          "scope": {
+            "include": [],
+            "exclude": [],
+            "folder_include": [],
+            "folder_exclude": [],
+            "selected_folders": [],
+            "exclude_root_files": false,
+            "skip_hidden": false,
+            "skip_system": false
+          },
+          "monitor": false,
+          "debounce_secs": 20,
+          "retries": 3,
+          "bandwidth_kib": 128,
+          "transfer_concurrency": 2,
+          "comparison": "FullContent",
+          "conflict_policy": "RequireChoices",
+          "history_patterns": [],
+          "history_cap": 10,
+          "schedule": {
+            "kind": "",
+            "interval_minutes": 15,
+            "hour": 23,
+            "minute": 0,
+            "weekdays": [
+              1
+            ],
+            "month_day": 1
+          },
+          "login": false,
+          "deletion_policy": {
+            "enabled": false,
+            "max_entries": 20,
+            "max_percent": 10
+          }
+        },
+        "root_a": "\\\\?\\C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\A|4241541576|131072|2726252",
+        "root_b": "\\\\?\\C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\B|4241541576|65536|2726253",
+        "operations": [
+          {
+            "path": "from-a.txt",
+            "action": "Ignore",
+            "kind": "Ignore",
+            "reason": "Explicit ignore for this run; conflict remains unresolved",
+            "status": "Planned",
+            "a": {
+              "path": "from-a.txt",
+              "digest": "4a86984ee4e8b69c4c514b6d54187f74262cc8ffaa0dfe63f96d8e2c92447118",
+              "directory": false,
+              "size": 26,
+              "mtime_ns": "1792143174629695000",
+              "file_id": "4241541576:393216:2784149"
+            },
+            "b": {
+              "path": "from-a.txt",
+              "digest": "b67532c9c042722755413f1dbf5d9258c1c68f2903e6e30ec7d0c832434b6bdf",
+              "directory": false,
+              "size": 35,
+              "mtime_ns": "1792143174631696300",
+              "file_id": "4241541576:65536:2772226"
+            }
+          },
+          {
+            "path": "parallel-ui-0.bin",
+            "action": "CopyToB",
+            "kind": "Create",
+            "reason": "One-sided creation or change",
+            "status": "Planned",
+            "a": {
+              "path": "parallel-ui-0.bin",
+              "digest": "9fdece2b85d54103fda74a32ecca69e380af268636ac499696dbba166077f903",
+              "directory": false,
+              "size": 4194304,
+              "mtime_ns": "1792160949890974000",
+              "file_id": "4241541576:3211264:2858501"
+            },
+            "b": null
+          },
+          {
+            "path": "parallel-ui-1.bin",
+            "action": "CopyToB",
+            "kind": "Create",
+            "reason": "One-sided creation or change",
+            "status": "Planned",
+            "a": {
+              "path": "parallel-ui-1.bin",
+              "digest": "6a0e4f810902492053334e24d8e66a1de06c7c4d86bd8425d43a88626d354de2",
+              "directory": false,
+              "size": 4194304,
+              "mtime_ns": "1792160949897966400",
+              "file_id": "4241541576:2752512:2900839"
+            },
+            "b": null
+          }
+        ],
+        "metrics": {
+          "peak_workers": 0,
+          "scanned_entries": 626,
+          "hashed_bytes": 50353039,
+          "copied_bytes": 0,
+          "queued_paths": 0,
+          "reconciliations": 1,
+          "watch_events": 0
+        },
+        "baseline_generation": 35,
+        "created_at": 1792161212,
+        "status": "Preview",
+        "deletion_review": null,
+        "operation_count": 315
+      }
+    }
+  ],
+  "stages": [],
+  "staging_rows": 0,
+  "conflicts": [
+    [
+      "from-a.txt"
+    ]
+  ],
+  "hashes": {
+    "A": {
+      "parallel-ui-0.bin": "7bb39758eb9552403145c6c3029496c302433b0a4115d446d76c7b3ea04eb4be",
+      "parallel-ui-1.bin": "d84d3e2769174cebd8eded541eabd811a048fb05ba196a715caa042205786b21",
+      "from-a.txt": "f70e0cad47a9aaeb66999c6395012f2a9b2e266f0e79456d2f6bc1374ea11488"
+    },
+    "B": {
+      "parallel-ui-0.bin": null,
+      "parallel-ui-1.bin": null,
+      "from-a.txt": "95b498713c7dfdc8a8dc1a970a6c19e66f6a57354da800c751223817c648b870"
+    }
+  }
+}
