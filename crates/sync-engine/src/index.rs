@@ -22,7 +22,7 @@ impl Index {
         )?;
         let version: i64 = db.query_row("PRAGMA user_version", [], |r| r.get(0))?;
         anyhow::ensure!(
-            version <= 2,
+            version <= 3,
             "Database schema is newer than this application; refusing downgrade"
         );
         db.busy_timeout(std::time::Duration::from_secs(5))?;
@@ -41,11 +41,12 @@ impl Index {
  CREATE TABLE IF NOT EXISTS staging(path TEXT PRIMARY KEY,task TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS displaced(path TEXT PRIMARY KEY,task TEXT NOT NULL,relative TEXT NOT NULL,side TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS conflicts(task TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,path TEXT NOT NULL,json TEXT NOT NULL,PRIMARY KEY(task,path));
+ CREATE TABLE IF NOT EXISTS baseline_reviews(task TEXT PRIMARY KEY REFERENCES tasks(id) ON DELETE CASCADE,json TEXT NOT NULL);
  ")?;
         if version < 2 {
             db.execute_batch("ALTER TABLE entries ADD COLUMN index_generation INTEGER NOT NULL DEFAULT 0; ALTER TABLE entries ADD COLUMN file_id TEXT;")?;
         }
-        db.execute_batch("PRAGMA user_version=2; COMMIT; UPDATE runs SET status='Interrupted' WHERE status='Applying';")?;
+        db.execute_batch("PRAGMA user_version=3; COMMIT; UPDATE runs SET status='Interrupted' WHERE status='Applying';")?;
         Ok(Self {
             db,
             storage: storage.to_path_buf(),

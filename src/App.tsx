@@ -44,6 +44,7 @@ import {
   modifiedLabel,
   triggerLabel,
   messageLabel,
+  deletionReasonLabel,
 } from "./i18n";
 import "./style.css";
 const englishModeLabels: Record<Mode, string> = {
@@ -151,6 +152,12 @@ export default function App() {
   const date = (seconds: number) => formatDate(seconds, lang);
   const bytes = (value: number) => formatBytes(value, lang);
   const meta = (entry: Entry | null) => entryLabel(entry, lang);
+  const deletionReady =
+    !!task &&
+    !!statuses.find((s) => s.task_id === task.id)?.deletion_baseline_run &&
+    JSON.stringify(tasks.find((t) => t.id === task.id)?.scope) ===
+      JSON.stringify(task.scope) &&
+    ["TwoWay", "Mirror"].includes(task.mode);
   const modeLabels: Record<Mode, string> =
     lang === "de"
       ? {
@@ -295,6 +302,46 @@ export default function App() {
     setTask(structuredClone(t));
     setOriginal(JSON.stringify(t));
     setPage("editor");
+  }
+  function requestSaveTask() {
+    if (!task) return;
+    const snapshot = structuredClone(task);
+    const previous = original ? (JSON.parse(original) as Task) : null;
+    const saveTask = () =>
+      perform(async () => {
+        await invoke("save_task", { task: snapshot });
+        setSelected([]);
+        await refresh();
+        setOriginal(JSON.stringify(snapshot));
+        setPage("dashboard");
+        setMessage(
+          tr(
+            "Task saved. Preview the first run.",
+            "Aufgabe gespeichert. Prüfen Sie den ersten Lauf.",
+          ),
+        );
+      });
+    if (
+      snapshot.deletion_policy.enabled &&
+      (JSON.stringify(snapshot.deletion_policy) !==
+        JSON.stringify(previous?.deletion_policy) ||
+        snapshot.monitor !== previous?.monitor ||
+        snapshot.login !== previous?.login ||
+        JSON.stringify(snapshot.schedule) !==
+          JSON.stringify(previous?.schedule))
+    ) {
+      setConfirm({
+        title: tr(
+          "Enable automatic deletion?",
+          "Automatische Entfernung aktivieren?",
+        ),
+        body: tr(
+          `Future automatic runs may remove up to ${snapshot.deletion_policy.max_entries} entries and ${snapshot.deletion_policy.max_percent}% of the indexed common baseline per run, only when deletion is proven. A: ${snapshot.a}. B: ${snapshot.b}. Protected versions are retained. Unproven removals and Move require review.`,
+          `Künftige automatische Läufe dürfen je Lauf bis zu ${snapshot.deletion_policy.max_entries} Einträge und ${snapshot.deletion_policy.max_percent}% des indizierten gemeinsamen Ausgangszustands entfernen, sofern die Entfernung nachgewiesen ist. A: ${snapshot.a}. B: ${snapshot.b}. Geschützte Versionen bleiben erhalten. Unbelegte Entfernungen und Verschieben erfordern Prüfung.`,
+        ),
+        action: saveTask,
+      });
+    } else void saveTask();
   }
   async function preview(t: Task) {
     await perform(async () => {
@@ -931,24 +978,7 @@ export default function App() {
                     )}
                   </p>
                 </div>
-                <Button
-                  disabled={busy}
-                  onClick={() =>
-                    void perform(async () => {
-                      await invoke("save_task", { task });
-                      setSelected([]);
-                      await refresh();
-                      setOriginal(JSON.stringify(task));
-                      setPage("dashboard");
-                      setMessage(
-                        tr(
-                          "Task saved. Preview the first run.",
-                          "Aufgabe gespeichert. Prüfen Sie den ersten Lauf.",
-                        ),
-                      );
-                    })
-                  }
-                >
+                <Button disabled={busy} onClick={requestSaveTask}>
                   {tr("Save task", "Aufgabe speichern")}
                 </Button>
               </div>
@@ -1148,8 +1178,8 @@ export default function App() {
                 </div>
                 <p>
                   {tr(
-                    "Only enable monitoring after reviewing a successful first run. Destructive operations require manual review.",
-                    "Überwachung erst nach geprüftem Erstlauf aktivieren. Destruktive Vorgänge erfordern manuelle Prüfung.",
+                    "Only enable monitoring after reviewing a successful first run. Removals require manual review unless proven baseline deletion is explicitly enabled below.",
+                    "Überwachung erst nach geprüftem Erstlauf aktivieren. Entfernungen erfordern manuelle Prüfung, sofern nachgewiesene Ausgangszustands-Entfernung unten nicht ausdrücklich freigegeben ist.",
                   )}
                 </p>
                 <div className="checks">
@@ -1190,6 +1220,86 @@ export default function App() {
                     />
                   </label>
                 </div>
+              </section>
+              <section className="panel">
+                <h2>{tr("Automatic deletion", "Automatische Entfernung")}</h2>
+                <p>
+                  {tr(
+                    "Off by default. First complete a successful full manual Preview and Apply. Scope changes require another manual reconciliation. Both limits apply per run; entries include files and directories. Limits do not accumulate across runs.",
+                    "Standardmäßig aus. Zuerst eine erfolgreiche vollständige manuelle Vorschau anwenden. Nach Umfangsänderungen erneut manuell abgleichen. Beide Grenzen gelten je Lauf; Einträge umfassen Dateien und Ordner. Grenzen werden nicht über Läufe aufsummiert.",
+                  )}
+                </p>
+                <label className="check-row">
+                  <input
+                    type="checkbox"
+                    checked={task.deletion_policy.enabled}
+                    disabled={
+                      busy || (!deletionReady && !task.deletion_policy.enabled)
+                    }
+                    onChange={(e) =>
+                      patch({
+                        deletion_policy: {
+                          ...task.deletion_policy,
+                          enabled: e.target.checked,
+                        },
+                      })
+                    }
+                  />
+                  {tr(
+                    "Allow proven baseline deletions automatically",
+                    "Nachgewiesene Ausgangszustands-Entfernungen automatisch erlauben",
+                  )}
+                </label>
+                <div className="form-grid">
+                  <label>
+                    {tr(
+                      "Maximum removed entries per run",
+                      "Maximal entfernte Einträge je Lauf",
+                    )}
+                    <input
+                      type="number"
+                      min={1}
+                      max={100000}
+                      disabled={!task.deletion_policy.enabled}
+                      value={task.deletion_policy.max_entries}
+                      onChange={(e) =>
+                        patch({
+                          deletion_policy: {
+                            ...task.deletion_policy,
+                            max_entries: Number(e.target.value),
+                          },
+                        })
+                      }
+                    />
+                  </label>
+                  <label>
+                    {tr(
+                      "Maximum percentage of indexed baseline",
+                      "Maximaler Anteil am indizierten Ausgangszustand",
+                    )}
+                    <input
+                      type="number"
+                      min={1}
+                      max={100}
+                      disabled={!task.deletion_policy.enabled}
+                      value={task.deletion_policy.max_percent}
+                      onChange={(e) =>
+                        patch({
+                          deletion_policy: {
+                            ...task.deletion_policy,
+                            max_percent: Number(e.target.value),
+                          },
+                        })
+                      }
+                    />
+                  </label>
+                </div>
+                <small>
+                  {tr(
+                    "Protected recovery copies remain outside both roots. Unproven deletions, Move and exceeded limits wait for review. Enabling this policy does not itself enable monitoring or schedules.",
+                    "Geschützte Wiederherstellungskopien bleiben außerhalb beider Ordner. Unbelegte Entfernungen, Verschieben und überschrittene Grenzen warten auf Prüfung. Diese Freigabe aktiviert weder Überwachung noch Zeitpläne.",
+                  )}
+                </small>
               </section>
               <section className="panel">
                 <h2>{tr("Schedules & startup", "Zeitplan & Start")}</h2>
@@ -1493,6 +1603,37 @@ export default function App() {
                   {tr("Run ID", "Lauf-ID")}: {plan.id}
                 </small>
               </div>
+              {plan.deletion_review && (
+                <section
+                  className="panel"
+                  aria-label={tr(
+                    "Automatic deletion decision",
+                    "Entscheidung zur automatischen Entfernung",
+                  )}
+                >
+                  <h3>
+                    {tr(
+                      "Automatic deletion policy",
+                      "Richtlinie für automatische Entfernung",
+                    )}
+                  </h3>
+                  <p>
+                    {deletionReasonLabel(plan.deletion_review.reason, lang)}
+                  </p>
+                  <p>
+                    {tr(
+                      `${plan.deletion_review.entries} removals / ${plan.deletion_review.baseline_entries} indexed baseline entries. Limits: ${plan.deletion_review.max_entries} entries and ${plan.deletion_review.max_percent}% per run.`,
+                      `${plan.deletion_review.entries} Entfernungen / ${plan.deletion_review.baseline_entries} indizierte Ausgangseinträge. Grenzen: ${plan.deletion_review.max_entries} Einträge und ${plan.deletion_review.max_percent}% je Lauf.`,
+                    )}
+                  </p>
+                  {plan.deletion_review.baseline_run && (
+                    <small>
+                      {tr("Manual baseline run", "Manueller Ausgangslauf")}:{" "}
+                      {plan.deletion_review.baseline_run}
+                    </small>
+                  )}
+                </section>
+              )}
               {summary.deletes > 0 &&
                 ["Preview", "Review required"].includes(plan.status) && (
                   <label className="alert warning">
@@ -1782,6 +1923,10 @@ export default function App() {
                       monitor: false,
                       login: false,
                       schedule: newTask().schedule,
+                      deletion_policy: {
+                        ...task.deletion_policy,
+                        enabled: false,
+                      },
                     };
                     edit(t);
                   }}

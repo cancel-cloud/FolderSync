@@ -155,6 +155,7 @@ impl Engine {
             } else {
                 format!("Failed: Discovery: {error:#}")
             },
+            deletion_review: None,
         };
         self.index.put_plan(&plan)?;
         self.write_log(&plan)

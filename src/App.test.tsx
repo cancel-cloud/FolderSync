@@ -66,6 +66,41 @@ afterEach(() => {
   vi.clearAllMocks();
   api.listeners.clear();
 });
+test("enabling automatic deletion requires a separate policy confirmation before saving", async () => {
+  let saved = { ...newTask(), name: "Approved baseline", a: "A", b: "B" };
+  api.invoke.mockImplementation(
+    async (command: string, args?: { task: typeof saved }) => {
+      if (command === "tasks") return [saved];
+      if (command === "statuses")
+        return [
+          {
+            task_id: saved.id,
+            last_run: null,
+            pending_conflicts: 0,
+            next_run: null,
+            deletion_baseline_run: "manual-proof",
+          },
+        ];
+      if (command === "save_task" && args) saved = args.task;
+      return null;
+    },
+  );
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "Configure" }));
+  await user.click(
+    screen.getByRole("checkbox", {
+      name: "Allow proven baseline deletions automatically",
+    }),
+  );
+  await user.click(screen.getByRole("button", { name: "Save task" }));
+  expect(
+    await screen.findByRole("dialog", { name: "Enable automatic deletion?" }),
+  ).toBeTruthy();
+  expect(saved.deletion_policy.enabled).toBe(false);
+  await user.click(screen.getByRole("button", { name: "Confirm" }));
+  await waitFor(() => expect(saved.deletion_policy.enabled).toBe(true));
+});
 test("group filtering clears hidden selections and bulk reassignment refreshes collapsible groups", async () => {
   let tasks = [
     { ...newTask(), name: "Mechanical", group: "Engineering", a: "A", b: "B" },

@@ -19,7 +19,7 @@ Purpose: safely synchronize an engineering workspace and a user-accessible share
 
 - Preview, including conflict selection, never mutates user files.
 - Missing or partially enumerated roots cannot create deletion evidence.
-- Deletion requires a successful common baseline, recoverable storage and explicit destructive review.
+- Deletion requires recoverable storage and manual exact-plan approval, or explicit policy opt-in after a reviewed common baseline within both per-run limits.
 - Source removal in Move follows verified destination persistence.
 - Baselines advance only after successful operations; conflicts remain pending independently of transfer errors.
 - A steady-state single-file event must not enumerate/hash the entire tree.
@@ -27,4 +27,4 @@ Purpose: safely synchronize an engineering workspace and a user-accessible share
 
 ## Current checkpoint
 
-Implementation steps 1–8 have produced a running Rust/Tauri application, real filesystem tests, Computer Use workflows and an installed release. Development continues against acceptance-audit.md: several explicit management and unattended-deletion requirements remain incomplete, alongside real SMB, tray dispatch/toast activation, accessibility and OS lifecycle QA. These requirements are not waived by the passing core workflows. The initial missing MSVC prerequisite was supplied externally; the original blocked provisioning command was never retried. Actual results supersede the early audit checkpoint and are recorded in qa-report.md. Ordinary history is bounded, reviews use backend summary/detail pages, and English/German progress and cancellation are undergoing installed-build verification.
+Implementation steps 1–8 have produced a running Rust/Tauri application, real filesystem tests, Computer Use workflows and an installed release. Development continues against acceptance-audit.md: several explicit management requirements remain incomplete; approved unattended deletion is under installed verification, alongside real SMB, tray dispatch/toast activation, accessibility and OS lifecycle QA. These requirements are not waived by the passing core workflows. The initial missing MSVC prerequisite was supplied externally; the original blocked provisioning command was never retried. Actual results supersede the early audit checkpoint and are recorded in qa-report.md. Ordinary history is bounded, reviews use backend summary/detail pages, and English/German progress and cancellation are undergoing installed-build verification.

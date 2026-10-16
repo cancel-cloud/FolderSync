@@ -63,6 +63,39 @@ export function reasonLabel(reason: string, language: string) {
     ? reasons[reason] || `Technische Details: ${reason}`
     : reason;
 }
+export function deletionReasonLabel(reason: string, language: string) {
+  const labels: Record<string, [string, string]> = {
+    Approved: [
+      "Automatic deletion approved against the common baseline and configured limits.",
+      "Automatische Entfernung anhand des gemeinsamen Ausgangszustands und der eingestellten Grenzen freigegeben.",
+    ],
+    Disabled: [
+      "Automatic deletion is off. Review this run before applying.",
+      "Automatische Entfernung ist aus. Prüfen Sie diesen Lauf vor dem Anwenden.",
+    ],
+    BaselineApprovalRequired: [
+      "A successful full manual reconciliation is required before automatic deletion.",
+      "Vor automatischer Entfernung ist ein erfolgreicher vollständiger manueller Abgleich erforderlich.",
+    ],
+    UnprovenDeletion: [
+      "Some removals have no unchanged common baseline. Manual review is required.",
+      "Für einige Entfernungen fehlt ein unveränderter gemeinsamer Ausgangszustand. Manuelle Prüfung erforderlich.",
+    ],
+    EntryLimit: [
+      "The entry limit was exceeded. Review this run before applying.",
+      "Die Eintragsgrenze wurde überschritten. Prüfen Sie diesen Lauf vor dem Anwenden.",
+    ],
+    PercentLimit: [
+      "The percentage limit was exceeded. Review this run before applying.",
+      "Die Prozentgrenze wurde überschritten. Prüfen Sie diesen Lauf vor dem Anwenden.",
+    ],
+    MoveRequiresReview: [
+      "Move source removals always require manual review.",
+      "Quellentfernungen beim Verschieben erfordern immer manuelle Prüfung.",
+    ],
+  };
+  return labels[reason]?.[language === "de" ? 1 : 0] || reason;
+}
 export function entryLabel(entry: Entry | null, language: string) {
   if (!entry) return language === "de" ? "Nicht vorhanden" : "Absent";
   return `${entry.directory ? (language === "de" ? "Ordner" : "Folder") : formatBytes(entry.size, language)} · ${entry.digest.slice(0, 12)}`;

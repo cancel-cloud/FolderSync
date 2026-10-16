@@ -40,7 +40,7 @@ impl Engine {
                 "Review required"
             };
             serde_json::to_string(
-                &serde_json::json!({"run":plan.id,"task":plan.task.id,"status":status,"time":plan.created_at,"entries":plan.operations.len(),"metrics":plan.metrics}),
+                &serde_json::json!({"run":plan.id,"task":plan.task.id,"status":status,"time":plan.created_at,"entries":plan.operations.len(),"metrics":plan.metrics,"deletion_review":plan.deletion_review}),
             )?
         };
         if fs::metadata(&path).is_ok_and(|m| m.len() > 5 * 1024 * 1024) {

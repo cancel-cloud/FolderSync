@@ -83,26 +83,28 @@ impl Engine {
             .and_then(|s| s.parse().ok())
             .unwrap_or(0);
         plan.metrics.queued_paths = paths.len() as u64;
-        self.index.db.execute(
-            "UPDATE runs SET json=? WHERE id=?",
-            params![serde_json::to_string(&plan)?, plan.id],
-        )?;
-        // Background writes never imply approval for a newly destructive plan.
-        if plan.operations.iter().any(|o| {
-            matches!(
-                o.action,
-                Action::DeleteA | Action::DeleteB | Action::MoveToB
-            )
-        }) {
-            self.index.db.execute(
-                "UPDATE runs SET status='Review required' WHERE id=?",
-                [&plan.id],
-            )?;
+        plan.deletion_review = self.deletion_review(&plan)?;
+        let automatic_deletion = plan
+            .deletion_review
+            .as_ref()
+            .is_some_and(|r| r.reason == DeletionReason::Approved);
+        let review_required = plan
+            .deletion_review
+            .as_ref()
+            .is_some_and(|r| r.reason != DeletionReason::Approved);
+        if review_required {
             plan.status = "Review required".into();
+        }
+        self.index.db.execute(
+            "UPDATE runs SET json=?,status=? WHERE id=?",
+            params![serde_json::to_string(&plan)?, plan.status, plan.id],
+        )?;
+        if review_required {
+            self.write_log(&plan)?;
         } else {
             // Equal observations establish/advance the common baseline and
             // clear conflicts resolved externally, even without a transfer.
-            plan = match self.apply(&plan.id, false) {
+            plan = match self.apply_internal(&plan.id, automatic_deletion, false) {
                 Ok(plan) => plan,
                 Err(error) => {
                     self.record_apply_error(&plan.id, &error)?;

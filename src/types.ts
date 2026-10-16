@@ -41,6 +41,11 @@ export interface Task {
   history_cap: number;
   schedule: Schedule;
   login: boolean;
+  deletion_policy: {
+    enabled: boolean;
+    max_entries: number;
+    max_percent: number;
+  };
 }
 export interface Entry {
   path: string;
@@ -83,6 +88,21 @@ export interface Plan {
   metrics: Metrics;
   created_at: number;
   status: string;
+  deletion_review?: {
+    reason:
+      | "Approved"
+      | "Disabled"
+      | "BaselineApprovalRequired"
+      | "UnprovenDeletion"
+      | "EntryLimit"
+      | "PercentLimit"
+      | "MoveRequiresReview";
+    entries: number;
+    baseline_entries: number;
+    max_entries: number;
+    max_percent: number;
+    baseline_run: string | null;
+  } | null;
 }
 export interface OperationPage {
   operations: Operation[];
@@ -127,6 +147,7 @@ export interface TaskStatus {
   last_run: Plan | null;
   pending_conflicts: number;
   next_run: number | null;
+  deletion_baseline_run?: string | null;
 }
 export function newTask(mode: Mode = "TwoWay"): Task {
   return {
@@ -161,5 +182,6 @@ export function newTask(mode: Mode = "TwoWay"): Task {
       month_day: 1,
     },
     login: false,
+    deletion_policy: { enabled: false, max_entries: 20, max_percent: 10 },
   };
 }
