@@ -4,7 +4,7 @@ Status on 2026-10-16: the table records the original evidence and required proof
 
 | Feature | Reference evidence | Intended FolderSync behavior | Required proof |
 |---|---|---|---|
-| Tasks and native picker | workflows.md; E05, E22, E50–E53 | Persistent tasks, validated roots, duplication/groups, safe bulk review | Save/restart/edit/duplicate/import tests and native picker GUI workflow |
+| Tasks and native picker | workflows.md; E05, E22, E50–E53 | Persistent tasks, validated roots, duplication/groups, safe bulk review | Save/restart/edit/duplicate/import tests, atomic group reassignment and hidden-selection regressions; native picker GUI workflow |
 | Two-way | synchronization-behavior.md T02–T05; tray-and-notifications.md | Common-baseline state machine, preserve concurrent edits | A/B edits, conflicts, deletion, idempotency and SQLite assertions |
 | Copy | T09–T11, E60–E61 | A→B updates; retain B-only and source-deleted files | Real fixture integration tests |
 | Mirror / Move | E45/E49 UI claims only; runtime unknown | Reviewed mirror deletes; verified copy before Move source removal | Destructive review and failed-transfer tests |

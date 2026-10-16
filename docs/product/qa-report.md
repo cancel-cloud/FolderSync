@@ -139,3 +139,10 @@ Using the real task editor, bandwidth was reset from 512 KiB/s to unlimited and 
 
 
 Benchmark rerun against source `2ee8089` completed with exit 0 after packaging/GUI work was idle. Debug engine, 10,000 files per side, 1,024 bytes each, 100 directories per side: initial discovery 23,822 ms (20,200 entries; 20,480,000 hashed bytes); single-file incremental discovery 139 ms (2 entries; 2,048 hashed bytes); forced full discovery 24,432 ms (20,200 entries; 20,480,000 hashed bytes). Native event through Apply was 324 ms with 2 native events; configured UI debounce is excluded. Windows sampled peak working set was 54,255,616 bytes. Current raw results are benchmarks/latest.json and latest-memory.json; before-progress files preserve the preceding measurements. The incremental acceptance condition still passes after progress/cancellation instrumentation.
+
+
+## Functional task groups
+
+Added a group filter, collapsible group sections and bulk group assignment/ungrouping. Rust validates all requested task IDs before a single transaction writes configuration and increments review generations; groups persist across engine restart, and user files are untouched. Existing immutable run snapshots keep their historical group label. Filtering or collapsing clears relevant selections. Independent review found a selected task could remain selected after editing it into another hidden group; a regression reproduced that failure, and saving task configuration now clears selection.
+
+The full verification script passed with 62 Rust and 12 frontend tests (`evidence/verification-groups.txt`). After the subsequent frontend-only selection correction, TypeScript, ESLint, all **13 frontend tests** and production frontend build passed again (terminal session 55961, exit 0). Native Rust code did not change after the full suite. The first verification attempt failed Clippy's cloned_ref_to_slice_refs check in the new test; corrected to slice::from_ref before the passing full run. Installed group GUI verification is pending at this checkpoint.

@@ -173,6 +173,34 @@ impl Engine {
     pub fn tasks(&self) -> Result<Vec<Task>> {
         self.index.tasks()
     }
+    /// Configuration-only batch: validate every identity before writing any row.
+    pub fn assign_group(&mut self, ids: &[String], group: &str) -> Result<()> {
+        let group = group.trim();
+        ensure!(
+            group.chars().count() <= 128 && !group.chars().any(char::is_control),
+            "Invalid group name"
+        );
+        ensure!(!ids.is_empty(), "Select at least one task");
+        let tasks = ids
+            .iter()
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .map(|id| {
+                let mut task = self.index.task(id)?;
+                task.group = group.to_owned();
+                Ok(task)
+            })
+            .collect::<Result<Vec<_>>>()?;
+        let transaction = self.index.db.transaction()?;
+        for task in tasks {
+            transaction.execute(
+                "UPDATE tasks SET json=?,generation=generation+1 WHERE id=?",
+                params![serde_json::to_string(&task)?, task.id],
+            )?;
+        }
+        transaction.commit()?;
+        Ok(())
+    }
     pub fn statuses(&self) -> Result<Vec<TaskStatus>> {
         self.tasks()?.into_iter().map(|t|{
             let last:Option<String>=self.index.db.query_row("SELECT id FROM runs WHERE task=? AND status!='Preview' ORDER BY rowid DESC LIMIT 1",[&t.id],|r|r.get(0)).optional()?;

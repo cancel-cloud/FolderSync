@@ -1,6 +1,47 @@
 use foldersync_engine::*;
 use std::fs;
 #[test]
+fn bulk_group_assignment_is_atomic_persistent_and_invalidates_old_reviews() {
+    let d = tempfile::Builder::new()
+        .prefix("FolderSync-groups-")
+        .tempdir()
+        .unwrap();
+    let a = d.path().join("A");
+    let b = d.path().join("B");
+    fs::create_dir(&a).unwrap();
+    fs::create_dir(&b).unwrap();
+    let state = d.path().join("state");
+    let mut e = Engine::open(&state).unwrap();
+    let t = Task {
+        a,
+        b,
+        group: "Original".into(),
+        ..Task::default()
+    };
+    e.save_task(&t).unwrap();
+    fs::write(t.a.join("proof.txt"), "only A").unwrap();
+    let preview = e.preview(&t.id).unwrap();
+    assert!(
+        e.assign_group(&[t.id.clone(), uuid::Uuid::new_v4().to_string()], "Partial")
+            .is_err()
+    );
+    assert_eq!(e.tasks().unwrap()[0].group, "Original");
+    e.assign_group(&[t.id.clone(), t.id.clone()], "  Engineering  ")
+        .unwrap();
+    assert_eq!(e.tasks().unwrap()[0].group, "Engineering");
+    assert!(
+        e.apply(&preview.id, false).is_err(),
+        "Configuration changes invalidate reviewed task snapshot"
+    );
+    assert!(!t.b.join("proof.txt").exists());
+    assert_eq!(fs::read(t.a.join("proof.txt")).unwrap(), b"only A");
+    drop(e);
+    let mut e = Engine::open(&state).unwrap();
+    assert_eq!(e.tasks().unwrap()[0].group, "Engineering");
+    e.assign_group(std::slice::from_ref(&t.id), "").unwrap();
+    assert_eq!(e.tasks().unwrap()[0].group, "");
+}
+#[test]
 fn legacy_index_migration_preserves_task_configuration() {
     let d = tempfile::tempdir().unwrap();
     let db = rusqlite::Connection::open(d.path().join("foldersync.sqlite3")).unwrap();

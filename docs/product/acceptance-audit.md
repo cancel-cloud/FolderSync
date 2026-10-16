@@ -11,7 +11,7 @@ Checkpoint: 2026-10-16, after source `88c18c2` and the subsequent progress/cance
 | Original references/assets/privacy | reference-matrix.md; research untouched and untracked; original application left untouched | Markdown and transcript research read; not every screenshot separately inspected; no proprietary assets used |
 | Persistent named tasks, native picker, duplicate, delete confirmation | management tests; Computer Use create/pick/save/restart/import | Verified principal workflows; deletion GUI matrix incomplete |
 | Editable task IDs | UUIDs remain internal immutable identities | Missing user-editable IDs |
-| Task grouping | Editable group label shown on cards | Partial: no functional group filtering/collapse/bulk group management |
+| Task grouping | Group label, filter/collapse and transactional bulk reassignment; backend restart/stale-review tests and UI selection regressions | Automated principal paths verified; installed group GUI verification pending |
 | Local/USB/UNC root validation and identity | filesystem/windows_paths/windows_safety tests; native identity checks | Local/junction/Unicode/long paths verified; physical USB and real SMB pending |
 | Unsafe pair/task overlap rejection | validate_roots/save_task guards and tests, including login-only triggers in either save order | Automatic intersecting roots rejected; exhaustive alias/reparse races pending |
 | Four real modes | planner/integration/windows_paths tests with actual files | Verified local modes; broader GUI per-mode matrix pending |

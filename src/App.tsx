@@ -97,6 +97,22 @@ export default function App() {
     [sort, setSort] = useState("path");
   const [progress, setProgress] = useState<RunProgress | null>(null);
   const [failedPlanId, setFailedPlanId] = useState("");
+  const [groupFilter, setGroupFilter] = useState("*");
+  const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState("");
+  const groupNames = [...new Set(tasks.map((t) => t.group))].sort();
+  const filteredTasks = tasks.filter(
+    (t) => groupFilter === "*" || `group:${t.group}` === groupFilter,
+  );
+  const visibleTasks = filteredTasks.filter(
+    (t) => !collapsedGroups.includes(t.group),
+  );
+  const taskGroups = groupNames
+    .map((name) => ({
+      name,
+      tasks: filteredTasks.filter((t) => t.group === name),
+    }))
+    .filter((group) => group.tasks.length > 0);
   const [operationRows, setOperationRows] = useState<
     (OperationPage & { key: string }) | null
   >(null);
@@ -161,6 +177,9 @@ export default function App() {
     ]);
     setTasks(t);
     setStatuses(s);
+    setSelected((current) =>
+      current.filter((id) => t.some((task) => task.id === id)),
+    );
   }
   useEffect(() => {
     let mounted = true;
@@ -582,16 +601,46 @@ export default function App() {
                 <>
                   <div className="toolbar">
                     <label>
+                      {tr("Filter by group", "Nach Gruppe filtern")}
+                      <select
+                        disabled={busy}
+                        aria-label={tr(
+                          "Filter by group",
+                          "Nach Gruppe filtern",
+                        )}
+                        value={groupFilter}
+                        onChange={(e) => {
+                          setGroupFilter(e.target.value);
+                          setSelected([]);
+                        }}
+                      >
+                        <option value="*">
+                          {tr("All groups", "Alle Gruppen")}
+                        </option>
+                        {groupNames.map((name) => (
+                          <option key={name} value={`group:${name}`}>
+                            {name || tr("Ungrouped", "Ohne Gruppe")}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
                       <input
                         type="checkbox"
                         aria-label={tr(
-                          "Select all tasks",
-                          "Alle Aufgaben auswählen",
+                          "Select all visible tasks",
+                          "Alle sichtbaren Aufgaben auswählen",
                         )}
-                        checked={selected.length === tasks.length}
+                        disabled={busy || visibleTasks.length === 0}
+                        checked={
+                          visibleTasks.length > 0 &&
+                          visibleTasks.every((t) => selected.includes(t.id))
+                        }
                         onChange={(e) =>
                           setSelected(
-                            e.target.checked ? tasks.map((t) => t.id) : [],
+                            e.target.checked
+                              ? visibleTasks.map((t) => t.id)
+                              : [],
                           )
                         }
                       />
@@ -621,107 +670,198 @@ export default function App() {
                       {tr("Refresh", "Aktualisieren")}
                     </Button>
                   </div>
+                  <div className="toolbar group-assignment">
+                    <label>
+                      {tr(
+                        "Group for selected tasks",
+                        "Gruppe für ausgewählte Aufgaben",
+                      )}
+                      <input
+                        aria-label={tr(
+                          "Group for selected tasks",
+                          "Gruppe für ausgewählte Aufgaben",
+                        )}
+                        value={selectedGroup}
+                        maxLength={128}
+                        disabled={busy}
+                        placeholder={tr(
+                          "Empty = ungrouped",
+                          "Leer = ohne Gruppe",
+                        )}
+                        onChange={(e) => setSelectedGroup(e.target.value)}
+                      />
+                    </label>
+                    <Button
+                      variant="outline"
+                      disabled={busy || !selected.length}
+                      onClick={() =>
+                        void perform(async () => {
+                          await invoke("assign_group", {
+                            ids: selected,
+                            group: selectedGroup,
+                          });
+                          setSelected([]);
+                          setGroupFilter("*");
+                          setCollapsedGroups([]);
+                          await refresh();
+                          setMessage(
+                            tr(
+                              "Task groups saved.",
+                              "Aufgabengruppen gespeichert.",
+                            ),
+                          );
+                        })
+                      }
+                    >
+                      {tr("Assign group", "Gruppe zuweisen")}
+                    </Button>
+                    <span>
+                      {selected.length} {tr("selected", "ausgewählt")}
+                    </span>
+                  </div>
+                  {taskGroups.length === 0 && (
+                    <p>
+                      {tr(
+                        "No tasks in this group.",
+                        "Keine Aufgaben in dieser Gruppe.",
+                      )}
+                    </p>
+                  )}
                   <div className="task-list">
-                    {tasks.map((t) => (
-                      <article className="task-card" key={t.id}>
-                        <div className="task-top">
-                          <input
-                            type="checkbox"
-                            aria-label={tr(
-                              `Select ${t.name}`,
-                              `${t.name} auswählen`,
-                            )}
-                            checked={selected.includes(t.id)}
-                            onChange={(e) =>
-                              setSelected(
-                                e.target.checked
-                                  ? [...selected, t.id]
-                                  : selected.filter((x) => x !== t.id),
-                              )
-                            }
-                          />
-                          <div className="task-icon">
-                            {t.mode === "TwoWay" ? (
-                              <ArrowLeftRight size={20} />
-                            ) : t.mode === "Copy" ? (
-                              <Copy size={20} />
-                            ) : (
-                              <ArrowRight size={20} />
-                            )}
-                          </div>
-                          <div className="task-title">
-                            <h2>{t.name}</h2>
-                            <span>
-                              {modeLabels[t.mode]}
-                              {t.group && ` · ${t.group}`}
-                            </span>
-                          </div>
-                          <span className="badge">{triggerLabel(t, lang)}</span>
-                        </div>
-                        <div className="paths">
-                          <div>
-                            <b>A</b>
-                            <code title={t.a}>{t.a}</code>
-                          </div>
-                          <div>
-                            <b>B</b>
-                            <code title={t.b}>{t.b}</code>
-                          </div>
-                        </div>
-                        <div className="task-bottom">
-                          <span>
-                            {statusLabel(
-                              statuses.find((s) => s.task_id === t.id)?.last_run
-                                ?.status || "",
-                              lang,
-                            ) ||
-                              tr(
-                                "Awaiting first run",
-                                "Wartet auf ersten Lauf",
-                              )}
-                            <small>
-                              {statuses.find((s) => s.task_id === t.id)
-                                ?.last_run
-                                ? date(
-                                    statuses.find((s) => s.task_id === t.id)!
-                                      .last_run!.created_at,
-                                  )
-                                : "—"}{" "}
-                              ·{" "}
-                              {statuses.find((s) => s.task_id === t.id)
-                                ?.pending_conflicts || 0}{" "}
-                              {tr("pending conflicts", "offene Konflikte")}
-                            </small>
-                            <small>
-                              {tr("Next", "Nächster Lauf")}:{" "}
-                              {statuses.find((s) => s.task_id === t.id)
-                                ?.next_run
-                                ? date(
-                                    statuses.find((s) => s.task_id === t.id)!
-                                      .next_run!,
-                                  )
-                                : "—"}
-                            </small>
-                          </span>
-                          <div>
-                            <Button
-                              variant="ghost"
-                              onClick={() => void details(t)}
-                            >
-                              {tr("Details", "Details")}
-                            </Button>
-                            <Button variant="outline" onClick={() => edit(t)}>
-                              {tr("Configure", "Konfigurieren")}
-                            </Button>
-                            <Button
-                              disabled={busy}
-                              onClick={() => void preview(t)}
-                            >
-                              {tr("Preview / Run", "Vorschau / Start")}
-                            </Button>
-                          </div>
-                        </div>
-                      </article>
+                    {taskGroups.map((group) => (
+                      <section className="task-group" key={group.name}>
+                        <Button
+                          variant="ghost"
+                          aria-expanded={!collapsedGroups.includes(group.name)}
+                          onClick={() => {
+                            setCollapsedGroups((current) =>
+                              current.includes(group.name)
+                                ? current.filter((name) => name !== group.name)
+                                : [...current, group.name],
+                            );
+                            setSelected((current) =>
+                              current.filter(
+                                (id) => !group.tasks.some((t) => t.id === id),
+                              ),
+                            );
+                          }}
+                        >
+                          {group.name || tr("Ungrouped", "Ohne Gruppe")} (
+                          {group.tasks.length})
+                        </Button>
+                        {!collapsedGroups.includes(group.name) &&
+                          group.tasks.map((t) => (
+                            <article className="task-card" key={t.id}>
+                              <div className="task-top">
+                                <input
+                                  type="checkbox"
+                                  aria-label={tr(
+                                    `Select ${t.name}`,
+                                    `${t.name} auswählen`,
+                                  )}
+                                  checked={selected.includes(t.id)}
+                                  onChange={(e) =>
+                                    setSelected(
+                                      e.target.checked
+                                        ? [...selected, t.id]
+                                        : selected.filter((x) => x !== t.id),
+                                    )
+                                  }
+                                />
+                                <div className="task-icon">
+                                  {t.mode === "TwoWay" ? (
+                                    <ArrowLeftRight size={20} />
+                                  ) : t.mode === "Copy" ? (
+                                    <Copy size={20} />
+                                  ) : (
+                                    <ArrowRight size={20} />
+                                  )}
+                                </div>
+                                <div className="task-title">
+                                  <h2>{t.name}</h2>
+                                  <span>
+                                    {modeLabels[t.mode]}
+                                    {t.group && ` · ${t.group}`}
+                                  </span>
+                                </div>
+                                <span className="badge">
+                                  {triggerLabel(t, lang)}
+                                </span>
+                              </div>
+                              <div className="paths">
+                                <div>
+                                  <b>A</b>
+                                  <code title={t.a}>{t.a}</code>
+                                </div>
+                                <div>
+                                  <b>B</b>
+                                  <code title={t.b}>{t.b}</code>
+                                </div>
+                              </div>
+                              <div className="task-bottom">
+                                <span>
+                                  {statusLabel(
+                                    statuses.find((s) => s.task_id === t.id)
+                                      ?.last_run?.status || "",
+                                    lang,
+                                  ) ||
+                                    tr(
+                                      "Awaiting first run",
+                                      "Wartet auf ersten Lauf",
+                                    )}
+                                  <small>
+                                    {statuses.find((s) => s.task_id === t.id)
+                                      ?.last_run
+                                      ? date(
+                                          statuses.find(
+                                            (s) => s.task_id === t.id,
+                                          )!.last_run!.created_at,
+                                        )
+                                      : "—"}{" "}
+                                    ·{" "}
+                                    {statuses.find((s) => s.task_id === t.id)
+                                      ?.pending_conflicts || 0}{" "}
+                                    {tr(
+                                      "pending conflicts",
+                                      "offene Konflikte",
+                                    )}
+                                  </small>
+                                  <small>
+                                    {tr("Next", "Nächster Lauf")}:{" "}
+                                    {statuses.find((s) => s.task_id === t.id)
+                                      ?.next_run
+                                      ? date(
+                                          statuses.find(
+                                            (s) => s.task_id === t.id,
+                                          )!.next_run!,
+                                        )
+                                      : "—"}
+                                  </small>
+                                </span>
+                                <div>
+                                  <Button
+                                    variant="ghost"
+                                    onClick={() => void details(t)}
+                                  >
+                                    {tr("Details", "Details")}
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => edit(t)}
+                                  >
+                                    {tr("Configure", "Konfigurieren")}
+                                  </Button>
+                                  <Button
+                                    disabled={busy}
+                                    onClick={() => void preview(t)}
+                                  >
+                                    {tr("Preview / Run", "Vorschau / Start")}
+                                  </Button>
+                                </div>
+                              </div>
+                            </article>
+                          ))}
+                      </section>
                     ))}
                   </div>
                 </>
@@ -796,6 +936,7 @@ export default function App() {
                   onClick={() =>
                     void perform(async () => {
                       await invoke("save_task", { task });
+                      setSelected([]);
                       await refresh();
                       setOriginal(JSON.stringify(task));
                       setPage("dashboard");
