@@ -24,7 +24,9 @@ pub fn directory(root: &Path, task_id: Option<&str>) -> Result<PathBuf> {
     }
     std::fs::create_dir_all(&target)?;
     crate::app_storage::reject_reparse_ancestors(&target)?;
-    Ok(target)
+    // The Explorer process is outside this app's MSIX filesystem view. Resolve
+    // the opened directory to its physical path before handing it to the shell.
+    Ok(dunce::canonicalize(target)?)
 }
 
 #[cfg(test)]
