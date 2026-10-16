@@ -242,26 +242,66 @@ fn relocated(path: &Path, source: &Path, target: &Path) -> Result<PathBuf> {
     }
 }
 
+fn protected_relative(
+    version: &foldersync_engine::Version,
+    source: &Path,
+) -> Result<(PathBuf, PathBuf)> {
+    uuid::Uuid::parse_str(&version.id).context("Invalid protected version UUID")?;
+    uuid::Uuid::parse_str(&version.task_id).context("Invalid protected task UUID")?;
+    let flat = PathBuf::from("versions").join(&version.id);
+    let nested = PathBuf::from("versions")
+        .join(&version.task_id)
+        .join(&version.id);
+    ensure!(
+        version.stored == source.join(&flat) || version.stored == source.join(&nested),
+        "Unexpected protected version catalog path"
+    );
+    let original = version.stored.strip_prefix(source)?.to_path_buf();
+    ensure!(
+        original
+            .components()
+            .all(|c| matches!(c, Component::Normal(_))),
+        "Unsafe protected version path"
+    );
+    Ok((original, nested))
+}
+
 fn relocate_database(stage: &Path, source: &Path, target: &Path) -> Result<()> {
     use foldersync_engine::{Metrics, RestorePreview, Version};
     let db = Connection::open(stage.join(DATABASE))?;
     db.execute_batch("PRAGMA synchronous=FULL; BEGIN IMMEDIATE")?;
-    let versions: Vec<(String, String)> = db
-        .prepare("SELECT id,json FROM versions")?
-        .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))?
+    let versions: Vec<(String, String, String)> = db
+        .prepare("SELECT id,task,json FROM versions")?
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?
         .collect::<rusqlite::Result<_>>()?;
-    for (id, json) in versions {
+    let mut moved_versions = std::collections::HashMap::new();
+    for (id, task, json) in versions {
         let mut v: Version = serde_json::from_str(&json)?;
-        let relative = v
-            .stored
-            .strip_prefix(source)
-            .context("Protected version is outside legacy storage")?;
+        ensure!(
+            v.id == id && v.task_id == task,
+            "Protected version catalog identity mismatch"
+        );
+        let (relative, nested) = protected_relative(&v, source)?;
         let checked = foldersync_engine::fs::safe_path(stage, &relative.to_string_lossy())?;
         ensure!(
             foldersync_engine::fs::hash_file(&checked, &mut Metrics::default())?.0 == v.digest,
             "Protected version failed integrity validation during migration"
         );
-        v.stored = relocated(&v.stored, source, target)?;
+        let destination = foldersync_engine::fs::safe_path(stage, &nested.to_string_lossy())?;
+        if checked != destination {
+            ensure!(
+                !destination.try_exists()?,
+                "Ambiguous protected version migration destination"
+            );
+            fs::create_dir_all(
+                destination
+                    .parent()
+                    .context("Missing protected version parent")?,
+            )?;
+            fs::rename(&checked, &destination)?;
+        }
+        v.stored = target.join(nested);
+        moved_versions.insert(id.clone(), v.clone());
         db.execute(
             "UPDATE versions SET json=? WHERE id=?",
             params![serde_json::to_string(&v)?, id],
@@ -286,7 +326,19 @@ fn relocate_database(stage: &Path, source: &Path, target: &Path) -> Result<()> {
         .collect::<rusqlite::Result<_>>()?;
     for (key, json) in previews {
         let mut preview: RestorePreview = serde_json::from_str(&json)?;
-        preview.version.stored = relocated(&preview.version.stored, source, target)?;
+        let (_, nested) = protected_relative(&preview.version, source)?;
+        if let Some(version) = moved_versions.get(&preview.version.id) {
+            ensure!(
+                preview.version.task_id == version.task_id
+                    && preview.version.digest == version.digest,
+                "Restore preview protected identity mismatch"
+            );
+            preview.version.stored = version.stored.clone();
+        } else {
+            // Retention may already have expired this preview's version. Keep
+            // it invalid rather than reconnecting it to any other file.
+            preview.version.stored = target.join(nested);
+        }
         db.execute(
             "UPDATE settings SET json=? WHERE key=?",
             params![serde_json::to_string(&preview)?, key],
@@ -483,7 +535,16 @@ mod tests {
         let d = tempfile::tempdir().unwrap();
         let (e, t) = fixture(d.path());
         let source = d.path().join("dev.foldersync.desktop");
-        let v = e.versions(&t.id).unwrap().remove(0);
+        let mut v = e.versions(&t.id).unwrap().remove(0);
+        let flat = source.join("versions").join(&v.id);
+        fs::rename(&v.stored, &flat).unwrap();
+        v.stored = flat;
+        let db = Connection::open(source.join(DATABASE)).unwrap();
+        db.execute(
+            "UPDATE versions SET json=? WHERE id=?",
+            params![serde_json::to_string(&v).unwrap(), v.id],
+        )
+        .unwrap();
         let restore = e.restore_preview(&v.id).unwrap();
         // Connection remains open; committed changes really are in WAL.
         assert!(source.join("foldersync.sqlite3-wal").exists());
@@ -501,7 +562,11 @@ mod tests {
                 .all(|op| op.action == foldersync_engine::Action::Unchanged)
         );
         let moved = migrated.versions(&t.id).unwrap().remove(0);
-        assert!(moved.stored.starts_with(&target));
+        assert_eq!(
+            moved.stored,
+            target.join("versions").join(&t.id).join(&v.id)
+        );
+        assert!(!target.join("versions").join(&v.id).exists());
         assert_eq!(fs::read(&moved.stored).unwrap(), b"original");
         migrated.restore_apply(&restore.id).unwrap();
         assert_eq!(fs::read(t.b.join("f")).unwrap(), b"original");
@@ -575,7 +640,10 @@ mod tests {
         assert!(migrated.tasks().unwrap().is_empty());
         assert_eq!(migrated.recovery_tasks().unwrap()[0].task.id, t.id);
         let restored = migrated.versions(&t.id).unwrap().remove(0);
-        assert_eq!(restored.stored, target.join("versions").join(&v.id));
+        assert_eq!(
+            restored.stored,
+            target.join("versions").join(&t.id).join(&v.id)
+        );
         let preview = migrated.restore_preview(&v.id).unwrap();
         migrated.restore_apply(&preview.id).unwrap();
         assert_eq!(fs::read(t.b.join("f")).unwrap(), b"original");
@@ -591,6 +659,25 @@ mod tests {
         assert!(error.to_string().contains("busy"));
         assert!(!d.path().join(".FolderSync.migrating").exists());
         assert!(!d.path().join("FolderSync").exists());
+    }
+
+    #[test]
+    fn migration_rejects_unexpected_protected_catalog_path() {
+        let d = tempfile::tempdir().unwrap();
+        let (e, t) = fixture(d.path());
+        let mut v = e.versions(&t.id).unwrap().remove(0);
+        let unexpected = e.storage().join("unrelated-protected-file");
+        fs::rename(&v.stored, &unexpected).unwrap();
+        v.stored = unexpected.clone();
+        let db = Connection::open(e.storage().join(DATABASE)).unwrap();
+        db.execute(
+            "UPDATE versions SET json=? WHERE id=?",
+            params![serde_json::to_string(&v).unwrap(), v.id],
+        )
+        .unwrap();
+        assert!(resolve_at(d.path(), || Ok(())).is_err());
+        assert!(!d.path().join("FolderSync").exists());
+        assert_eq!(fs::read(&unexpected).unwrap(), b"original");
     }
 
     #[test]
