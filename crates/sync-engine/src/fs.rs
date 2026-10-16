@@ -243,16 +243,29 @@ pub(crate) fn hash_file_controlled(
     cancel: Option<&std::sync::atomic::AtomicBool>,
     progress: Option<&ProgressState>,
 ) -> Result<(String, u64)> {
+    let display = progress
+        .and_then(ProgressState::snapshot)
+        .and_then(|s| s.path);
+    hash_file_named(path, metrics, cancel, progress, display.as_deref())
+}
+fn hash_file_named(
+    path: &Path,
+    metrics: &mut Metrics,
+    cancel: Option<&std::sync::atomic::AtomicBool>,
+    progress: Option<&ProgressState>,
+    display: Option<&str>,
+) -> Result<(String, u64)> {
     let mut f = File::open(path)?;
+    let label = display
+        .map(std::borrow::Cow::Borrowed)
+        .unwrap_or_else(|| path.to_string_lossy());
+    let length = if progress.is_some() {
+        f.metadata().map(|m| m.len()).unwrap_or(0)
+    } else {
+        0
+    };
     if let Some(progress) = progress {
-        let length = f.metadata().map(|m| m.len()).unwrap_or(0);
-        progress.update(|s| {
-            s.file_bytes = 0;
-            s.file_total = length;
-            if s.phase == ProgressPhase::Applying {
-                s.phase = ProgressPhase::Validating;
-            }
-        });
+        progress.hashed_file(Path::new(label.as_ref()), 0, length);
     }
     let mut h = blake3::Hasher::new();
     let mut buf = vec![0; 256 * 1024];
@@ -267,7 +280,7 @@ pub(crate) fn hash_file_controlled(
         size += n as u64;
         metrics.hashed_bytes += n as u64;
         if let Some(progress) = progress {
-            progress.update(|s| s.file_bytes = size);
+            progress.hashed_file(Path::new(label.as_ref()), size, length.max(size));
         }
     }
     Ok((h.finalize().to_hex().to_string(), size))
@@ -354,7 +367,7 @@ pub(crate) fn read_entry_matched(
         ("directory".into(), 0)
     } else {
         ensure!(m.is_file(), "Unsupported file type");
-        hash_file_controlled(&path, metrics, cancel, progress)?
+        hash_file_named(&path, metrics, cancel, progress, Some(relative))?
     };
     let after = fs::metadata(&path)?;
     ensure!(
