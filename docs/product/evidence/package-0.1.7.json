@@ -1,0 +1,19 @@
+{
+  "installed": false,
+  "layout_widths": [
+    800,
+    1100,
+    1920
+  ],
+  "lint_exit_code": 0,
+  "frontend_build_exit_code": 0,
+  "installer_sha256": "B0CFF51E75944ABDB85C62124EC3009D0799109910B63123868A11D807155C33",
+  "source_commit": "1b733c4",
+  "installer_bytes": 4125195,
+  "reason": "User synchronization active; running app left untouched",
+  "executable_sha256": "65AD8B26AE9D26B2AB42C7B0B4F79902586790BFF857F9C6E90268007543F7A0",
+  "package_exit_code": 0,
+  "frontend_tests_passed": 32,
+  "previous_stylesheet_layout_failed_as_expected": true,
+  "version": "0.1.7"
+}
