@@ -1,0 +1,13 @@
+{
+  "source_commit": "2ee8089",
+  "run_id": "c36c642e-6cdc-4ef1-9f38-e34aa154fc93",
+  "status": "Cancelled",
+  "operation_status": "Cancelled",
+  "source_sha256": "3b74c275d1764b980613b1e42fa5b083c0f10e0c90cec788423898342f96d652",
+  "destination_absent": true,
+  "stages_remaining": 0,
+  "conflict": {
+    "A": "f70e0cad47a9aaeb66999c6395012f2a9b2e266f0e79456d2f6bc1374ea11488",
+    "B": "95b498713c7dfdc8a8dc1a970a6c19e66f6a57354da800c751223817c648b870"
+  }
+}
