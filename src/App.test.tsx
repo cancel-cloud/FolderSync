@@ -66,6 +66,106 @@ afterEach(() => {
   vi.clearAllMocks();
   api.listeners.clear();
 });
+test("group filtering clears hidden selections and bulk reassignment refreshes collapsible groups", async () => {
+  let tasks = [
+    { ...newTask(), name: "Mechanical", group: "Engineering", a: "A", b: "B" },
+    { ...newTask(), name: "Archive", group: "Archive", a: "C", b: "D" },
+  ];
+  api.invoke.mockImplementation(
+    async (command: string, args?: { ids: string[]; group: string }) => {
+      if (command === "tasks") return tasks;
+      if (command === "statuses") return [];
+      if (command === "assign_group") {
+        tasks = tasks.map((t) =>
+          args?.ids.includes(t.id) ? { ...t, group: args.group } : t,
+        );
+      }
+      return null;
+    },
+  );
+  const user = userEvent.setup();
+  render(<App />);
+  await screen.findByRole("heading", { name: "Mechanical" });
+  await user.click(screen.getByRole("checkbox", { name: "Select Archive" }));
+  await user.selectOptions(
+    screen.getByRole("combobox", { name: "Filter by group" }),
+    "group:Engineering",
+  );
+  expect(screen.queryByRole("heading", { name: "Archive" })).toBeNull();
+  expect(
+    (screen.getByRole("button", { name: "Assign group" }) as HTMLButtonElement)
+      .disabled,
+  ).toBe(true);
+  await user.click(
+    screen.getByRole("checkbox", { name: "Select all visible tasks" }),
+  );
+  await user.type(
+    screen.getByRole("textbox", { name: "Group for selected tasks" }),
+    "Review",
+  );
+  await user.click(screen.getByRole("button", { name: "Assign group" }));
+  await waitFor(() => expect(tasks[0].group).toBe("Review"));
+  expect(tasks[1].group).toBe("Archive");
+  await waitFor(() =>
+    expect(
+      (
+        screen.getByRole("combobox", {
+          name: "Filter by group",
+        }) as HTMLSelectElement
+      ).value,
+    ).toBe("*"),
+  );
+  await user.click(screen.getByRole("button", { name: "Review (1)" }));
+  expect(screen.queryByRole("heading", { name: "Mechanical" })).toBeNull();
+  expect(
+    screen
+      .getByRole("button", { name: "Review (1)" })
+      .getAttribute("aria-expanded"),
+  ).toBe("false");
+  await user.click(screen.getByRole("button", { name: "Review (1)" }));
+  expect(screen.getByRole("heading", { name: "Mechanical" })).toBeTruthy();
+});
+test("saving a selected task into another group clears its hidden bulk selection", async () => {
+  let task = {
+    ...newTask(),
+    name: "Move group",
+    group: "Before",
+    a: "A",
+    b: "B",
+  };
+  api.invoke.mockImplementation(
+    async (command: string, args?: { task: typeof task }) => {
+      if (command === "tasks") return [task];
+      if (command === "statuses") return [];
+      if (command === "save_task" && args) task = args.task;
+      return null;
+    },
+  );
+  const user = userEvent.setup();
+  render(<App />);
+  await screen.findByRole("heading", { name: "Move group" });
+  await user.selectOptions(
+    screen.getByRole("combobox", { name: "Filter by group" }),
+    "group:Before",
+  );
+  await user.click(screen.getByRole("checkbox", { name: "Select Move group" }));
+  await user.click(screen.getByRole("button", { name: "Configure" }));
+  await user.clear(screen.getByRole("textbox", { name: "Group" }));
+  await user.type(screen.getByRole("textbox", { name: "Group" }), "After");
+  await user.click(screen.getByRole("button", { name: "Save task" }));
+  await screen.findByText("No tasks in this group.");
+  expect(
+    (screen.getByRole("button", { name: "Assign group" }) as HTMLButtonElement)
+      .disabled,
+  ).toBe(true);
+  expect(
+    (
+      screen.getByRole("button", {
+        name: "Preview selected",
+      }) as HTMLButtonElement
+    ).disabled,
+  ).toBe(true);
+});
 test("nested conflict choice only revises preview; Apply requires its separate confirmation", async () => {
   const task = {
     ...newTask("TwoWay"),

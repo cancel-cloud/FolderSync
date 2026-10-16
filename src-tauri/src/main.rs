@@ -53,6 +53,14 @@ async fn save_task(r: State<'_, Runtime>, task: Task) -> Result<(), String> {
     work(r.inner().clone(), move |e| e.save_task(&task)).await
 }
 #[tauri::command]
+async fn assign_group(
+    r: State<'_, Runtime>,
+    ids: Vec<String>,
+    group: String,
+) -> Result<(), String> {
+    work(r.inner().clone(), move |e| e.assign_group(&ids, &group)).await
+}
+#[tauri::command]
 async fn preview(r: State<'_, Runtime>, id: String) -> Result<PlanHeader, String> {
     work(r.inner().clone(), move |e| {
         Ok(PlanHeader::from(&e.preview(&id)?))
@@ -314,6 +322,7 @@ fn main() {
             tasks,
             statuses,
             save_task,
+            assign_group,
             preview,
             apply,
             progress,
