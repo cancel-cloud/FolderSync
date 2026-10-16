@@ -16,7 +16,6 @@ import {
   Pause,
   Square,
   FileClock,
-  CheckCircle2,
 } from "lucide-react";
 import { PathPair } from "./components/path-pair";
 import { Confirmation } from "./components/ui/confirmation";
@@ -730,95 +729,6 @@ export default function App() {
               role="status"
             >
               {messageLabel(message, lang)}
-            </div>
-          )}
-          {(progress || (busy && page !== "settings")) && (
-            <div className="working" role="status">
-              <RefreshCw size={16} className="spin" />
-              {tr(
-                "Working… files are verified before replacement.",
-                "In Arbeit… Dateien werden vor dem Ersetzen geprüft.",
-              )}
-              {progress && (
-                <div className="run-progress">
-                  <strong>
-                    {
-                      {
-                        Discovering: tr(
-                          "Discovering files",
-                          "Dateien erfassen",
-                        ),
-                        Validating: tr(
-                          "Validating reviewed inputs",
-                          "Geprüfte Eingaben validieren",
-                        ),
-                        Applying: tr(
-                          "Applying reviewed operations",
-                          "Geprüfte Aktionen anwenden",
-                        ),
-                        Transferring: tr("Copying file", "Datei kopieren"),
-                        Protecting: tr(
-                          "Protecting previous version",
-                          "Vorherige Version schützen",
-                        ),
-                        Verifying: tr(
-                          "Verifying staged copy",
-                          "Zwischengespeicherte Kopie prüfen",
-                        ),
-                      }[progress.phase]
-                    }
-                  </strong>
-                  {progress.path && <code>{progress.path}</code>}
-                  {(progress.max_transfers ?? 1) > 1 && (
-                    <small>
-                      {progress.active_transfers ?? 0} /{" "}
-                      {progress.max_transfers}{" "}
-                      {tr("active transfers", "aktive Übertragungen")}
-                    </small>
-                  )}
-                  {progress.total_entries > 0 && (
-                    <small>
-                      {progress.completed_entries} / {progress.total_entries}{" "}
-                      {tr("reviewed entries", "geprüfte Einträge")}
-                    </small>
-                  )}
-                  {progress.phase === "Discovering" &&
-                    progress.total_entries === 0 && (
-                      <small>
-                        {progress.completed_entries}{" "}
-                        {tr("entries examined", "Einträge geprüft")}
-                      </small>
-                    )}
-                  {progress.file_total > 0 && (
-                    <>
-                      <progress
-                        aria-label={tr(
-                          "Current file progress",
-                          "Fortschritt der aktuellen Datei",
-                        )}
-                        value={progress.file_bytes}
-                        max={progress.file_total}
-                      />
-                      <small>
-                        {bytes(progress.file_bytes)} /{" "}
-                        {bytes(progress.file_total)}{" "}
-                        {["Transferring", "Protecting"].includes(progress.phase)
-                          ? tr(
-                              "staged bytes; verification and commit follow",
-                              "zwischengespeicherte Bytes; Prüfung und Übernahme folgen",
-                            )
-                          : tr(
-                              "hashed bytes in current file",
-                              "gehashte Bytes der aktuellen Datei",
-                            )}
-                      </small>
-                    </>
-                  )}
-                </div>
-              )}
-              <Button variant="ghost" onClick={() => void invoke("stop")}>
-                {tr("Cancel", "Abbrechen")}
-              </Button>
             </div>
           )}
           {page === "dashboard" && (
@@ -2764,8 +2674,8 @@ export default function App() {
                     {storageLocation()}
                     <p>
                       {tr(
-                        "SQLite state and protected versions are stored here. No telemetry or cloud services are used.",
-                        "SQLite-Zustand und geschützte Versionen liegen hier. Keine Telemetrie oder Cloud-Dienste.",
+                        "Application data and saved file versions are stored here.",
+                        "Hier liegen die Anwendungsdaten und gespeicherten Dateiversionen.",
                       )}
                     </p>
                     <div className="toolbar local-data-actions">
@@ -2825,18 +2735,102 @@ export default function App() {
             </>
           )}
         </main>
-        {page !== "settings" && (
-          <footer>
-            <span>
-              <CheckCircle2 size={13} />
-              {tr(
-                "Verified transfers · protected originals",
-                "Geprüfte Übertragungen · geschützte Originale",
+        <section
+          className="run-status"
+          aria-label={tr("Synchronization status", "Synchronisationsstatus")}
+        >
+          {(progress || (busy && page !== "settings")) && (
+            <div className="working" role="status">
+              <RefreshCw size={16} className="spin" />
+              {!progress && tr("Working…", "In Arbeit…")}
+              {progress && (
+                <div className="run-progress">
+                  <strong>
+                    {
+                      {
+                        Discovering: tr(
+                          "Discovering files",
+                          "Dateien erfassen",
+                        ),
+                        Validating: tr(
+                          "Validating reviewed inputs",
+                          "Geprüfte Eingaben validieren",
+                        ),
+                        Applying: tr(
+                          "Applying reviewed operations",
+                          "Geprüfte Aktionen anwenden",
+                        ),
+                        Transferring: tr("Copying file", "Datei kopieren"),
+                        Protecting: tr(
+                          "Protecting previous version",
+                          "Vorherige Version schützen",
+                        ),
+                        Verifying: tr(
+                          "Verifying staged copy",
+                          "Zwischengespeicherte Kopie prüfen",
+                        ),
+                      }[progress.phase]
+                    }
+                  </strong>
+                  {progress.path && <code>{progress.path}</code>}
+                  {(progress.max_transfers ?? 1) > 1 && (
+                    <small>
+                      {progress.active_transfers ?? 0} /{" "}
+                      {progress.max_transfers}{" "}
+                      {tr("active transfers", "aktive Übertragungen")}
+                    </small>
+                  )}
+                  {progress.total_entries > 0 && (
+                    <small>
+                      {progress.completed_entries} / {progress.total_entries}{" "}
+                      {tr("reviewed entries", "geprüfte Einträge")}
+                    </small>
+                  )}
+                  {progress.phase === "Discovering" &&
+                    progress.total_entries === 0 && (
+                      <small>
+                        {progress.completed_entries}{" "}
+                        {tr("entries examined", "Einträge geprüft")}
+                      </small>
+                    )}
+                  {progress.file_total > 0 && (
+                    <>
+                      <progress
+                        aria-label={tr(
+                          "Current file progress",
+                          "Fortschritt der aktuellen Datei",
+                        )}
+                        value={progress.file_bytes}
+                        max={progress.file_total}
+                      />
+                      <small>
+                        {bytes(progress.file_bytes)} /{" "}
+                        {bytes(progress.file_total)}{" "}
+                        {["Transferring", "Protecting"].includes(progress.phase)
+                          ? tr(
+                              "staged bytes; verification and commit follow",
+                              "zwischengespeicherte Bytes; Prüfung und Übernahme folgen",
+                            )
+                          : tr(
+                              "hashed bytes in current file",
+                              "gehashte Bytes der aktuellen Datei",
+                            )}
+                      </small>
+                    </>
+                  )}
+                </div>
               )}
+              <Button variant="ghost" onClick={() => void invoke("stop")}>
+                {tr("Cancel", "Abbrechen")}
+              </Button>
+            </div>
+          )}
+          {!progress && !(busy && page !== "settings") && (
+            <span className="run-idle">
+              {tr("No active run", "Kein aktiver Lauf")}
             </span>
-            <span>FolderSync {packageInfo.version}</span>
-          </footer>
-        )}
+          )}
+        </section>
       </div>
       {showFilterHelp && (
         <FilterHelp lang={lang} onClose={() => setShowFilterHelp(false)} />
