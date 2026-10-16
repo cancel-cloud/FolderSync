@@ -1,13 +1,130 @@
-export type Mode='TwoWay'|'Mirror'|'Copy'|'Move';
-export type Action='Unchanged'|'CopyToA'|'CopyToB'|'DeleteA'|'DeleteB'|'MoveToB'|'Conflict';
-export interface Scope {include:string[];exclude:string[];folder_include:string[];folder_exclude:string[];selected_folders:string[];exclude_root_files:boolean;skip_hidden:boolean;skip_system:boolean}
-export interface Schedule {kind:string;interval_minutes:number;hour:number;minute:number;weekdays:number[];month_day:number}
-export interface Task {id:string;name:string;a:string;b:string;mode:Mode;group:string;scope:Scope;monitor:boolean;debounce_secs:number;retries:number;bandwidth_kib:number;history_patterns:string[];history_cap:number;schedule:Schedule;login:boolean}
-export interface Entry {path:string;digest:string;directory:boolean;size:number;mtime_ns:string}
-export interface Operation {path:string;action:Action;reason:string;a:Entry|null;b:Entry|null}
-export interface Metrics {scanned_entries:number;hashed_bytes:number;copied_bytes:number;queued_paths:number;reconciliations:number;watch_events:number}
-export interface Plan {id:string;task:Task;operations:Operation[];metrics:Metrics;created_at:number;status:string}
-export interface Version {id:string;task_id:string;side:string;path:string;digest:string;stored:string;created_at:number}
-export interface RestorePreview {id:string;version:Version;current:Entry|null}
-export interface TaskStatus {task_id:string;last_run:Plan|null;pending_conflicts:number;next_run:number|null}
-export function newTask(mode:Mode='TwoWay'):Task {return {id:crypto.randomUUID(),name:'',a:'',b:'',mode,group:'',scope:{include:[],exclude:[],folder_include:[],folder_exclude:[],selected_folders:[],exclude_root_files:false,skip_hidden:false,skip_system:false},monitor:false,debounce_secs:20,retries:3,bandwidth_kib:0,history_patterns:[],history_cap:10,schedule:{kind:'',interval_minutes:15,hour:23,minute:0,weekdays:[1],month_day:1},login:false}}
+export type Mode = "TwoWay" | "Mirror" | "Copy" | "Move";
+export type Action =
+  | "Unchanged"
+  | "CopyToA"
+  | "CopyToB"
+  | "DeleteA"
+  | "DeleteB"
+  | "MoveToB"
+  | "Conflict";
+export interface Scope {
+  include: string[];
+  exclude: string[];
+  folder_include: string[];
+  folder_exclude: string[];
+  selected_folders: string[];
+  exclude_root_files: boolean;
+  skip_hidden: boolean;
+  skip_system: boolean;
+}
+export interface Schedule {
+  kind: string;
+  interval_minutes: number;
+  hour: number;
+  minute: number;
+  weekdays: number[];
+  month_day: number;
+}
+export interface Task {
+  id: string;
+  name: string;
+  a: string;
+  b: string;
+  mode: Mode;
+  group: string;
+  scope: Scope;
+  monitor: boolean;
+  debounce_secs: number;
+  retries: number;
+  bandwidth_kib: number;
+  history_patterns: string[];
+  history_cap: number;
+  schedule: Schedule;
+  login: boolean;
+}
+export interface Entry {
+  path: string;
+  digest: string;
+  directory: boolean;
+  size: number;
+  mtime_ns: string;
+}
+export interface Operation {
+  path: string;
+  action: Action;
+  reason: string;
+  status?: string;
+  a: Entry | null;
+  b: Entry | null;
+}
+export interface Metrics {
+  scanned_entries: number;
+  hashed_bytes: number;
+  copied_bytes: number;
+  queued_paths: number;
+  reconciliations: number;
+  watch_events: number;
+}
+export interface Plan {
+  id: string;
+  task: Task;
+  operations: Operation[];
+  metrics: Metrics;
+  created_at: number;
+  status: string;
+}
+export interface Version {
+  id: string;
+  task_id: string;
+  side: string;
+  path: string;
+  digest: string;
+  stored: string;
+  created_at: number;
+}
+export interface RestorePreview {
+  id: string;
+  version: Version;
+  current: Entry | null;
+}
+export interface TaskStatus {
+  task_id: string;
+  last_run: Plan | null;
+  pending_conflicts: number;
+  next_run: number | null;
+}
+export function newTask(mode: Mode = "TwoWay"): Task {
+  return {
+    id: crypto.randomUUID(),
+    name: "",
+    a: "",
+    b: "",
+    mode,
+    group: "",
+    scope: {
+      include: [],
+      exclude: [],
+      folder_include: [],
+      folder_exclude: [],
+      selected_folders: [],
+      exclude_root_files: false,
+      skip_hidden: false,
+      skip_system: false,
+    },
+    monitor: false,
+    debounce_secs: 20,
+    retries: 3,
+    bandwidth_kib: 0,
+    history_patterns: [],
+    history_cap: 10,
+    schedule: {
+      kind: "",
+      interval_minutes: 15,
+      hour: 23,
+      minute: 0,
+      weekdays: [1],
+      month_day: 1,
+    },
+    login: false,
+  };
+}

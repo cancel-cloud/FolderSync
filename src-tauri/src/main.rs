@@ -5,6 +5,7 @@ use std::sync::{
     atomic::{AtomicBool, Ordering},
 };
 use tauri::{Emitter, Manager, State};
+use tauri_plugin_notification::NotificationExt;
 mod background;
 #[derive(Clone)]
 struct Runtime {
@@ -96,7 +97,20 @@ async fn setting(r: State<'_, Runtime>, key: String) -> Result<Option<String>, S
 }
 #[tauri::command]
 async fn set_setting(r: State<'_, Runtime>, key: String, value: String) -> Result<(), String> {
+    let allowed = match key.as_str() {
+        "language" => ["en", "de"].contains(&value.as_str()),
+        "notifications" | "paused" => ["on", "off"].contains(&value.as_str()),
+        "log_level" => ["off", "basic", "detailed"].contains(&value.as_str()),
+        _ => false,
+    };
+    if !allowed {
+        return Err("Unsupported preference or value".into());
+    }
     work(r.inner().clone(), move |e| e.set_setting(&key, &value)).await
+}
+#[tauri::command]
+async fn logs(r: State<'_, Runtime>) -> Result<String, String> {
+    work(r.inner().clone(), |e| e.recent_log()).await
 }
 #[tauri::command]
 async fn storage(r: State<'_, Runtime>) -> Result<String, String> {
@@ -110,8 +124,50 @@ fn stop(r: State<'_, Runtime>) {
 fn pause(r: State<'_, Runtime>, value: bool) {
     r.paused.store(value, Ordering::Relaxed);
 }
+fn request_quit(app: tauri::AppHandle, r: Runtime) {
+    r.paused.store(true, Ordering::Relaxed);
+    r.cancel.store(true, Ordering::Relaxed);
+    tauri::async_runtime::spawn_blocking(move || {
+        if let Ok(guard) = r.engine.lock() {
+            drop(guard)
+        }
+        app.exit(0);
+    });
+}
+#[tauri::command]
+fn quit(app: tauri::AppHandle, r: State<'_, Runtime>) {
+    request_quit(app, r.inner().clone());
+}
+#[tauri::command]
+fn pattern_test(
+    scope: foldersync_engine::Scope,
+    path: String,
+    directory: bool,
+) -> Result<bool, String> {
+    foldersync_engine::fs::Matcher::new(&scope)
+        .map(|m| m.allows(&path, directory))
+        .map_err(|e| e.to_string())
+}
+fn notification_task(action: &tauri_plugin_notification::ActionPerformed) -> Option<String> {
+    if action.action_id() == "dismiss" {
+        return None;
+    }
+    action
+        .notification()?
+        .extra()
+        .get("task_id")?
+        .as_str()
+        .map(str::to_owned)
+}
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(w) = app.get_webview_window("main") {
+                let _ = w.show();
+                let _ = w.unminimize();
+                let _ = w.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_autostart::Builder::new().build())
@@ -123,6 +179,17 @@ fn main() {
                 cancel,
                 paused: Arc::new(AtomicBool::new(false)),
             });
+            let handle = app.handle().clone();
+            app.notification().on_action(move |action| {
+                if let Some(id) = notification_task(action) {
+                    if let Some(w) = handle.get_webview_window("main") {
+                        let _ = w.show();
+                        let _ = w.unminimize();
+                        let _ = w.set_focus();
+                    }
+                    let _ = handle.emit("open-task", id);
+                }
+            })?;
             background::start(app.handle().clone(), app.state::<Runtime>().inner().clone());
             let menu = tauri::menu::Menu::with_items(
                 app,
@@ -173,8 +240,7 @@ fn main() {
                     }
                     "stop" => r.cancel.store(true, Ordering::Relaxed),
                     "quit" => {
-                        r.cancel.store(true, Ordering::Relaxed);
-                        app.exit(0)
+                        request_quit(app.clone(), r.inner().clone());
                     }
                     _ => {}
                 }
@@ -205,9 +271,24 @@ fn main() {
             setting,
             set_setting,
             storage,
+            logs,
             stop,
-            pause
+            pause,
+            quit,
+            pattern_test
         ])
         .run(tauri::generate_context!())
         .expect("FolderSync failed to start");
+}
+
+#[cfg(test)]
+mod notification_tests {
+    use super::*;
+    #[test]
+    fn activation_routes_to_the_originating_task_without_an_apply_action() {
+        let action=serde_json::from_value(serde_json::json!({"actionId":"tap","inputValue":null,"notification":{"id":1,"extra":{"task_id":"fixture-task"}}})).unwrap();
+        assert_eq!(notification_task(&action).as_deref(), Some("fixture-task"));
+        let dismiss=serde_json::from_value(serde_json::json!({"actionId":"dismiss","notification":{"id":1,"extra":{"task_id":"fixture-task"}}})).unwrap();
+        assert!(notification_task(&dismiss).is_none());
+    }
 }
