@@ -1,0 +1,26 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.33s
+     Running tests\event_regressions.rs (target\debug\deps\event_regressions-9a0fea48c612a6e8.exe)
+
+running 3 tests
+test event_invalidation_detects_same_length_timestamp_preserving_edit ... FAILED
+test delayed_duplicate_events_use_current_bytes_and_do_not_replay_old_edits ... ok
+test rename_events_preserve_old_destination_until_exact_plan_approval ... ok
+
+failures:
+
+---- event_invalidation_detects_same_length_timestamp_preserving_edit stdout ----
+
+thread 'event_invalidation_detects_same_length_timestamp_preserving_edit' (12800) panicked at crates\sync-engine\tests\event_regressions.rs:42:5:
+assertion `left == right` failed
+  left: 8
+ right: 2
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    event_invalidation_detects_same_length_timestamp_preserving_edit
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.58s
+
+error: test failed, to rerun pass `-p foldersync-engine --test event_regressions`

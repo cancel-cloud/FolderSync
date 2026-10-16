@@ -1,0 +1,13 @@
+{
+  "source_commit": "7c65ad2",
+  "groups": {
+    "9b2d06d2-3805-4f2a-ba90-8498035bbb58": "GUI-Einzeln",
+    "cdd93674-6655-4d0e-9e62-c52a3ad2e9b4": "GUI-Gruppe"
+  },
+  "bulk_assignment_observed": true,
+  "single_task_reassignment_observed": true,
+  "filter_clears_hidden_selection_observed": true,
+  "collapse_and_keyboard_expansion_observed": true,
+  "automatic_triggers_off": true,
+  "fixture_hashes_unchanged": true
+}
