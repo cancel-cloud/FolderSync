@@ -1,0 +1,41 @@
+{
+  "bytes_per_file": 1024,
+  "files_per_side": 10000,
+  "fixture": "C:\\Users\\Lukas\\AppData\\Local\\Temp\\FolderSync-benchmark-4aec7906-a1e0-4e63-84bb-7bc540e470a5",
+  "forced_full_discovery": {
+    "metrics": {
+      "copied_bytes": 0,
+      "hashed_bytes": 20480000,
+      "queued_paths": 0,
+      "reconciliations": 1,
+      "scanned_entries": 20200,
+      "watch_events": 0
+    },
+    "wall_ms": 19588
+  },
+  "incremental_discovery": {
+    "metrics": {
+      "copied_bytes": 0,
+      "hashed_bytes": 2048,
+      "queued_paths": 1,
+      "reconciliations": 0,
+      "scanned_entries": 2,
+      "watch_events": 0
+    },
+    "wall_ms": 106
+  },
+  "initial_discovery": {
+    "metrics": {
+      "copied_bytes": 0,
+      "hashed_bytes": 20480000,
+      "queued_paths": 0,
+      "reconciliations": 1,
+      "scanned_entries": 20200,
+      "watch_events": 0
+    },
+    "wall_ms": 19633
+  },
+  "native_event_through_apply_ms": 253,
+  "native_events": 2,
+  "peak_memory": "Measured separately by process PeakWorkingSet64"
+}
