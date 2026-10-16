@@ -299,6 +299,7 @@ impl Engine {
     ) -> Result<Plan> {
         let roots = self.validate(&t)?;
         let mut operations = Vec::new();
+        let mut baselines = std::collections::BTreeMap::new();
         let matcher = syncfs::Matcher::new(&t.scope)?;
         for key in keys {
             let baseline: Option<Option<String>> = self
@@ -321,6 +322,9 @@ impl Engine {
                 || syncfs::excluded_attributes(&t.b, &path, &t.scope)?
             {
                 continue;
+            }
+            if let Some(Some(digest)) = &baseline {
+                baselines.insert(key.clone(), digest.clone());
             }
             let mut action = classify(
                 t.mode,
@@ -356,6 +360,19 @@ impl Engine {
                 a: ae.cloned(),
                 b: be.cloned(),
             });
+        }
+        crate::renames::protect_ambiguous(t.mode, &mut operations, &baselines);
+        for operation in &operations {
+            if operation.reason == crate::renames::AMBIGUOUS_RENAME {
+                self.index.db.execute(
+                    "INSERT OR REPLACE INTO conflicts VALUES(?,?,?)",
+                    params![
+                        t.id,
+                        path_key(&operation.path),
+                        serde_json::to_string(operation)?
+                    ],
+                )?;
+            }
         }
         let changed: Vec<_> = operations
             .iter()

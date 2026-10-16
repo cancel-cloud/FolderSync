@@ -1,0 +1,24 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.04s
+     Running tests\ambiguous_renames.rs (target\debug\deps\ambiguous_renames-ced62a796f589ecb.exe)
+
+running 3 tests
+test coalesced_incremental_events_hold_ambiguous_creates_and_removals_even_with_delete_approval ... ok
+test identical_content_multiple_origins_never_guess_rename_pairing ... ok
+test opposing_renames_preserve_baseline_and_attention_while_independent_files_sync ... FAILED
+
+failures:
+
+---- opposing_renames_preserve_baseline_and_attention_while_independent_files_sync stdout ----
+
+thread 'opposing_renames_preserve_baseline_and_attention_while_independent_files_sync' (28500) panicked at crates\sync-engine\tests\ambiguous_renames.rs:60:27:
+called `Result::unwrap()` on an `Err` value: Destructive review is required
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    opposing_renames_preserve_baseline_and_attention_while_independent_files_sync
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+
+error: test failed, to rerun pass `-p foldersync-engine --test ambiguous_renames`

@@ -1,0 +1,21 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.95s
+     Running tests\ambiguous_renames.rs (target\debug\deps\ambiguous_renames-ced62a796f589ecb.exe)
+
+running 4 tests
+test matching_rename_on_both_sides_and_unrelated_duplicate_are_not_ambiguous ... ok
+test coalesced_incremental_events_hold_ambiguous_creates_and_removals_even_with_delete_approval ... ok
+test identical_content_multiple_origins_never_guess_rename_pairing ... ok
+test opposing_renames_preserve_baseline_and_attention_while_independent_files_sync ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.82s
+
+     Running tests\event_regressions.rs (target\debug\deps\event_regressions-9a0fea48c612a6e8.exe)
+
+running 3 tests
+test event_invalidation_detects_same_length_timestamp_preserving_edit ... ok
+test rename_events_preserve_old_destination_until_exact_plan_approval ... ok
+test delayed_duplicate_events_use_current_bytes_and_do_not_replay_old_edits ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.57s
+

@@ -1,0 +1,40 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.94s
+     Running tests\ambiguous_renames.rs (target\debug\deps\ambiguous_renames-ced62a796f589ecb.exe)
+
+running 3 tests
+test opposing_renames_preserve_baseline_and_attention_while_independent_files_sync ... FAILED
+test identical_content_multiple_origins_never_guess_rename_pairing ... FAILED
+test coalesced_incremental_events_hold_ambiguous_creates_and_removals_even_with_delete_approval ... FAILED
+
+failures:
+
+---- opposing_renames_preserve_baseline_and_attention_while_independent_files_sync stdout ----
+
+thread 'opposing_renames_preserve_baseline_and_attention_while_independent_files_sync' (21124) panicked at crates\sync-engine\tests\ambiguous_renames.rs:23:9:
+assertion `left == right` failed: old.txt
+  left: Unchanged
+ right: Conflict
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- identical_content_multiple_origins_never_guess_rename_pairing stdout ----
+
+thread 'identical_content_multiple_origins_never_guess_rename_pairing' (4640) panicked at crates\sync-engine\tests\ambiguous_renames.rs:73:5:
+assertion failed: p.operations.iter().all(|o| o.action == Action::Conflict)
+
+---- coalesced_incremental_events_hold_ambiguous_creates_and_removals_even_with_delete_approval stdout ----
+
+thread 'coalesced_incremental_events_hold_ambiguous_creates_and_removals_even_with_delete_approval' (29980) panicked at crates\sync-engine\tests\ambiguous_renames.rs:56:5:
+assertion `left == right` failed
+  left: "Applied"
+ right: "Attention"
+
+
+failures:
+    coalesced_incremental_events_hold_ambiguous_creates_and_removals_even_with_delete_approval
+    identical_content_multiple_origins_never_guess_rename_pairing
+    opposing_renames_preserve_baseline_and_attention_while_independent_files_sync
+
+test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+
+error: test failed, to rerun pass `-p foldersync-engine --test ambiguous_renames`
