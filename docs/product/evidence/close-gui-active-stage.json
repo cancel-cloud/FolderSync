@@ -1,0 +1,12 @@
+{
+  "source_commit": "09ef954",
+  "time": 1792157051.259048,
+  "staging": [
+    {
+      "path": "C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\B\\.foldersync-stage-61ae5a63-e7c1-4766-aabc-daf6d28bdb69",
+      "task": "9b2d06d2-3805-4f2a-ba90-8498035bbb58",
+      "length": 786432
+    }
+  ],
+  "destination_exists": false
+}

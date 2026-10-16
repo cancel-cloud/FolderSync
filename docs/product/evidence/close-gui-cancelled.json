@@ -1,0 +1,71 @@
+{
+  "source_commit": "09ef954",
+  "run_id": "ca4d93ed-491c-4ed6-a303-3b7533fb962c",
+  "status": "Cancelled",
+  "staging_rows": 0,
+  "stage_files": [],
+  "source_sha256": "2b07811057df887086f06a67edc6ebf911de8b6741156e7a2eb1416a4b8b1b2e",
+  "destination_exists": false,
+  "conflict_hashes": {
+    "A": "f70e0cad47a9aaeb66999c6395012f2a9b2e266f0e79456d2f6bc1374ea11488",
+    "B": "95b498713c7dfdc8a8dc1a970a6c19e66f6a57354da800c751223817c648b870"
+  },
+  "run_summary": {
+    "id": "ca4d93ed-491c-4ed6-a303-3b7533fb962c",
+    "root_a": "\\\\?\\C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\A|4241541576|131072|2726252",
+    "root_b": "\\\\?\\C:\\Users\\Lukas\\Developer\\SyncFolders\\.tools\\FolderSync-GUI\\B|4241541576|65536|2726253",
+    "metrics": {
+      "scanned_entries": 1239,
+      "hashed_bytes": 79734186,
+      "copied_bytes": 0,
+      "queued_paths": 0,
+      "reconciliations": 1,
+      "watch_events": 0
+    },
+    "baseline_generation": 27,
+    "created_at": 1792157023,
+    "status": "Cancelled",
+    "deletion_review": null
+  },
+  "relevant_operations": [
+    {
+      "path": "close-quit.bin",
+      "action": "CopyToB",
+      "kind": "Create",
+      "reason": "One-sided creation or change",
+      "status": "Cancelled",
+      "a": {
+        "path": "close-quit.bin",
+        "digest": "f07d773396809ee18e28b44345f49c6e9a97bfd73ac7ba693ecd3dcd1616158d",
+        "directory": false,
+        "size": 4194304,
+        "mtime_ns": "1792156391908995100",
+        "file_id": "4241541576:2228224:2879492"
+      },
+      "b": null
+    },
+    {
+      "path": "from-a.txt",
+      "action": "Conflict",
+      "kind": "Conflict",
+      "reason": "Both sides differ from a common baseline, or there is no safe baseline",
+      "status": "Not run",
+      "a": {
+        "path": "from-a.txt",
+        "digest": "4a86984ee4e8b69c4c514b6d54187f74262cc8ffaa0dfe63f96d8e2c92447118",
+        "directory": false,
+        "size": 26,
+        "mtime_ns": "1792143174629695000",
+        "file_id": "4241541576:393216:2784149"
+      },
+      "b": {
+        "path": "from-a.txt",
+        "digest": "b67532c9c042722755413f1dbf5d9258c1c68f2903e6e30ec7d0c832434b6bdf",
+        "directory": false,
+        "size": 35,
+        "mtime_ns": "1792143174631696300",
+        "file_id": "4241541576:65536:2772226"
+      }
+    }
+  ]
+}
