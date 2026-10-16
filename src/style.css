@@ -266,6 +266,9 @@ main {
   font-size: 12px;
   color: #596d81;
 }
+.toolbar label {
+  white-space: nowrap;
+}
 input[type="checkbox"] {
   accent-color: #168573;
   width: 15px;
