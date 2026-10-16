@@ -4,6 +4,33 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
 import { newTask } from "./types";
+import type { Plan, Operation } from "./types";
+import { summarize, directions } from "./review";
+type FixturePlan = Omit<Plan, "summary"> & {
+  operations: Operation[];
+  root_a?: string;
+  root_b?: string;
+  baseline_generation?: number;
+};
+function header(p: FixturePlan): Plan {
+  const d = directions(p.operations);
+  return {
+    id: p.id,
+    task: p.task,
+    created_at: p.created_at,
+    status: p.status,
+    metrics: p.metrics,
+    summary: {
+      ...summarize(p.operations),
+      entries: p.operations.length,
+      to_a: d.toA,
+      to_b: d.toB,
+      remove_a: d.removeA,
+      remove_b: d.removeB,
+      explicit: p.operations.some((o) => o.reason.startsWith("Explicit")),
+    },
+  };
+}
 const api = vi.hoisted(() => ({ invoke: vi.fn() }));
 vi.mock("@tauri-apps/api/core", () => ({ invoke: api.invoke }));
 vi.mock("@tauri-apps/api/event", () => ({ listen: async () => () => {} }));
@@ -40,7 +67,7 @@ test("nested conflict choice only revises preview; Apply requires its separate c
     mtime_ns: "1",
     file_id: null,
   };
-  const plan = {
+  const plan: FixturePlan = {
     id: "preview",
     task,
     root_a: "A",
@@ -67,6 +94,7 @@ test("nested conflict choice only revises preview; Apply requires its separate c
       },
     ],
   };
+  let current = plan;
   api.invoke.mockImplementation(async (command: string) => {
     switch (command) {
       case "tasks":
@@ -76,9 +104,14 @@ test("nested conflict choice only revises preview; Apply requires its separate c
       case "storage":
         return "state";
       case "preview":
-        return plan;
-      case "resolve":
+        return header(plan);
+      case "operation_page":
         return {
+          operations: current.operations,
+          total: current.operations.length,
+        };
+      case "resolve":
+        current = {
           ...plan,
           id: "revised",
           operations: [
@@ -89,8 +122,9 @@ test("nested conflict choice only revises preview; Apply requires its separate c
             },
           ],
         };
+        return header(current);
       case "apply":
-        return { ...plan, status: "Applied" };
+        return header({ ...current, status: "Applied" });
       default:
         return null;
     }
@@ -141,7 +175,7 @@ test("saved German preference localizes dashboard, conflict review and metadata"
     directory: false,
     mtime_ns: "1000000000",
   };
-  const plan = {
+  const plan: FixturePlan = {
     id: "localized",
     task,
     created_at: 0,
@@ -175,7 +209,7 @@ test("saved German preference localizes dashboard, conflict review and metadata"
           return [
             {
               task_id: task.id,
-              last_run: plan,
+              last_run: header(plan),
               pending_conflicts: 1,
               next_run: null,
             },
@@ -185,7 +219,9 @@ test("saved German preference localizes dashboard, conflict review and metadata"
         case "storage":
           return "state";
         case "preview":
-          return { ...plan, status: "Preview" };
+          return header({ ...plan, status: "Preview" });
+        case "operation_page":
+          return { operations: plan.operations, total: plan.operations.length };
         default:
           return null;
       }
@@ -207,4 +243,91 @@ test("saved German preference localizes dashboard, conflict review and metadata"
   expect(screen.getAllByText(/Geändert:/)).toHaveLength(2);
   expect(screen.getByRole("columnheader", { name: "Ordner A" })).toBeTruthy();
   expect(screen.getByText(/Entfernungen aus A/)).toBeTruthy();
+});
+
+test("review requests bounded pages and resets paging when filters change", async () => {
+  const task = { ...newTask(), name: "Large review", a: "A", b: "B" };
+  const plan: Plan = {
+    id: "large",
+    task,
+    created_at: 1,
+    status: "Preview",
+    metrics: {
+      scanned_entries: 405,
+      hashed_bytes: 0,
+      copied_bytes: 0,
+      queued_paths: 0,
+      reconciliations: 1,
+      watch_events: 0,
+    },
+    summary: {
+      entries: 405,
+      copies: 405,
+      deletes: 0,
+      conflicts: 0,
+      unchanged: 0,
+      to_a: 0,
+      to_b: 405,
+      remove_a: 0,
+      remove_b: 0,
+      explicit: false,
+    },
+  };
+  api.invoke.mockImplementation(
+    async (
+      command: string,
+      args?: { query?: { offset: number; limit: number; filter: string } },
+    ) => {
+      if (command === "tasks") return [task];
+      if (command === "statuses") return [];
+      if (command === "preview") return plan;
+      if (command === "operation_page") {
+        const q = args!.query!;
+        const count = q.filter ? 1 : Math.min(200, 405 - q.offset);
+        return {
+          total: q.filter ? 1 : 405,
+          operations: Array.from({ length: count }, (_, i) => ({
+            path: q.filter || `row-${q.offset + i}`,
+            action: "CopyToB",
+            reason: "One-sided creation or change",
+            status: "Planned",
+            a: null,
+            b: null,
+          })),
+        };
+      }
+      return null;
+    },
+  );
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(
+    await screen.findByRole("button", { name: "Preview / Run" }),
+  );
+  expect(await screen.findByText("row-0")).toBeTruthy();
+  expect(screen.queryByText("row-200")).toBeNull();
+  await user.click(screen.getByRole("button", { name: "Next" }));
+  expect(await screen.findByText("row-200")).toBeTruthy();
+  expect(screen.queryByText("row-0")).toBeNull();
+  await user.type(
+    screen.getByRole("textbox", { name: "Filter operations" }),
+    "needle",
+  );
+  expect(await screen.findByText("needle")).toBeTruthy();
+  await waitFor(() =>
+    expect(api.invoke).toHaveBeenLastCalledWith("operation_page", {
+      id: "large",
+      query: {
+        offset: 0,
+        limit: 200,
+        filter: "needle",
+        show_unchanged: false,
+        sort: "path",
+      },
+    }),
+  );
+  expect(
+    (screen.getByRole("button", { name: "Next" }) as HTMLButtonElement)
+      .disabled,
+  ).toBe(true);
 });

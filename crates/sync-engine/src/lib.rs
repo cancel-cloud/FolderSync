@@ -6,6 +6,7 @@ mod index;
 mod logging;
 mod model;
 mod recovery;
+mod review;
 pub mod scheduler;
 mod transfer;
 pub mod watch;

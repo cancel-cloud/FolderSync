@@ -29,9 +29,9 @@ import type {
   Entry,
   RestorePreview,
   TaskStatus,
+  OperationPage,
 } from "./types";
 import { newTask } from "./types";
-import { summarize, directions } from "./review";
 import {
   actionLabel,
   statusLabel,
@@ -93,6 +93,40 @@ export default function App() {
     [sampleResult, setSampleResult] = useState(""),
     [operationPage, setOperationPage] = useState(0),
     [sort, setSort] = useState("path");
+  const [operationRows, setOperationRows] = useState<
+    (OperationPage & { key: string }) | null
+  >(null);
+  const operationKey = JSON.stringify([
+    plan,
+    filter,
+    showUnchanged,
+    sort,
+    operationPage,
+  ]);
+  useEffect(() => {
+    if (!plan || page !== "preview") return;
+    let current = true;
+    void invoke<OperationPage>("operation_page", {
+      id: plan.id,
+      query: {
+        offset: operationPage * 200,
+        limit: 200,
+        filter,
+        show_unchanged: showUnchanged,
+        sort,
+      },
+    })
+      .then((result) => {
+        if (current) setOperationRows({ ...result, key: operationKey });
+      })
+      .catch((e) => {
+        if (current) setError(String(e));
+      });
+    return () => {
+      current = false;
+    };
+  }, [plan, page, filter, showUnchanged, sort, operationPage, operationKey]);
+  const rows = operationRows?.key === operationKey ? operationRows : null;
   const tr = (en: string, de: string) => (lang === "de" ? de : en);
   const date = (seconds: number) => formatDate(seconds, lang);
   const bytes = (value: number) => formatBytes(value, lang);
@@ -298,8 +332,8 @@ export default function App() {
   function patch(p: Partial<Task>) {
     if (task) setTask({ ...task, ...p });
   }
-  const summary = plan ? summarize(plan.operations) : null;
-  const direction = plan ? directions(plan.operations) : null;
+  const summary = plan?.summary;
+  const direction = plan?.summary;
   return (
     <div className="app">
       <aside>
@@ -308,7 +342,8 @@ export default function App() {
             <ArrowLeftRight size={22} />
           </div>
           <div>
-            FolderSync<small>{tr("LOCAL WORKSPACE", "LOKALER ARBEITSBEREICH")}</small>
+            FolderSync
+            <small>{tr("LOCAL WORKSPACE", "LOKALER ARBEITSBEREICH")}</small>
           </div>
         </div>
         <nav aria-label={tr("Main navigation", "Hauptnavigation")}>
@@ -1141,11 +1176,7 @@ export default function App() {
                             setPlan(
                               await invoke<Plan>("apply", {
                                 id: plan.id,
-                                destructive:
-                                  approved ||
-                                  plan.operations.some((o) =>
-                                    o.reason.startsWith("Explicit"),
-                                  ),
+                                destructive: approved || summary.explicit,
                               }),
                             );
                             setMessage(
@@ -1180,11 +1211,11 @@ export default function App() {
               </div>
               {direction && (
                 <p className="hint" role="status">
-                  A → B: {direction.toB} · B → A: {direction.toA} ·{" "}
+                  A → B: {direction.to_b} · B → A: {direction.to_a} ·{" "}
                   {tr("Removals from A", "Entfernungen aus A")}:{" "}
-                  {direction.removeA} ·{" "}
+                  {direction.remove_a} ·{" "}
                   {tr("Removals from B", "Entfernungen aus B")}:{" "}
-                  {direction.removeB}
+                  {direction.remove_b}
                 </p>
               )}
               <div className="panel">
@@ -1241,7 +1272,10 @@ export default function App() {
                   <input
                     type="checkbox"
                     checked={showUnchanged}
-                    onChange={(e) => setShowUnchanged(e.target.checked)}
+                    onChange={(e) => {
+                      setShowUnchanged(e.target.checked);
+                      setOperationPage(0);
+                    }}
                   />
                   {tr("Show unchanged", "Unveränderte anzeigen")}
                 </label>
@@ -1253,6 +1287,11 @@ export default function App() {
                   {tr("Fresh preview", "Neue Vorschau")}
                 </Button>
               </div>
+              {!rows && (
+                <p role="status">
+                  {tr("Loading operations…", "Aktionen werden geladen…")}
+                </p>
+              )}
               <div className="table-wrap">
                 <table>
                   <thead>
@@ -1264,103 +1303,90 @@ export default function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {plan.operations
-                      .filter(
-                        (o) =>
-                          (showUnchanged || o.action !== "Unchanged") &&
-                          o.path.toLowerCase().includes(filter.toLowerCase()),
-                      )
-                      .sort((a, b) =>
-                        sort === "action"
-                          ? a.action.localeCompare(b.action) ||
-                            a.path.localeCompare(b.path)
-                          : a.path.localeCompare(b.path),
-                      )
-                      .slice(operationPage * 200, (operationPage + 1) * 200)
-                      .map((o) => (
-                        <tr key={o.path}>
-                          <td>
-                            <strong>{o.path}</strong>
-                            <small>{reasonLabel(o.reason, lang)}</small>
-                          </td>
-                          <td>
-                            <span className={`op ${o.action}`}>
-                              {actionLabel(o.action, lang)}
-                            </span>
-                            {!["Preview", "Review required"].includes(
+                    {rows?.operations.map((o) => (
+                      <tr key={o.path}>
+                        <td>
+                          <strong>{o.path}</strong>
+                          <small>{reasonLabel(o.reason, lang)}</small>
+                        </td>
+                        <td>
+                          <span className={`op ${o.action}`}>
+                            {actionLabel(o.action, lang)}
+                          </span>
+                          {!["Preview", "Review required"].includes(
+                            plan.status,
+                          ) && (
+                            <small>
+                              {statusLabel(o.status || plan.status, lang)}
+                            </small>
+                          )}
+                          {o.action === "Conflict" &&
+                            ["Preview", "Review required"].includes(
                               plan.status,
                             ) && (
-                              <small>
-                                {statusLabel(o.status || plan.status, lang)}
-                              </small>
-                            )}
-                            {o.action === "Conflict" &&
-                              ["Preview", "Review required"].includes(
-                                plan.status,
-                              ) && (
-                                <select
-                                  aria-label={tr(
-                                    `Resolve ${o.path}`,
-                                    `${o.path} auflösen`,
+                              <select
+                                aria-label={tr(
+                                  `Resolve ${o.path}`,
+                                  `${o.path} auflösen`,
+                                )}
+                                value=""
+                                onChange={(e) =>
+                                  void perform(async () => {
+                                    setPlan(
+                                      await invoke<Plan>("resolve", {
+                                        id: plan.id,
+                                        path: o.path,
+                                        choice: e.target.value,
+                                      }),
+                                    );
+                                  })
+                                }
+                              >
+                                <option value="">
+                                  {tr(
+                                    "Keep both / unresolved",
+                                    "Beide behalten / offen",
                                   )}
-                                  value=""
-                                  onChange={(e) =>
-                                    void perform(async () => {
-                                      setPlan(
-                                        await invoke<Plan>("resolve", {
-                                          id: plan.id,
-                                          path: o.path,
-                                          choice: e.target.value,
-                                        }),
-                                      );
-                                    })
-                                  }
-                                >
-                                  <option value="">
+                                </option>
+                                {o.a && (
+                                  <option value="a">
                                     {tr(
-                                      "Keep both / unresolved",
-                                      "Beide behalten / offen",
+                                      "Choose A → B (preview)",
+                                      "A → B wählen (Vorschau)",
                                     )}
                                   </option>
-                                  {o.a && (
-                                    <option value="a">
-                                      {tr(
-                                        "Choose A → B (preview)",
-                                        "A → B wählen (Vorschau)",
-                                      )}
-                                    </option>
-                                  )}
-                                  {o.b && (
-                                    <option value="b">
-                                      {tr(
-                                        "Choose B → A (preview)",
-                                        "B → A wählen (Vorschau)",
-                                      )}
-                                    </option>
-                                  )}
-                                </select>
-                              )}
-                          </td>
-                          <td title={o.a?.digest}>
-                            {meta(o.a)}
-                            {o.a && (
-                              <small>
-                                {tr("Modified", "Geändert")}:{" "}
-                                {modifiedLabel(o.a, lang)}
-                              </small>
+                                )}
+                                {o.b && (
+                                  <option value="b">
+                                    {tr(
+                                      "Choose B → A (preview)",
+                                      "B → A wählen (Vorschau)",
+                                    )}
+                                  </option>
+                                )}
+                              </select>
                             )}
-                          </td>
-                          <td title={o.b?.digest}>
-                            {meta(o.b)}
-                            {o.b && (
-                              <small>
-                                {tr("Modified", "Geändert")}:{" "}
-                                {modifiedLabel(o.b, lang)}
-                              </small>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
+                        </td>
+                        <td title={o.a?.digest}>
+                          {meta(o.a)}
+                          {o.a && (
+                            <small>
+                              {tr("Modified", "Geändert")}:{" "}
+                              {modifiedLabel(o.a, lang)}
+                            </small>
+                          )}
+                        </td>
+                        <td title={o.b?.digest}>
+                          {meta(o.b)}
+                          {o.b && (
+                            <small>
+                              {tr("Modified", "Geändert")}:{" "}
+                              {modifiedLabel(o.b, lang)}
+                            </small>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -1378,14 +1404,7 @@ export default function App() {
                 </span>
                 <Button
                   variant="outline"
-                  disabled={
-                    (operationPage + 1) * 200 >=
-                    plan.operations.filter(
-                      (o) =>
-                        (showUnchanged || o.action !== "Unchanged") &&
-                        o.path.toLowerCase().includes(filter.toLowerCase()),
-                    ).length
-                  }
+                  disabled={(operationPage + 1) * 200 >= (rows?.total ?? 0)}
                   onClick={() => setOperationPage(operationPage + 1)}
                 >
                   {tr("Next", "Weiter")}
@@ -1451,9 +1470,8 @@ export default function App() {
                         {statusLabel(p.status, lang)}
                       </span>
                       <span>
-                        {summarize(p.operations).conflicts}{" "}
-                        {tr("conflicts", "Konflikte")} · {p.operations.length}{" "}
-                        {tr("entries", "Einträge")}
+                        {p.summary.conflicts} {tr("conflicts", "Konflikte")} ·{" "}
+                        {p.summary.entries} {tr("entries", "Einträge")}
                       </span>
                     </button>
                   ))
