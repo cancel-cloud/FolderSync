@@ -245,7 +245,11 @@ export default function App() {
     try {
       await action();
     } catch (e) {
-      setError(String(e));
+      if (e === "[FolderSync:Cancelled]")
+        setMessage(
+          "Run cancelled. Completed operations remain committed. Create a fresh preview to continue.",
+        );
+      else setError(String(e));
     } finally {
       setBusy(false);
     }
@@ -461,7 +465,14 @@ export default function App() {
             </div>
           )}
           {message && (
-            <div className="alert success" role="status">
+            <div
+              className={
+                message.startsWith("Run cancelled.") || message === "Cancelled"
+                  ? "alert warning"
+                  : "alert success"
+              }
+              role="status"
+            >
               {messageLabel(message, lang)}
             </div>
           )}
@@ -1279,6 +1290,12 @@ export default function App() {
                             });
                             setPlan(result.plan);
                             await refresh();
+                            if (result.plan.status === "Cancelled") {
+                              setMessage(
+                                "Run cancelled. Completed operations remain committed. Create a fresh preview to continue.",
+                              );
+                              return;
+                            }
                             if (result.error) throw new Error(result.error);
                             setFailedPlanId("");
                             setMessage(

@@ -12,6 +12,13 @@ use tauri_plugin_notification::NotificationExt;
 mod background;
 mod presentation;
 mod progress_runtime;
+fn command_error(error: &anyhow::Error) -> String {
+    if error.is::<foldersync_engine::Cancelled>() {
+        "[FolderSync:Cancelled]".into()
+    } else {
+        format!("{error:#}")
+    }
+}
 #[derive(Clone)]
 struct Runtime {
     engine: Arc<Mutex<Engine>>,
@@ -28,7 +35,7 @@ async fn work<T: Send + 'static>(
             .engine
             .lock()
             .map_err(|_| "Engine lock failed".to_string())?;
-        f(&mut e).map_err(|e| format!("{e:#}"))
+        f(&mut e).map_err(|e| command_error(&e))
     })
     .await
     .map_err(|e| e.to_string())?
@@ -335,6 +342,16 @@ fn main() {
 #[cfg(test)]
 mod notification_tests {
     use super::*;
+    #[test]
+    fn command_cancellation_has_a_reserved_marker_and_os_errors_keep_details() {
+        let cancelled = anyhow::Error::new(foldersync_engine::Cancelled).context("validation");
+        assert_eq!(command_error(&cancelled), "[FolderSync:Cancelled]");
+        assert_eq!(command_error(&anyhow::anyhow!("Cancelled")), "Cancelled");
+        assert_eq!(
+            command_error(&anyhow::anyhow!("destination locked")),
+            "destination locked"
+        );
+    }
     #[test]
     fn activation_routes_to_the_originating_task_without_an_apply_action() {
         let action=serde_json::from_value(serde_json::json!({"actionId":"tap","inputValue":null,"notification":{"id":1,"extra":{"task_id":"fixture-task"}}})).unwrap();
