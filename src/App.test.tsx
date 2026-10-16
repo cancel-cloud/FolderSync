@@ -1133,7 +1133,7 @@ test("settings exposes version information separately from local data", async ()
   expect(screen.getByRole("heading", { name: "Local data" })).toBeTruthy();
   await user.click(screen.getByRole("tab", { name: "Version" }));
   expect(
-    screen.getByRole("heading", { name: "FolderSync 0.1.4" }),
+    screen.getByRole("heading", { name: "FolderSync 0.1.5" }),
   ).toBeTruthy();
   expect(screen.queryByRole("heading", { name: "Local data" })).toBeNull();
   expect(screen.getByText(/Automatic updates are not configured/)).toBeTruthy();
