@@ -17,7 +17,7 @@ impl Index {
             storage.join("foldersync.sqlite3"),
             rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE,
         )?;
-        db.busy_timeout(std::time::Duration::from_secs(5))?;
+        db.busy_timeout(std::time::Duration::from_secs(30))?;
         db.execute_batch("PRAGMA foreign_keys=ON; PRAGMA synchronous=FULL;")?;
         anyhow::ensure!(
             db.query_row("PRAGMA user_version", [], |r| r.get::<_, u32>(0))? == 5,
@@ -116,11 +116,8 @@ impl Index {
     pub fn entry(&self, task: &str, side: &str, path: &str) -> Result<Option<Entry>> {
         let json: Option<String> = self
             .db
-            .query_row(
-                "SELECT json FROM entries WHERE task=? AND side=? AND path=?",
-                params![task, side, path],
-                |r| r.get(0),
-            )
+            .prepare_cached("SELECT json FROM entries WHERE task=? AND side=? AND path=?")?
+            .query_row(params![task, side, path], |r| r.get(0))
             .optional()?;
         json.map(|j| Ok(serde_json::from_str(&j)?)).transpose()
     }
@@ -181,6 +178,9 @@ impl Index {
         self.update_ancestors(task, side, &keys)
     }
     pub fn update_ancestors(&self, task: &str, side: &str, keys: &BTreeSet<String>) -> Result<()> {
+        // Directory digests are derived index data. Persist the complete update
+        // atomically rather than flushing once for every parent directory.
+        let transaction = self.db.unchecked_transaction()?;
         let mut parents = BTreeSet::from([String::new()]);
         for key in keys {
             if self.entry(task, side, key)?.is_some_and(|e| e.directory) {
@@ -203,7 +203,7 @@ impl Index {
         });
         for parent in parents {
             let mut h = blake3::Hasher::new();
-            let mut s=self.db.prepare("SELECT path,digest,json FROM entries WHERE task=? AND side=? AND parent=? ORDER BY path")?;
+            let mut s=self.db.prepare_cached("SELECT path,digest,json FROM entries WHERE task=? AND side=? AND parent=? ORDER BY path")?;
             let rows = s.query_map(params![task, side, parent], |r| {
                 Ok((
                     r.get::<_, String>(0)?,
@@ -235,6 +235,7 @@ impl Index {
                 params![task, side, parent, h.finalize().to_hex().to_string()],
             )?;
         }
+        transaction.commit()?;
         Ok(())
     }
     pub fn baseline(

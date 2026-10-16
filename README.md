@@ -8,6 +8,8 @@ FolderSync connects two folders accessible from one Windows PC: a local working 
 
 After initial indexing, Windows file events drive incremental discovery. A normal single-file change reads that path on both sides and updates its cached ancestors; it does not hash the entire folder tree. Missed events, restart or an uncertain/unavailable root require reconciliation. Manual Preview and the optional Full content comparison intentionally verify both complete trees.
 
+Release 0.1.8 compares file contents with up to 10 readers and defaults new tasks to 4 verified transfers (1–16 selectable). Comparison workers are independent of the transfer setting. Small-file copying still includes durable journals, staged-file verification and Windows flush/atomic commit costs; it is not equivalent to a raw SSD bandwidth test. Preview and Apply each check content so changed inputs cannot execute an obsolete review. See the [35,000-file investigation and measured transfer comparison](docs/product/release-0.1.8.md), including why 10 copying workers were slower than 4 on this machine.
+
 Measured on this machine with the debug engine, 10,000 files per side (1 KiB each), release 0.1.1 source f13b9bc:
 
 | Discovery | Time | Entries examined | Bytes hashed |
@@ -20,7 +22,7 @@ Native event through Apply took 340 ms before the configured debounce; peak work
 
 ## Install and run
 
-Run `target\release\bundle\nsis\FolderSync_0.1.6_x64-setup.exe`. The NSIS installer targets the current user, with no service or administrator requirement. Microsoft Edge WebView2 Runtime is required; the Tauri installer can provision it when missing. This machine already has it. No signing certificate is configured.
+Run `target\release\bundle\nsis\FolderSync_0.1.8_x64-setup.exe`. The NSIS installer targets the current user, with no service or administrator requirement. Microsoft Edge WebView2 Runtime is required; the Tauri installer can provision it when missing. This machine already has it. No signing certificate is configured.
 
 The optional installer checkbox **Start FolderSync in the tray when I sign in** registers only the current account. It is unchecked for a new install. Silent installation supports `/S /STARTUP=1` or `/S /STARTUP=0`; omitting the option preserves an existing registration. Settings offers the same option. Sign-in uses the quoted installed executable with `--background`, loads saved configuration and leaves the window hidden. Installing or enabling startup does not enable any task, watch, schedule or deletion policy. Previously enabled task triggers still run when FolderSync starts. Uninstall removes its sign-in entry and retains saved data unless you explicitly request removal.
 
@@ -37,7 +39,7 @@ Closing the window leaves the process running in the tray by default. Settings c
 - Native Windows notifications for filesystem changes, persistent dirty paths and incremental ancestor hashes.
 - Calendar/periodic schedules, bounded retries/debounce/bandwidth, pause/cancel, close-to-tray.
 - Incremental or full content verification; preserve-and-continue or hold-until-reviewed conflict policy.
-- Configurable 1–4 verified file transfers sharing a total bandwidth cap, with cancellation and crash recovery; default one transfer.
+- Configurable 1–16 verified file transfers sharing a total bandwidth cap, with cancellation and crash recovery; new-task default 4. Content comparisons use up to 10 readers independently.
 - English/German principal screens, expandable/copyable full folder paths, local optional operation logs, no telemetry/account/cloud service.
 
 Automatic deletion defaults off. After a successful full manual reconciliation, two-way/mirror tasks can explicitly opt into proven baseline deletion within both per-run entry and percentage limits. Unknown deletions and Move still stop for review; see [policy details](docs/product/automatic-deletion.md). Roots and mode of an established task require a new task; this prevents carrying a baseline into a different folder pair. Recovery copies are ordinary file content, not an ACL/alternate-stream backup system. An actual unavailable UNC was safely rejected. Creating the dedicated disposable SMB share was denied to this account, so real SMB transfers, disconnect/reconnect and network notification behavior are unverified. Use a stable UNC path and manually review the first result. Actual OS sign-in, notification activation/deep links, high-DPI and comprehensive fault coverage remain unverified; see QA for the full list.

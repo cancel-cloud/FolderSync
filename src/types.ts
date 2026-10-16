@@ -200,7 +200,7 @@ export function newTask(mode: Mode = "TwoWay"): Task {
     debounce_secs: 20,
     retries: 3,
     bandwidth_kib: 0,
-    transfer_concurrency: 1,
+    transfer_concurrency: 4,
     comparison: "Incremental",
     conflict_policy: "ContinueIndependent",
     history_enabled: true,

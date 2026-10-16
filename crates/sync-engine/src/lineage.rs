@@ -9,6 +9,13 @@ pub(crate) const LINEAGE_RENAME: &str =
     "Rename identity connects divergent paths; originals preserved until explicit review";
 
 impl Index {
+    fn has_lineage(&self, task: &str) -> Result<bool> {
+        Ok(self.db.query_row(
+            "SELECT EXISTS(SELECT 1 FROM baseline_identity WHERE task=?1) OR EXISTS(SELECT 1 FROM rename_links WHERE task=?1)",
+            [task],
+            |row| row.get(0),
+        )?)
+    }
     fn link_candidate(&self, task: &str, origin: &str, target: &str) -> Result<()> {
         let digest:String=self.db.query_row("SELECT COALESCE((SELECT json_extract(json,'$.digest') FROM baseline_identity WHERE task=? AND path=? LIMIT 1),(SELECT digest FROM rename_links WHERE task=? AND target=? LIMIT 1),'')",params![task,origin,task,origin],|r|r.get(0))?;
         // Invalidate first: a crash may invalidate an extra review, but never
@@ -49,14 +56,14 @@ impl Index {
         Ok(())
     }
     fn identity_origins(&self, task: &str, side: &str, id: &str) -> Result<Vec<String>> {
-        let mut s = self
-            .db
-            .prepare("SELECT path FROM baseline_identity WHERE task=? AND side=? AND file_id=?")?;
+        let mut s = self.db.prepare_cached(
+            "SELECT path FROM baseline_identity WHERE task=? AND side=? AND file_id=?",
+        )?;
         Ok(s.query_map(params![task, side, id], |r| r.get(0))?
             .collect::<rusqlite::Result<_>>()?)
     }
     fn linked(&self, task: &str, path: &str) -> Result<Vec<String>> {
-        let mut s = self.db.prepare(
+        let mut s = self.db.prepare_cached(
             "SELECT origin,target FROM rename_links WHERE task=? AND (origin=? OR target=?)",
         )?;
         let rows = s.query_map(params![task, path, path], |r| {
@@ -70,7 +77,7 @@ impl Index {
         Ok(paths)
     }
     fn content_origins(&self, task: &str, path: &str, digest: &str) -> Result<Vec<String>> {
-        let mut s=self.db.prepare("SELECT DISTINCT origin FROM rename_links WHERE task=? AND digest=? AND NOT EXISTS(SELECT 1 FROM baseline WHERE task=? AND path=? AND digest IS NOT NULL)")?;
+        let mut s=self.db.prepare_cached("SELECT DISTINCT origin FROM rename_links WHERE task=? AND digest=? AND NOT EXISTS(SELECT 1 FROM baseline WHERE task=? AND path=? AND digest IS NOT NULL)")?;
         Ok(
             s.query_map(params![task, digest, task, path], |r| r.get(0))?
                 .collect::<rusqlite::Result<_>>()?,
@@ -114,7 +121,7 @@ impl Engine {
         keys: &mut BTreeSet<String>,
         m: &mut Metrics,
     ) -> Result<()> {
-        if t.mode != Mode::TwoWay {
+        if t.mode != Mode::TwoWay || !self.index.has_lineage(&t.id)? {
             return Ok(());
         }
         let mut pending: VecDeque<_> = keys.iter().cloned().collect();
@@ -134,7 +141,7 @@ impl Engine {
                 }
                 // Previously indexed targets also remain reachable when the old
                 // name's notification arrives after its target.
-                let mut s=self.index.db.prepare("SELECT e.path FROM baseline_identity i JOIN entries e ON e.task=i.task AND e.side=i.side AND e.file_id=i.file_id WHERE i.task=? AND i.side=? AND i.path=?")?;
+                let mut s=self.index.db.prepare_cached("SELECT e.path FROM baseline_identity i JOIN entries e ON e.task=i.task AND e.side=i.side AND e.file_id=i.file_id WHERE i.task=? AND i.side=? AND i.path=?")?;
                 related.extend(
                     s.query_map(params![t.id, side, key], |r| r.get::<_, String>(0))?
                         .collect::<rusqlite::Result<Vec<_>>>()?,
@@ -169,7 +176,7 @@ impl Engine {
         baselines: &BTreeMap<String, String>,
         metrics: &mut Metrics,
     ) -> Result<()> {
-        if t.mode != Mode::TwoWay {
+        if t.mode != Mode::TwoWay || !self.index.has_lineage(&t.id)? {
             return Ok(());
         }
         let positions: BTreeMap<_, _> = operations
@@ -212,7 +219,7 @@ impl Engine {
                 }
             }
         }
-        let mut s = self.index.db.prepare(
+        let mut s = self.index.db.prepare_cached(
             "SELECT origin,target FROM rename_links WHERE task=? AND (origin=? OR target=?)",
         )?;
         let mut links = BTreeSet::new();

@@ -154,13 +154,33 @@ fn parallel_workers_share_the_task_bandwidth_budget() {
 #[test]
 fn invalid_worker_counts_are_rejected_without_changing_saved_task() {
     let (_d, mut e, t) = fixture(Mode::Copy, 1, 0);
-    for count in [0, 5] {
+    for count in [0, 17] {
         let mut j = serde_json::to_value(&t).unwrap();
         j["transfer_concurrency"] = count.into();
         let bad = serde_json::from_value(j).unwrap();
         assert!(e.save_task(&bad).is_err());
     }
     assert_eq!(e.tasks().unwrap()[0], t);
+}
+
+#[test]
+fn ten_workers_verify_copies_and_new_tasks_default_to_four() {
+    assert_eq!(Task::default().transfer_concurrency, 4);
+    let (_d, mut engine, task) = fixture(Mode::Copy, 10, 10240);
+    for i in 0..20 {
+        fs::write(task.a.join(format!("file-{i}")), vec![i as u8; 256 * 1024]).unwrap();
+    }
+    let plan = engine.preview(&task.id).unwrap();
+    let applied = engine.apply(&plan.id, false).unwrap();
+    assert_eq!(applied.status, "Applied");
+    assert!(applied.metrics.peak_workers > 4);
+    assert!(applied.metrics.peak_workers <= 10);
+    for i in 0..20 {
+        assert_eq!(
+            fs::read(task.b.join(format!("file-{i}"))).unwrap(),
+            vec![i as u8; 256 * 1024]
+        );
+    }
 }
 
 #[test]

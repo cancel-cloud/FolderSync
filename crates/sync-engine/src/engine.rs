@@ -172,7 +172,7 @@ impl Engine {
         );
         ensure!(
             t.debounce_secs <= 3600
-                && (1..=4).contains(&t.transfer_concurrency)
+                && (1..=16).contains(&t.transfer_concurrency)
                 && t.bandwidth_kib.checked_mul(1024).is_some()
                 && t.retries <= 10
                 && t.history_cap > 0
@@ -321,11 +321,8 @@ impl Engine {
             let baseline: Option<Option<String>> = self
                 .index
                 .db
-                .query_row(
-                    "SELECT digest FROM baseline WHERE task=? AND path=?",
-                    params![t.id, key],
-                    |r| r.get(0),
-                )
+                .prepare_cached("SELECT digest FROM baseline WHERE task=? AND path=?")?
+                .query_row(params![t.id, key], |r| r.get(0))
                 .optional()?;
             let ae = a.get(&key);
             let be = b.get(&key);
@@ -533,24 +530,32 @@ impl Engine {
                 ) || o.reason.starts_with("Explicit")),
             "Destructive review is required"
         );
-        for (completed, o) in p.operations.iter().enumerate() {
-            self.progress.update(|s| {
-                s.completed_entries = completed as u64;
-                s.path = Some(o.path.clone());
-            });
-            crate::progress::check_cancel(Some(&self.cancel))?;
-            for (root, expected) in [(&p.task.a, &o.a), (&p.task.b, &o.b)] {
-                let actual = self.read_entry(root, &o.path, &p.task.scope, &mut p.metrics)?;
-                ensure!(
-                    &actual == expected,
-                    "Stale input: {}; preview again",
-                    o.path
-                );
+        self.validate_inputs(&p.task, &p.operations, &mut p.metrics)?;
+        // Persist all mutation intents before touching a file. One durable
+        // transaction provides the same write-ahead boundary without a flush
+        // for every small file. Pending does not mean that a file was changed.
+        {
+            let transaction = self.index.db.transaction()?;
+            transaction.execute("UPDATE runs SET status='Applying' WHERE id=?", [id])?;
+            {
+                let mut insert = transaction.prepare(
+                    "INSERT OR REPLACE INTO journal(run,path,json,status) VALUES(?,?,?,'Pending')",
+                )?;
+                for operation in &p.operations {
+                    if !matches!(
+                        operation.action,
+                        Action::Conflict | Action::Ignore | Action::Unchanged
+                    ) {
+                        insert.execute(params![
+                            id,
+                            operation.path,
+                            serde_json::to_string(operation)?
+                        ])?;
+                    }
+                }
             }
+            transaction.commit()?;
         }
-        self.index
-            .db
-            .execute("UPDATE runs SET status='Applying' WHERE id=?", [id])?;
         // Equal snapshots need no mutation journal. Commit their baseline in one
         // transaction instead of forcing a disk flush for every unchanged file.
         {
@@ -913,10 +918,6 @@ impl Engine {
         metrics.peak_workers = metrics.peak_workers.max(1);
         crate::progress::check_cancel(Some(&self.cancel))?;
         self.validate(task)?;
-        self.index.db.execute(
-            "INSERT OR REPLACE INTO journal(run,path,json,status) VALUES(?,?,?,'Pending')",
-            params![id, o.path, serde_json::to_string(o)?],
-        )?;
         match o.action {
             Action::CopyToB | Action::MoveToB => self.copy(
                 task,
@@ -967,10 +968,6 @@ impl Engine {
             );
             self.remove(task, &o.path, "A", o.a.as_ref().unwrap(), false, metrics)?;
         }
-        self.index.db.execute(
-            "UPDATE journal SET status='Complete' WHERE run=? AND path=?",
-            params![id, o.path],
-        )?;
         o.status = "Applied".into();
         let (a, b) = (
             self.read_entry(&task.a, &o.path, &task.scope, metrics)?,
@@ -978,6 +975,10 @@ impl Engine {
         );
         let digest = if task.mode == Mode::TwoWay {
             if a.as_ref().map(|e| &e.digest) != b.as_ref().map(|e| &e.digest) {
+                self.index.db.execute(
+                    "UPDATE journal SET status='Complete' WHERE run=? AND path=?",
+                    params![id, o.path],
+                )?;
                 return Ok(());
             }
             a.as_ref().map(|e| e.digest.clone())
@@ -988,7 +989,11 @@ impl Engine {
                 .filter(|x| b.as_ref().is_some_and(|y| x.digest == y.digest))
                 .map(|e| e.digest.clone())
         };
-        let tx = self.index.db.transaction()?;
+        let tx = self.index.db.unchecked_transaction()?;
+        tx.execute(
+            "UPDATE journal SET status='Complete' WHERE run=? AND path=?",
+            params![id, o.path],
+        )?;
         tx.execute(
             "INSERT OR REPLACE INTO baseline VALUES(?,?,?)",
             params![task.id, path_key(&o.path), digest],
@@ -998,11 +1003,11 @@ impl Engine {
             params![task.id, path_key(&o.path)],
         )?;
         Index::remember_common(&tx, &task.id, &path_key(&o.path), a.as_ref(), b.as_ref())?;
-        tx.commit()?;
         self.index
             .put_entry(&task.id, "A", &path_key(&o.path), a.as_ref())?;
         self.index
             .put_entry(&task.id, "B", &path_key(&o.path), b.as_ref())?;
+        tx.commit()?;
         Ok(())
     }
     pub fn export(&self) -> Result<String> {
