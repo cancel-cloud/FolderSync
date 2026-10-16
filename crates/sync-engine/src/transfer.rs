@@ -219,8 +219,13 @@ impl Engine {
                         )
                     };
                     let error = std::io::Error::last_os_error();
-                    let preserved =
-                        self.preserve_displaced(&displaced, t, &relative.to_string_lossy(), side)?;
+                    let preserved = self.preserve_displaced(
+                        &displaced,
+                        t,
+                        &relative.to_string_lossy(),
+                        side,
+                        if ok != 0 { expected_destination } else { None },
+                    )?;
                     ensure!(ok != 0, "Atomic replacement failed: {error}");
                     ensure!(
                         preserved.as_deref() == expected_destination,
@@ -323,6 +328,7 @@ mod tests {
         let t = Task {
             a,
             b,
+            history_enabled: false,
             ..Task::default()
         };
         e.save_task(&t).unwrap();
@@ -343,5 +349,31 @@ mod tests {
         let v = e.versions(&t.id).unwrap();
         assert_eq!(v.len(), 1);
         assert_eq!(fs::read(&v[0].stored).unwrap(), b"racing precious bytes");
+    }
+    #[test]
+    fn unexpected_displaced_bytes_are_rescued_even_when_history_is_off() {
+        let d = tempfile::tempdir().unwrap();
+        let a = d.path().join("A");
+        let b = d.path().join("B");
+        fs::create_dir(&a).unwrap();
+        fs::create_dir(&b).unwrap();
+        let mut e = Engine::open(&d.path().join("state")).unwrap();
+        let t = Task {
+            a,
+            b,
+            history_enabled: false,
+            ..Task::default()
+        };
+        e.save_task(&t).unwrap();
+        let displaced = t.b.join(".foldersync-displaced-fixture");
+        fs::write(&displaced, "unreviewed concurrent edit").unwrap();
+        e.preserve_displaced(&displaced, &t, "file", "B", Some("reviewed-old-digest"))
+            .unwrap();
+        let versions = e.versions(&t.id).unwrap();
+        assert_eq!(versions.len(), 1);
+        assert_eq!(
+            fs::read(&versions[0].stored).unwrap(),
+            b"unreviewed concurrent edit"
+        );
     }
 }

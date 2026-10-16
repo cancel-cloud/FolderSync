@@ -26,7 +26,7 @@ export function operationLabel(operation: Operation, language: string) {
     Create: ["Create file", "Datei erstellen"],
     Update: ["Update file", "Datei aktualisieren"],
     Mkdir: ["Create folder", "Ordner erstellen"],
-    DeleteToTrash: ["Protected removal", "Geschützt entfernen"],
+    DeleteToTrash: ["Remove entry", "Eintrag entfernen"],
     Move: ["Verified move", "Geprüft verschieben"],
     Conflict: ["Conflict", "Konflikt"],
     Ignore: ["Ignore this run", "Diesen Lauf überspringen"],

@@ -1133,7 +1133,7 @@ test("settings exposes version information separately from local data", async ()
   expect(screen.getByRole("heading", { name: "Local data" })).toBeTruthy();
   await user.click(screen.getByRole("tab", { name: "Version" }));
   expect(
-    screen.getByRole("heading", { name: "FolderSync 0.1.5" }),
+    screen.getByRole("heading", { name: "FolderSync 0.1.6" }),
   ).toBeTruthy();
   expect(screen.queryByRole("heading", { name: "Local data" })).toBeNull();
   expect(screen.getByText(/Automatic updates are not configured/)).toBeTruthy();
@@ -1267,6 +1267,40 @@ test("German deletion label uses intact umlauts", async () => {
   expect(
     screen.getByRole("checkbox", { name: "Löschungen automatisch übernehmen" }),
   ).toBeTruthy();
+});
+
+test("unsaved task shows a draft ID hint and versioning can be disabled before saving", async () => {
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks" || command === "statuses") return [];
+    return null;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "New task" }));
+  expect(
+    (screen.getByRole("textbox", { name: "Task ID" }) as HTMLInputElement)
+      .placeholder,
+  ).toBe("Automatic when saved");
+  expect(
+    screen.getByText("Not saved yet. No backup folder has been assigned."),
+  ).toBeTruthy();
+  expect(
+    screen.queryByRole("button", { name: "Open backup folder" }),
+  ).toBeNull();
+  expect(screen.queryByText(/Saving never changes files/)).toBeNull();
+  const toggle = screen.getByRole("checkbox", {
+    name: "Keep file versions",
+  }) as HTMLInputElement;
+  expect(toggle.checked).toBe(true);
+  await user.click(toggle);
+  expect(
+    (
+      screen.getByRole("spinbutton", {
+        name: "Versions per matching file",
+      }) as HTMLInputElement
+    ).disabled,
+  ).toBe(true);
+  expect(screen.getByText(/Existing versions remain available/)).toBeTruthy();
 });
 
 test("bulk deletion failure is visible and preserves the selected task", async () => {

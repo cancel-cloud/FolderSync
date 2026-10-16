@@ -345,6 +345,20 @@ export default function App() {
     }
   }
   function storageLocation(selectedTask?: Task | null) {
+    if (
+      selectedTask &&
+      page === "editor" &&
+      !tasks.some((t) => t.id === selectedTask.id)
+    ) {
+      return (
+        <p className="hint">
+          {tr(
+            "Not saved yet. No backup folder has been assigned.",
+            "Noch nicht gespeichert. Es ist noch kein Sicherungsordner zugeordnet.",
+          )}
+        </p>
+      );
+    }
     return (
       <div className="storage-location">
         <div>
@@ -437,8 +451,8 @@ export default function App() {
           "Automatische Entfernung aktivieren?",
         ),
         body: tr(
-          `Future automatic runs may remove up to ${snapshot.deletion_policy.max_entries} entries and ${snapshot.deletion_policy.max_percent}% of the indexed common baseline per run, only when deletion is proven. A: ${snapshot.a}. B: ${snapshot.b}. Protected versions are retained. Unproven removals and Move require review.`,
-          `Künftige automatische Läufe dürfen je Lauf bis zu ${snapshot.deletion_policy.max_entries} Einträge und ${snapshot.deletion_policy.max_percent}% des indizierten gemeinsamen Ausgangszustands entfernen, sofern die Entfernung nachgewiesen ist. A: ${snapshot.a}. B: ${snapshot.b}. Geschützte Versionen bleiben erhalten. Unbelegte Entfernungen und Verschieben erfordern Prüfung.`,
+          `Future automatic runs may remove up to ${snapshot.deletion_policy.max_entries} entries and ${snapshot.deletion_policy.max_percent}% of the indexed common baseline per run, only when deletion is proven. A: ${snapshot.a}. B: ${snapshot.b}. ${snapshot.history_enabled !== false ? "Old file contents are retained according to the version policy." : "File versioning is OFF: removed contents normally cannot be restored."} Unproven removals and Move require review.`,
+          `Künftige automatische Läufe dürfen je Lauf bis zu ${snapshot.deletion_policy.max_entries} Einträge und ${snapshot.deletion_policy.max_percent}% des indizierten gemeinsamen Ausgangszustands entfernen, sofern die Entfernung nachgewiesen ist. A: ${snapshot.a}. B: ${snapshot.b}. ${snapshot.history_enabled !== false ? "Bisherige Inhalte werden gemäß Versionsregel aufbewahrt." : "Dateiversionen sind AUS: Entfernte Inhalte können normalerweise nicht wiederhergestellt werden."} Unbelegte Entfernungen und Verschieben erfordern Prüfung.`,
         ),
         action: saveTask,
       });
@@ -516,8 +530,8 @@ export default function App() {
           "Geschützte Version wiederherstellen?",
         ),
         body: tr(
-          `Destination: ${p.target_root}/${v.path}. Current: ${meta(p.current)}. Restore: ${v.digest.slice(0, 16)}. The current version will also be protected.`,
-          `Ziel: ${p.target_root}/${v.path}. Aktuell: ${meta(p.current)}. Wiederherstellen: ${v.digest.slice(0, 16)}. Die aktuelle Version wird ebenfalls geschützt.`,
+          `Destination: ${p.target_root}/${v.path}. Current: ${meta(p.current)}. Restore: ${v.digest.slice(0, 16)}. ${task?.history_enabled !== false ? "The current version will also be protected." : "File versioning is OFF. The current contents will be overwritten without keeping a normal recovery copy."}`,
+          `Ziel: ${p.target_root}/${v.path}. Aktuell: ${meta(p.current)}. Wiederherstellen: ${v.digest.slice(0, 16)}. ${task?.history_enabled !== false ? "Die aktuelle Version wird ebenfalls geschützt." : "Dateiversionen sind AUS. Der aktuelle Inhalt wird ohne normale Wiederherstellungskopie überschrieben."}`,
         ),
         action: async () => {
           await perform(async () => {
@@ -1206,7 +1220,14 @@ export default function App() {
                     <input
                       value={task.identifier || ""}
                       aria-label={tr("Task ID", "Aufgaben-ID")}
-                      placeholder={task.id}
+                      placeholder={
+                        tasks.some((t) => t.id === task.id)
+                          ? task.id
+                          : tr(
+                              "Automatic when saved",
+                              "Automatisch beim Speichern",
+                            )
+                      }
                       onChange={(e) => patch({ identifier: e.target.value })}
                     />
                     <small>
@@ -1215,6 +1236,14 @@ export default function App() {
                         "Eindeutig unter aktiven Aufgaben. Leer lassen für eine automatische ID.",
                       )}
                     </small>
+                    {!tasks.some((t) => t.id === task.id) && (
+                      <small>
+                        {tr(
+                          "Draft: the internal ID is reserved now; the task is created only when you save it.",
+                          "Entwurf: Die interne Kennung ist bereits reserviert. Die Aufgabe wird erst beim Speichern angelegt.",
+                        )}
+                      </small>
+                    )}
                   </label>
                   <label>
                     {tr("Group", "Gruppe")}
@@ -1268,8 +1297,8 @@ export default function App() {
                 <p className="hint">
                   <ShieldCheck size={15} />
                   {tr(
-                    "Same, nested and unsafe folder pairs are rejected. No files change when you save.",
-                    "Gleiche und verschachtelte Ordner werden abgelehnt. Speichern ändert keine Dateien.",
+                    "Same, nested and unsafe folder pairs are rejected.",
+                    "Gleiche und verschachtelte Ordner werden abgelehnt.",
                   )}
                 </p>
               </section>
@@ -1408,8 +1437,8 @@ export default function App() {
                 </div>
                 <p>
                   {tr(
-                    "Only enable monitoring after reviewing a successful first run. Removals require manual review unless proven baseline deletion is explicitly enabled below.",
-                    "Überwachung erst nach geprüftem Erstlauf aktivieren. Entfernungen erfordern manuelle Prüfung, sofern nachgewiesene Ausgangszustands-Entfernung unten nicht ausdrücklich freigegeben ist.",
+                    "Run once: Save task → Preview / Start → review and Apply. For ongoing sync, enable monitoring below. It starts after saving, reacts to changes on both sides after the waiting time, and needs FolderSync running in the tray. Schedules can run in addition. Monitoring starts off so you can check your folders and first run before allowing background changes.",
+                    "Einmal starten: Aufgabe speichern → Vorschau / Start → prüfen und ausführen. Für laufenden Abgleich unten die Überwachung aktivieren. Sie startet nach dem Speichern, reagiert nach der Wartezeit auf Änderungen beider Seiten und benötigt FolderSync im Infobereich. Ein Zeitplan kann zusätzlich laufen. Anfangs ist die Überwachung aus, damit du Ordner und Erstlauf prüfen kannst, bevor Änderungen im Hintergrund erfolgen.",
                   )}
                 </p>
                 <div className="checks">
@@ -1548,17 +1577,14 @@ export default function App() {
                 </p>
                 <p>
                   {tr(
-                    "Removed/replaced file contents are protected here, separately for this task. Restore them from Details → Protected versions. These are recovery copies, not a third synchronized folder.",
-                    "Entfernte/ersetzte Dateiinhalte werden hier je Aufgabe gesichert. Wiederherstellen unter Details → Geschützte Versionen. Dies sind Sicherungskopien, kein dritter Sync-Ordner.",
+                    task.history_enabled !== false
+                      ? "Removed/replaced file contents are saved according to File versions below. Restore from Details → Protected versions."
+                      : "File versioning is OFF. Normally, removed/replaced file contents cannot be restored by FolderSync.",
+                    task.history_enabled !== false
+                      ? "Entfernte/ersetzte Dateiinhalte werden gemäß Dateiversionen unten gesichert. Wiederherstellen unter Details → Geschützte Versionen."
+                      : "Dateiversionen sind AUS. Entfernte/ersetzte Inhalte können dann normalerweise nicht mit FolderSync wiederhergestellt werden.",
                   )}
                 </p>
-                {storageLocation(task)}
-                <small>
-                  {tr(
-                    "Older flat backup files remain available through the recovery catalog. Retention applies: matching files keep the configured number of versions, others one; empty directories store no file content.",
-                    "Ältere Sicherungen ohne Aufgaben-Unterordner bleiben über die Wiederherstellung verfügbar. Aufbewahrung: passende Dateien behalten die eingestellte Versionszahl, andere eine; leere Ordner enthalten keine zu sichernden Dateiinhalte.",
-                  )}
-                </small>
                 <label className="check-row">
                   <input
                     type="checkbox"
@@ -1626,8 +1652,8 @@ export default function App() {
                 </div>
                 <small>
                   {tr(
-                    "Protected recovery copies remain outside both roots. Unproven deletions, Move and exceeded limits wait for review. Enabling this policy does not itself enable monitoring or schedules.",
-                    "Geschützte Wiederherstellungskopien bleiben außerhalb beider Ordner. Unbelegte Entfernungen, Verschieben und überschrittene Grenzen warten auf Prüfung. Diese Freigabe aktiviert weder Überwachung noch Zeitpläne.",
+                    "Unproven deletions, Move and exceeded limits wait for review. File recovery depends on the version setting below. Enabling deletion does not enable monitoring or schedules.",
+                    "Unbelegte Entfernungen, Verschieben und überschrittene Grenzen warten auf Prüfung. Die Wiederherstellung hängt von der Einstellung für Dateiversionen unten ab. Diese Freigabe aktiviert weder Überwachung noch Zeitpläne.",
                   )}
                 </small>
               </section>
@@ -1775,13 +1801,36 @@ export default function App() {
                 </p>
               </section>
               <section className="panel">
-                <h2>{tr("Recovery", "Wiederherstellung")}</h2>
+                <h2>
+                  {tr(
+                    "File versions & recovery",
+                    "Dateiversionen & Wiederherstellung",
+                  )}
+                </h2>
                 <p>
                   {tr(
-                    "Replaced and deleted files are protected outside both folders.",
-                    "Ersetzte und gelöschte Dateien werden außerhalb beider Ordner geschützt.",
+                    "Optional file history: before overwriting or deleting a file during sync, keep its previous contents outside A/B. Example: after replacing a drawing, its previous revision can be restored via Tasks → Details → Protected versions. This does not synchronize a third folder.",
+                    "Optionaler Dateiverlauf: Vor dem Überschreiben oder Löschen beim Abgleich den bisherigen Inhalt außerhalb von A/B aufbewahren. Beispiel: Nach dem Ersetzen einer Zeichnung kannst du die vorige Fassung unter Aufgaben → Details → Geschützte Versionen zurückholen. Dies synchronisiert keinen dritten Ordner.",
                   )}
                 </p>
+                <label className="check-row">
+                  <input
+                    type="checkbox"
+                    checked={task.history_enabled !== false}
+                    onChange={(e) =>
+                      patch({ history_enabled: e.target.checked })
+                    }
+                  />
+                  {tr("Keep file versions", "Dateiversionen aufbewahren")}
+                </label>
+                {task.history_enabled === false && (
+                  <p className="hint">
+                    {tr(
+                      "Existing versions remain available. New normal overwrites and deletions keep no recovery version. Verified staging still applies; interrupted or unexpected replacements can leave emergency recovery copies.",
+                      "Vorhandene Versionen bleiben verfügbar. Bei neuen normalen Überschreibungen und Löschungen wird keine Wiederherstellungsversion behalten. Übertragungen bleiben geprüft; nach Abbrüchen oder unerwarteten Änderungen können Notfallkopien erhalten bleiben.",
+                    )}
+                  </p>
+                )}
                 {storageLocation(task)}
                 <div className="form-grid">
                   <label>
@@ -1790,6 +1839,7 @@ export default function App() {
                       "Verlaufsmuster (leer = alle Dateien)",
                     )}
                     <textarea
+                      disabled={task.history_enabled === false}
                       value={task.history_patterns.join("\n")}
                       onChange={(e) =>
                         patch({ history_patterns: lines(e.target.value) })
@@ -1805,6 +1855,7 @@ export default function App() {
                       type="number"
                       min={1}
                       max={1000}
+                      disabled={task.history_enabled === false}
                       value={task.history_cap}
                       onChange={(e) =>
                         patch({ history_cap: Number(e.target.value) })
@@ -1812,12 +1863,14 @@ export default function App() {
                     />
                   </label>
                 </div>
-                <p className="hint">
-                  {tr(
-                    "After successful runs this cap applies to matching files. Other files retain one recovery version.",
-                    "Nach erfolgreichen Läufen gilt diese Anzahl für passende Dateien. Andere Dateien behalten eine Wiederherstellungsversion.",
-                  )}
-                </p>
+                {task.history_enabled !== false && (
+                  <p className="hint">
+                    {tr(
+                      "After successful runs this cap applies to matching files. Other files retain one recovery version.",
+                      "Nach erfolgreichen Läufen gilt diese Anzahl für passende Dateien. Andere Dateien behalten eine Wiederherstellungsversion.",
+                    )}
+                  </p>
+                )}
               </section>
             </>
           )}
@@ -1861,8 +1914,8 @@ export default function App() {
                             "Geprüfte Aktionen anwenden?",
                           ),
                           body: tr(
-                            `${summary.copies} transfers, ${summary.deletes} removals, ${summary.conflicts} unresolved conflicts. Existing versions will be protected. This changes files in the selected folders.`,
-                            `${summary.copies} Übertragungen, ${summary.deletes} Entfernungen, ${summary.conflicts} offene Konflikte. Bestehende Versionen werden geschützt. Dateien in den ausgewählten Ordnern werden geändert.`,
+                            `${summary.copies} transfers, ${summary.deletes} removals, ${summary.conflicts} unresolved conflicts. ${plan.task.history_enabled !== false ? "Previous contents will be retained according to the version policy." : "File versioning is OFF: overwritten/deleted contents normally cannot be restored."} This changes files in the selected folders.`,
+                            `${summary.copies} Übertragungen, ${summary.deletes} Entfernungen, ${summary.conflicts} offene Konflikte. ${plan.task.history_enabled !== false ? "Bisherige Inhalte werden gemäß Versionsregel aufbewahrt." : "Dateiversionen sind AUS: Überschriebene/gelöschte Inhalte können normalerweise nicht wiederhergestellt werden."} Dateien in den ausgewählten Ordnern werden geändert.`,
                           ),
                           action: async () => {
                             await perform(async () => {
@@ -2218,8 +2271,8 @@ export default function App() {
                   </h1>
                   <p>
                     {tr(
-                      "Protected versions remain available after deleting a task. Restoring does not restart synchronization or restore its baseline.",
-                      "Geschützte Versionen bleiben nach dem Löschen einer Aufgabe verfügbar. Wiederherstellung aktiviert weder Synchronisation noch Ausgangszustand erneut.",
+                      "This page lists saved files from deleted tasks. For an active task, use Tasks → Details → Protected versions. Choose a version and review its destination before restoring; synchronization is not restarted.",
+                      "Hier findest du gesicherte Dateien gelöschter Aufgaben. Bei einer aktiven Aufgabe: Aufgaben → Details → Geschützte Versionen. Eine Version auswählen, Ziel prüfen und wiederherstellen; die Synchronisation wird dadurch nicht gestartet.",
                     )}
                   </p>
                 </div>
@@ -2343,8 +2396,12 @@ export default function App() {
                 {versions.length === 0 ? (
                   <p>
                     {tr(
-                      "No protected versions yet.",
-                      "Noch keine geschützten Versionen.",
+                      task?.history_enabled === false
+                        ? "Version retention is off. Existing versions, if any, remain available."
+                        : "No protected versions yet.",
+                      task?.history_enabled === false
+                        ? "Versionsaufbewahrung ist aus. Bereits vorhandene Versionen bleiben verfügbar."
+                        : "Noch keine geschützten Versionen.",
                     )}
                   </p>
                 ) : (

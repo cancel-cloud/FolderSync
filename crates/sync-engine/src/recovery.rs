@@ -115,6 +115,7 @@ impl Engine {
         t: &Task,
         relative: &str,
         side: &str,
+        reviewed_discard: Option<&str>,
     ) -> Result<Option<String>> {
         let mut m = Metrics::default();
         let digest = match std::fs::symlink_metadata(path) {
@@ -129,6 +130,17 @@ impl Engine {
             Err(e) => return Err(e.into()),
         };
         if let Some(digest) = &digest {
+            // History OFF discards only the exact reviewed bytes after a
+            // successful atomic replacement. Unexpected bytes and recovery
+            // after interruption are always rescued rather than guessed away.
+            if !t.history_enabled && reviewed_discard == Some(digest.as_str()) {
+                std::fs::remove_file(path)?;
+                self.index.db.execute(
+                    "DELETE FROM displaced WHERE path=?",
+                    [path.to_string_lossy().as_ref()],
+                )?;
+                return Ok(Some(digest.clone()));
+            }
             // The planned old version was normally protected before staging.
             // Reuse a verified copy rather than consuming the retention cap twice.
             let already_protected = self.versions(&t.id)?.iter().any(|v| {
@@ -203,11 +215,14 @@ impl Engine {
             );
             let rel = path.strip_prefix(std::fs::canonicalize(root)?)?;
             crate::fs::safe_path(root, &rel.to_string_lossy())?;
-            self.preserve_displaced(&path, &t, &relative, &side)?;
+            self.preserve_displaced(&path, &t, &relative, &side, None)?;
         }
         Ok(())
     }
     pub(crate) fn cleanup_versions(&self, t: &Task) -> Result<()> {
+        if !t.history_enabled {
+            return Ok(()); // Switching OFF never erases existing recovery data.
+        }
         let matcher = crate::fs::Matcher::new(&Scope {
             include: t.history_patterns.clone(),
             ..Scope::default()
