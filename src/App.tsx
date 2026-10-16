@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open, save } from "@tauri-apps/plugin-dialog";
-import { enable, disable, isEnabled } from "@tauri-apps/plugin-autostart";
 import {
   ArrowLeft,
   ArrowLeftRight,
@@ -233,7 +232,7 @@ export default function App() {
       invoke<TaskStatus[]>("statuses"),
       invoke<string>("storage"),
       invoke<string | null>("setting", { key: "language" }),
-      isEnabled(),
+      invoke<boolean>("startup_enabled"),
       invoke<string | null>("setting", { key: "notifications" }),
       invoke<string | null>("setting", { key: "log_level" }),
       invoke<string | null>("setting", { key: "close_behavior" }),
@@ -254,7 +253,7 @@ export default function App() {
             setStatuses(statuses);
             setStorage(path);
             if (language) setLang(language);
-            setStartup(enabled);
+            setStartup(Boolean(enabled));
             setNotifications(notifications !== "off");
             setLogLevel(logging || "off");
             setCloseBehavior(closing === "quit" ? "quit" : "tray");
@@ -2291,9 +2290,8 @@ export default function App() {
                     checked={startup}
                     onChange={(e) =>
                       void perform(async () => {
-                        if (e.target.checked) await enable();
-                        else await disable();
-                        setStartup(await isEnabled());
+                        await invoke("set_startup", { enabled: e.target.checked });
+                        setStartup(await invoke<boolean>("startup_enabled"));
                       })
                     }
                   />
@@ -2452,7 +2450,7 @@ export default function App() {
               "Geprüfte Übertragungen · geschützte Originale",
             )}
           </span>
-          <span>FolderSync 0.1.0</span>
+          <span>FolderSync 0.1.1</span>
         </footer>
       </div>
       {confirm && (

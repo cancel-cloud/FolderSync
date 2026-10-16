@@ -2,6 +2,10 @@ use anyhow::{Result, ensure};
 use foldersync_engine::Engine;
 use std::sync::atomic::{AtomicBool, Ordering};
 
+pub fn should_open_window(args: &[String]) -> bool {
+    !args.iter().any(|arg| arg == "--background")
+}
+
 /// Read without taking the engine lock on the window event thread.
 pub struct CloseBehavior {
     quit: AtomicBool,
@@ -30,6 +34,18 @@ impl CloseBehavior {
 mod tests {
     use super::*;
     use foldersync_engine::Engine;
+    #[test]
+    fn sign_in_launch_stays_in_tray_while_manual_relaunch_opens_the_window() {
+        assert!(!super::should_open_window(&[
+            "FolderSync.exe".into(),
+            "--background".into()
+        ]));
+        assert!(super::should_open_window(&["FolderSync.exe".into()]));
+        assert!(super::should_open_window(&[
+            "C:/--background/FolderSync.exe".into(),
+            "--background-extra".into()
+        ]));
+    }
     #[test]
     fn close_choice_defaults_to_tray_and_persists_without_changing_automation() {
         let d = tempfile::Builder::new()
