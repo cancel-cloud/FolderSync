@@ -102,6 +102,7 @@ export default function App() {
     [sort, setSort] = useState("path");
   const [settingsTab, setSettingsTab] = useState("general");
   const [taskView, setTaskView] = useState("tiles");
+  const [reconciliationMinutes, setReconciliationMinutes] = useState("1440");
   const [showFilterHelp, setShowFilterHelp] = useState(false);
   const [notificationFeedback, setNotificationFeedback] = useState("");
   const [notificationStatus, setNotificationStatus] = useState<{
@@ -257,6 +258,7 @@ export default function App() {
       invoke<string | null>("setting", { key: "log_level" }),
       invoke<string | null>("setting", { key: "close_behavior" }),
       invoke<string | null>("setting", { key: "task_view" }),
+      invoke<string | null>("setting", { key: "reconciliation_minutes" }),
     ])
       .then(
         ([
@@ -269,6 +271,7 @@ export default function App() {
           logging,
           closing,
           view,
+          reconciliation,
         ]) => {
           if (mounted) {
             setTasks(tasks);
@@ -280,6 +283,7 @@ export default function App() {
             setLogLevel(logging || "off");
             setCloseBehavior(closing === "quit" ? "quit" : "tray");
             setTaskView(view === "list" ? "list" : "tiles");
+            setReconciliationMinutes(reconciliation || "1440");
           }
         },
       )
@@ -2440,6 +2444,50 @@ export default function App() {
                         <option value="en">English</option>
                         <option value="de">Deutsch</option>
                       </select>
+                    </label>
+                    <label>
+                      {tr("Safety reconciliation", "Kontrollabgleich")}
+                      <select
+                        aria-label={tr(
+                          "Safety reconciliation",
+                          "Kontrollabgleich",
+                        )}
+                        value={reconciliationMinutes}
+                        disabled={busy}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          void perform(async () => {
+                            await invoke("set_setting", {
+                              key: "reconciliation_minutes",
+                              value,
+                            });
+                            setReconciliationMinutes(value);
+                          });
+                        }}
+                      >
+                        <option value="1440">{tr("Daily", "Täglich")}</option>
+                        <option value="360">
+                          {tr("Every 6 hours", "Alle 6 Stunden")}
+                        </option>
+                        <option value="60">{tr("Hourly", "Stündlich")}</option>
+                        <option value="10080">
+                          {tr("Weekly", "Wöchentlich")}
+                        </option>
+                        <option value="0">{tr("Off", "Aus")}</option>
+                        {!["1440", "360", "60", "10080", "0"].includes(
+                          reconciliationMinutes,
+                        ) && (
+                          <option value={reconciliationMinutes}>
+                            {reconciliationMinutes} min
+                          </option>
+                        )}
+                      </select>
+                      <small>
+                        {tr(
+                          "Additional full check for monitored tasks. Changes normally use Windows events. Restart, lost events and reconnection still require recovery; unavailable monitoring falls back to checks every 5 minutes.",
+                          "Zusätzlicher Vollvergleich überwachter Aufgaben. Änderungen werden normalerweise über Windows-Meldungen erkannt. Neustart, verlorene Meldungen und Wiederverbindung erfordern weiterhin einen Abgleich; ohne Überwachung wird alle 5 Minuten geprüft.",
+                        )}
+                      </small>
                     </label>
                     <label className="check-row">
                       <input

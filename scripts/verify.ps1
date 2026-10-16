@@ -6,6 +6,8 @@ cargo clippy --workspace --all-targets -- -D warnings
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 cargo test --workspace
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
+cargo test --manifest-path vendor/notify/Cargo.toml --lib
+if ($LASTEXITCODE) { exit $LASTEXITCODE }
 pnpm typecheck
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 pnpm lint

@@ -3,6 +3,7 @@ import { afterEach, beforeAll, expect, test, vi } from "vitest";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
+import packageInfo from "../package.json";
 import { newTask } from "./types";
 import type { Plan, Operation } from "./types";
 import { summarize, directions } from "./review";
@@ -60,6 +61,34 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
   api.listeners.clear();
+});
+
+test("safety reconciliation interval loads and persists without changing tasks", async () => {
+  api.invoke.mockImplementation(
+    async (command: string, args?: { key: string }) => {
+      if (command === "tasks" || command === "statuses") return [];
+      if (command === "setting" && args?.key === "reconciliation_minutes")
+        return "360";
+      return null;
+    },
+  );
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "Settings" }));
+  const select = await screen.findByRole("combobox", {
+    name: "Safety reconciliation",
+  });
+  expect((select as HTMLSelectElement).value).toBe("360");
+  await user.selectOptions(select, "1440");
+  await waitFor(() =>
+    expect(api.invoke).toHaveBeenCalledWith("set_setting", {
+      key: "reconciliation_minutes",
+      value: "1440",
+    }),
+  );
+  expect(
+    api.invoke.mock.calls.some(([command]) => command === "save_task"),
+  ).toBe(false);
 });
 test("startup uses native current-user registration without changing tasks", async () => {
   let enabled = false;
@@ -1034,7 +1063,9 @@ test("latest progress is visible during background work and Cancel reaches the n
     api.listeners.get("run-progress")?.({ payload: null });
   });
   expect(screen.queryByRole("progressbar")).toBeNull();
-  expect(screen.getByRole("region", { name: "Synchronization status" })).toBe(dock);
+  expect(screen.getByRole("region", { name: "Synchronization status" })).toBe(
+    dock,
+  );
   expect(screen.getByText("No active run")).toBeTruthy();
 });
 
@@ -1141,7 +1172,7 @@ test("settings exposes version information separately from local data", async ()
   expect(screen.getByRole("heading", { name: "Local data" })).toBeTruthy();
   await user.click(screen.getByRole("tab", { name: "Version" }));
   expect(
-    screen.getByRole("heading", { name: "FolderSync 0.1.8" }),
+    screen.getByRole("heading", { name: `FolderSync ${packageInfo.version}` }),
   ).toBeTruthy();
   expect(screen.queryByRole("heading", { name: "Local data" })).toBeNull();
   expect(screen.getByText(/Automatic updates are not configured/)).toBeTruthy();
