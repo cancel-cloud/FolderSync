@@ -1,5 +1,10 @@
 # QA report — 2026-10-16
 
+## Latest packaged release: 0.1.10 — live tray status
+
+173 workspace Rust tests, 8 patched dependency tests and 33 frontend tests pass, along with formatting, Clippy, TypeScript, lint, web build and the production NSIS build. Source commit `a70b5bf` adds live running/idle/paused tooltip states and localized work phase/task name through the existing independent progress sampler. The installed app was deliberately left at 0.1.9 because Computer Use showed the user's copy still running (28,758 of 35,350 entries, 8 active transfers). No stop/quit or installer execution was performed. Native Windows hover appearance has not been visually verified; Computer Use exposes no taskbar/hover surface here. See [package details and deferred installation](release-0.1.10.md).
+
+
 ## Latest incremental-monitoring release: 0.1.9
 
 170 workspace Rust tests, 8 patched-notify tests and 33 frontend tests pass, with formatting, Clippy, TypeScript, lint, frontend and NSIS production builds. The current-user installer from source `9cbe229` installed without elevation, exit 0. Computer Use verified version, saved/restored safety interval and an actual conflict-bearing disposable Preview with metadata. Two task configurations, five protected payloads and prior preferences were preserved. The steady-state 35k-per-side benchmark processed a real single-file notification through verified Apply in 337 ms excluding debounce, without full reconciliation; full equal reconciliation remains 42.008 s. Real SMB reconnection and OS sign-in remain unverified. See [release evidence and limitations](release-0.1.9.md).

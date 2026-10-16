@@ -1,0 +1,11 @@
+{
+  "installer_bytes": 4165381,
+  "installation_deferred": true,
+  "source_commit": "a70b5bf",
+  "installer_sha256": "17E3EE6D1B1ADD58B892D9650DBAB8B3BAB018C0E07731AE51FF7DFB2DAA416A",
+  "gui_observation": "28,758 / 35,350 checked entries; 8 / 8 active transfers",
+  "installed_version": "0.1.9",
+  "reason": "Existing user copy job remains active; no stop or quit was invoked",
+  "version": "0.1.10",
+  "native_hover_verified": false
+}
