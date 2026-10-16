@@ -6,20 +6,20 @@ This is a working, tested engineering release, not a claim that every acceptance
 
 Rust 1.99.1 / cargo 1.99.1, Windows MSVC Build Tools 18 (14.51 compiler), Node 24.19, pnpm 11.25, Windows WebView2 already present. The original compiler prerequisite failure was resolved by an externally supplied toolchain; the rejected installer command was never retried.
 
-Final `scripts/verify.ps1` completed with exit 0:
+Latest `scripts/verify.ps1` completed with exit 0 against runtime source `6e5b430`:
 
 | Command | Actual result |
 |---|---|
 | `cargo fmt --all -- --check` | Pass |
 | `cargo clippy --workspace --all-targets -- -D warnings` | Pass, no warnings |
-| `cargo test --workspace` | 47 tests passed, 0 failed; includes native runtime scheduling/notification routing tests |
+| `cargo test --workspace` | 91 tests passed, 0 failed; includes actual-file rename safety and native Windows event coverage |
 | `pnpm typecheck` | Pass |
 | `pnpm lint` | Pass |
-| `pnpm test` | 2 tests passed in 2 files |
+| `pnpm test` | 22 tests passed in 4 files |
 | `pnpm build` | Pass; production Vite assets generated |
 | `scripts/package.ps1` / `pnpm tauri build` | Release executable + current-user x64 NSIS installer generated |
 
-Raw command evidence is in `evidence/verification-final.txt` and `evidence/package-final.txt`. No test result is inferred from compilation.
+Current command evidence is in `evidence/verification-ambiguous-renames-full.txt` and `evidence/package-ambiguous-renames.txt`; earlier evidence is retained. No test result is inferred from compilation.
 
 ## Filesystem coverage
 
@@ -48,15 +48,15 @@ A UTF-8 write mistake truncated App.tsx during localization work. It was restore
 
 ## Benchmarks
 
-`benchmarks/latest.json` and `latest-memory.json` contain the final measured synthetic run (debug engine, local filesystem). 10,000 files per side, 1,024 bytes each, 100 folders per side. These are discovery measurements; initial fixture creation and baseline Apply are outside discovery times.
+`benchmarks/latest.json` and `latest-memory.json` contain the latest measured synthetic run against runtime source `6e5b430` (debug engine, local filesystem). 10,000 files per side, 1,024 bytes each, 100 folders per side. These are discovery measurements; initial fixture creation and baseline Apply are outside discovery times.
 
 | Phase | Wall time | Entries examined | Bytes hashed |
 |---|---:|---:|---:|
-| Initial discovery | 27,193 ms | 20,200 | 20,480,000 |
-| Single-file incremental discovery | 115 ms | 2 | 2,048 |
-| Forced full verification | 25,124 ms | 20,200 | 20,480,000 |
+| Initial discovery | 23,413 ms | 20,200 | 20,480,000 |
+| Single-file incremental discovery | 141 ms | 2 | 2,048 |
+| Forced full verification | 23,828 ms | 20,200 | 20,480,000 |
 
-Native event through Apply: 292 ms; 2 native events observed. Benchmark bypasses the configured UI debounce to isolate engine/event work. Peak working set sampled from Windows `PeakWorkingSet64`: 54,206,464 bytes; exit 0. Final engine code matches safety commit e542266; subsequent desktop logging/activation changes do not change discovery. Earlier measured runs remain with dated names for comparison, not substituted for final results. Single-file steady state demonstrably avoids sibling enumeration/rehashing. Full verification is intentionally expensive.
+Native event through Apply: **318 ms**, with 2 native events. This excludes configured UI debounce. Windows sampled peak working set: **57,102,336 bytes**, exit 0. Prior raw measurements are retained in before-ambiguous-renames files. Single-file steady state still examines only two entries and hashes 2,048 bytes; the full verification examines 20,200 entries and hashes 20,480,000 bytes.
 
 ## Packaging
 
@@ -235,3 +235,11 @@ Installed source `1df12d5`: current-user unsigned NSIS build/install exit 0, **3
 Two-way plans now retain conflicts for multiple missing baseline origins or multiple novel paths sharing baseline bytes. Both-absent old paths stay conflicted so independent Apply cannot erase rename evidence. Unique rename behavior is preserved; equal same-name renames on both sides remain unchanged. Five new actual-filesystem tests cover opposing renames, identical-content multiple mappings, approved automatic deletion remaining blocked, baseline/attention after restart, explicit Preview/Apply choices, unrelated copies, non-ambiguous duplicates and real Windows both-root rename events. Three tests failed before implementation; one post-implementation assertion incorrectly omitted the existing explicit-choice review flag, corrected by asserting rejection then reviewed Apply. Independent read-only review found no actionable issue.
 
 Full scripts/verify.ps1 completed exit 0: **91 Rust / 22 frontend tests**, fmt, Clippy with warnings denied, TypeScript, ESLint and production build (`verification-ambiguous-renames-full.txt`). Native opposing rename test passed without full reconciliation. Detection uses verified snapshots within full discovery/coalesced dirty batches, not timestamps. Rename-plus-edit and arbitrary split-batch lineage remain incomplete as documented in semantics and the acceptance audit. Installed and benchmark evidence follow.
+
+
+Installed runtime `6e5b430`: unsigned current-user NSIS build/install exit 0; **3,888,484 bytes**, SHA-256 `C488F5913A923CFEEB682AD601A4D0790F70380B2760E3D79D03F1AF32E3D829`. With all automatic triggers OFF, guarded CLI setup renamed only the owned acceptance file review-created.txt differently on A/B after checking equal hashes and a non-null common baseline. Actual GUI Preview displayed three new localized rename conflicts plus the established from-a.txt conflict, zero proposed copies/removals. File/SQLite checks proved neither cross-copy existed and the old baseline was preserved.
+
+Computer Use selected A→B for rename-left.txt and B→A for rename-right.txt. Each selection revised Preview only; both new destinations remained absent. An initial read-only verifier sorted by created alone and selected an earlier revision sharing the original discovery timestamp; using the actual displayed run ID passed. Production history already orders created DESC,rowid DESC. Separate Apply/Confirm made four byte-identical renamed files across A/B, retained the both-absent old baseline and left Attention. Fresh Preview showed zero transfers/removals and only the unrelated conflict. Separate Apply confirmed that reconciliation, tombstoned the now-unambiguous old path and retained only the from-a.txt conflict with unchanged hashes. Screenshots: installed-ambiguous-rename-preview/reconciled.png; raw checks: rename-gui-*.json. Both active tasks remain manual, startup OFF and close preference tray. A helper geometry-unavailable input was rejected and recovered through current-window selection and screenshot observation. No company data was accessed. Benchmark rerun follows while GUI work is idle.
+
+
+Benchmark after installed GUI work became idle completed exit 0 for source `6e5b430`: 10,000 files per side at 1,024 bytes, 100 folders per side. Initial **23,413 ms**, incremental **141 ms**, forced full **23,828 ms**; examined entries **20,200 / 2 / 20,200**, hashed bytes **20,480,000 / 2,048 / 20,480,000**. Native event through Apply **318 ms**, 2 events, excluding debounce; peak working set **57,102,336 bytes**. The incremental acceptance condition passes after ambiguity analysis. Raw latest files and benchmark-ambiguous-renames.txt contain actual measurements; prior source-205f4c8 results are retained under before-ambiguous-renames names.

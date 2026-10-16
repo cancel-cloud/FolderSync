@@ -1,0 +1,10 @@
+{
+  "source_commit": "6e5b430",
+  "run_id": "39551273-0e95-41f2-b63a-ab3ad4cfafa1",
+  "operations": {
+    "rename-left.txt": "CopyToB",
+    "rename-right.txt": "CopyToA",
+    "review-created.txt": "Conflict"
+  },
+  "no_cross_copies": true
+}

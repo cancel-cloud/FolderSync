@@ -1,0 +1,50 @@
+{
+  "source_commit": "6e5b430",
+  "run_id": "05919f5e-8157-4c9a-8ec9-d025b28aefc3",
+  "status": "Preview",
+  "operations": [
+    {
+      "path": "rename-left.txt",
+      "action": "Conflict",
+      "kind": "Conflict",
+      "reason": "Ambiguous rename candidates share baseline content; originals preserved until explicit review",
+      "status": "Planned",
+      "a": {
+        "path": "rename-left.txt",
+        "digest": "0d6698292beb959b0e5fc1c089db42f5511bc70e7d5b4ead84c495df64e1180e",
+        "directory": false,
+        "size": 46,
+        "mtime_ns": "1792155611002126700",
+        "file_id": "4241541576:1245184:2858609"
+      },
+      "b": null
+    },
+    {
+      "path": "rename-right.txt",
+      "action": "Conflict",
+      "kind": "Conflict",
+      "reason": "Ambiguous rename candidates share baseline content; originals preserved until explicit review",
+      "status": "Planned",
+      "a": null,
+      "b": {
+        "path": "rename-right.txt",
+        "digest": "0d6698292beb959b0e5fc1c089db42f5511bc70e7d5b4ead84c495df64e1180e",
+        "directory": false,
+        "size": 46,
+        "mtime_ns": "1792155611002126700",
+        "file_id": "4241541576:1835008:2858596"
+      }
+    },
+    {
+      "path": "review-created.txt",
+      "action": "Conflict",
+      "kind": "Conflict",
+      "reason": "Ambiguous rename candidates share baseline content; originals preserved until explicit review",
+      "status": "Planned",
+      "a": null,
+      "b": null
+    }
+  ],
+  "baseline_preserved": true,
+  "no_cross_copies": true
+}
