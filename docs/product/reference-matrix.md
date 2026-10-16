@@ -26,7 +26,7 @@ Reference files live in `../syncfolders-research/` and remain untouched. Their v
 
 | Feature | Implementation and actual proof | Remaining gap |
 |---|---|---|
-| Tasks/picker | Rust persistent tasks + native Tauri dialog; Computer Use created pair, picked A, saved/restarted/configured; management import tests | Established roots/mode require fresh task; task IDs internal UUID |
+| Tasks/picker | Rust persistent tasks + native Tauri dialog; Computer Use created pair, picked A, saved/restarted/configured; management import tests | Established roots/mode require fresh task; editable public IDs with stable internal UUID; task_identifiers tests cover baseline/history/restart/import semantics |
 | Four modes | Pure classifier plus real executor; planner/integration/windows_paths tests | Real SMB modes pending |
 | Preview/conflict | Immutable plans, resolve returns a new plan; GUI filesystem snapshots before/after selection; App.test.tsx proves no Apply until Confirm | Broad GUI deletion matrix pending |
 | Deletion/root loss | Common baseline, protected versions, guarded deletion, nonrecursive directories; integration + safety + review_safety tests | Local ACL-denied nested enumeration is tested; partial SMB enumeration fault matrix pending; manual removals require review; opted-in baseline-proven automatic deletion has per-run entry/percentage limits, tested with real native events |

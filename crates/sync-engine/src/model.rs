@@ -34,6 +34,8 @@ pub struct Scope {
 #[serde(default)]
 pub struct Task {
     pub id: String,
+    /// User-editable identifier; empty uses the immutable internal UUID.
+    pub identifier: String,
     pub name: String,
     pub a: PathBuf,
     pub b: PathBuf,
@@ -54,6 +56,7 @@ impl Default for Task {
     fn default() -> Self {
         Self {
             id: uuid::Uuid::new_v4().to_string(),
+            identifier: String::new(),
             name: "New task".into(),
             a: PathBuf::new(),
             b: PathBuf::new(),

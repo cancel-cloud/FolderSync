@@ -129,6 +129,29 @@ impl Engine {
         ensure!(!t.name.trim().is_empty(), "Name is required");
         ensure!(uuid::Uuid::parse_str(&t.id).is_ok(), "Invalid task ID");
         ensure!(
+            t.identifier == t.identifier.trim()
+                && t.identifier.chars().count() <= 64
+                && !t.identifier.chars().any(char::is_control),
+            "Task identifier must be at most 64 characters without surrounding whitespace or control characters"
+        );
+        let identifier = if t.identifier.is_empty() {
+            &t.id
+        } else {
+            &t.identifier
+        }
+        .to_lowercase();
+        ensure!(
+            !self.tasks()?.iter().any(|other| other.id != t.id
+                && (if other.identifier.is_empty() {
+                    &other.id
+                } else {
+                    &other.identifier
+                })
+                .to_lowercase()
+                    == identifier),
+            "Task identifier is already in use"
+        );
+        ensure!(
             !self.index.db.query_row(
                 "SELECT EXISTS(SELECT 1 FROM recovery_tasks WHERE id=?)",
                 [&t.id],
@@ -903,8 +926,26 @@ impl Engine {
         ensure!(value["schema"] == 1, "Unsupported schema");
         let mut tasks: Vec<Task> = serde_json::from_value(value["tasks"].clone())?;
         ensure!(tasks.len() <= 1000, "Too many tasks");
+        let mut identifiers: BTreeSet<String> = self
+            .tasks()?
+            .iter()
+            .map(|t| {
+                (if t.identifier.is_empty() {
+                    &t.id
+                } else {
+                    &t.identifier
+                })
+                .to_lowercase()
+            })
+            .collect();
         for t in &mut tasks {
             t.id = uuid::Uuid::new_v4().to_string();
+            if !t.identifier.is_empty() && !identifiers.insert(t.identifier.to_lowercase()) {
+                t.identifier.clear();
+            }
+            if t.identifier.is_empty() {
+                identifiers.insert(t.id.to_lowercase());
+            }
             t.monitor = false;
             t.login = false;
             t.schedule = Schedule::default();

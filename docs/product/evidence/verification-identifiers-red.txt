@@ -1,0 +1,24 @@
+   Compiling foldersync-engine v0.1.0 (C:\Users\Lukas\Developer\SyncFolders\crates\sync-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.02s
+     Running tests\task_identifiers.rs (target\debug\deps\task_identifiers-61c22f42801f10a6.exe)
+
+running 1 test
+test editable_identifiers_preserve_baselines_and_history_and_reject_duplicates ... FAILED
+
+failures:
+
+---- editable_identifiers_preserve_baselines_and_history_and_reject_duplicates stdout ----
+
+thread 'editable_identifiers_preserve_baselines_and_history_and_reject_duplicates' (23932) panicked at crates\sync-engine\tests\task_identifiers.rs:19:5:
+assertion `left == right` failed
+  left: Null
+ right: "CAD-東京-02"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    editable_identifiers_preserve_baselines_and_history_and_reject_duplicates
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+error: test failed, to rerun pass `-p foldersync-engine --test task_identifiers`

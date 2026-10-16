@@ -853,6 +853,7 @@ export default function App() {
                                 </div>
                                 <div className="task-title">
                                   <h2>{t.name}</h2>
+                                  <small>ID: {t.identifier || t.id}</small>
                                   <span>
                                     {modeLabels[t.mode]}
                                     {t.group && ` · ${t.group}`}
@@ -1022,6 +1023,21 @@ export default function App() {
                         "Entwicklungsarbeitsplatz",
                       )}
                     />
+                  </label>
+                  <label>
+                    {tr("Task ID", "Aufgaben-ID")}
+                    <input
+                      value={task.identifier || ""}
+                      aria-label={tr("Task ID", "Aufgaben-ID")}
+                      placeholder={task.id}
+                      onChange={(e) => patch({ identifier: e.target.value })}
+                    />
+                    <small>
+                      {tr(
+                        "Unique among active tasks. Leave blank for an automatic ID.",
+                        "Eindeutig unter aktiven Aufgaben. Leer lassen für eine automatische ID.",
+                      )}
+                    </small>
                   </label>
                   <label>
                     {tr("Group", "Gruppe")}
@@ -2044,6 +2060,7 @@ export default function App() {
                       const t = {
                         ...structuredClone(task),
                         id: crypto.randomUUID(),
+                        identifier: "",
                         name: `${task.name} ${tr("(copy)", "(Kopie)")}`,
                         monitor: false,
                         login: false,
@@ -2190,8 +2207,8 @@ export default function App() {
                 <h2>{tr("Import & export", "Import & Export")}</h2>
                 <p>
                   {tr(
-                    "FolderSync versioned JSON only. Imported automatic triggers are disabled.",
-                    "Nur versioniertes FolderSync-JSON. Importierte automatische Auslöser werden deaktiviert.",
+                    "FolderSync versioned JSON only. Imported automatic triggers are disabled. Duplicate task IDs receive a new automatic ID.",
+                    "Nur versioniertes FolderSync-JSON. Importierte automatische Auslöser werden deaktiviert. Doppelte Aufgaben-IDs erhalten eine neue automatische ID.",
                   )}
                 </p>
                 <div className="toolbar">
