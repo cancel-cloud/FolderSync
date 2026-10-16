@@ -15,7 +15,7 @@ Checkpoint: 2026-10-16, after source `88c18c2` and the subsequent progress/cance
 | Local/USB/UNC root validation and identity | filesystem/windows_paths/windows_safety tests; native identity checks | Local/junction/Unicode/long paths verified; physical USB and real SMB pending |
 | Unsafe pair/task overlap rejection | validate_roots/save_task guards and tests, including login-only triggers in either save order | Automatic intersecting roots rejected; exhaustive alias/reparse races pending |
 | Four real modes | planner/integration/windows_paths tests with actual files | Verified local modes; broader GUI per-mode matrix pending |
-| Two-way edit/edit, delete/edit, concurrent creates and deletion baseline | integration/automation/review_safety tests, actual GUI conflict preservation | Verified tested cases; simple rename and delayed/duplicate queued-event regressions pass; ambiguous rename detection remains incomplete |
+| Two-way edit/edit, delete/edit, concurrent creates and deletion baseline | integration/automation/review_safety tests, actual GUI conflict preservation | Verified tested cases; simple rename and delayed/duplicate queued-event regressions pass; content-preserving ambiguous rename conflicts now implemented; full verification/installed evidence pending; rename-plus-edit and split-batch lineage incomplete |
 | Immutable Preview/Apply and stale inputs | filesystem tests, frontend confirmation tests, installed 300-file Preview proof | Verified principal boundary |
 | Distinct typed operations and reasons/directions | Action enum, PlanSummary, paged operation table and per-side totals | Typed kinds and explicit per-run Ignore verified by 84 Rust/17 frontend tests and installed Create/Mkdir/Update/Ignore/Apply safety in 205f4c8 |
 | Destructive review and mass-delete protection | Manual exact-plan approval; opt-in automatic common-baseline deletion with entry/percentage limits and root/scope-bound manual proof | Verified automated baseline/limits/race/native events and installed opt-in, hidden-window debounce deletion, protected bytes and exceeded-limit review in 2575c0f |
@@ -40,7 +40,7 @@ Checkpoint: 2026-10-16, after source `88c18c2` and the subsequent progress/cance
 
 ## Mandatory test gaps to close
 
-- Complete ambiguous/concurrent rename detection and regressions beyond the verified simple rename, delayed queued notifications and timestamp-preserving edit cases. Actual Windows SYSTEM matching is verified.
+- Complete rename-plus-edit/split-batch lineage; content-preserving ambiguous/opposing rename conflicts have targeted actual-file evidence, with full/native/installed verification pending. Actual Windows SYSTEM matching is verified.
 - Exercise additional installed failure modes beyond the verified progress/Stop/cancel and successful retry workflow.
 - Verify every remaining required task-management control; deleted-task recovery is now verified; do not equate internal UUIDs or group labels with completed management features.
 - Extend approved automatic deletion testing to specifically authorized disposable SMB/physical USB roots when available; local baseline, threshold and hidden-window workflows pass.

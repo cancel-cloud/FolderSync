@@ -62,6 +62,8 @@ export function statusLabel(status: string, language: string): string {
   return statuses[status] || status;
 }
 const reasons: Record<string, string> = {
+  "Ambiguous rename candidates share baseline content; originals preserved until explicit review":
+    "Mehrdeutige Umbenennungen haben denselben Ausgangsinhalt. Originale bleiben bis zur ausdrücklichen Prüfung erhalten.",
   "Explicit ignore for this run; conflict remains unresolved":
     "Für diesen Lauf ausdrücklich übersprungen; der Konflikt bleibt offen.",
   "Both originals preserved; conflict remains unresolved":

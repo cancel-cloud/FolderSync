@@ -8,6 +8,7 @@ mod logging;
 mod model;
 mod progress;
 mod recovery;
+mod renames;
 mod review;
 pub mod scheduler;
 mod transfer;
