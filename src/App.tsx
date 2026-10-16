@@ -104,11 +104,14 @@ export default function App() {
   const [settingsTab, setSettingsTab] = useState("general");
   const [taskView, setTaskView] = useState("tiles");
   const [showFilterHelp, setShowFilterHelp] = useState(false);
+  const [notificationFeedback, setNotificationFeedback] = useState("");
   const [notificationStatus, setNotificationStatus] = useState<{
     app_enabled: boolean;
     app_id: string;
     windows_setting: string;
     windows_error?: string | null;
+    banners?: boolean | null;
+    presentation?: string;
   } | null>(null);
   const [progress, setProgress] = useState<RunProgress | null>(null);
   const [failedPlanId, setFailedPlanId] = useState("");
@@ -341,6 +344,43 @@ export default function App() {
       setBusy(false);
     }
   }
+  function storageLocation(selectedTask?: Task | null) {
+    return (
+      <div className="storage-location">
+        <div>
+          {selectedTask && (
+            <strong>
+              {tr("Task ID: ", "Aufgaben-ID: ")}
+              {selectedTask.identifier || selectedTask.id}
+            </strong>
+          )}
+          <code>
+            {storage}
+            {selectedTask ? "\\versions" : ""}
+          </code>
+        </div>
+        <Button
+          variant="outline"
+          disabled={busy || !storage}
+          aria-label={
+            selectedTask
+              ? tr("Open backup folder", "Sicherungsordner öffnen")
+              : tr("Open local data folder", "Lokalen Datenordner öffnen")
+          }
+          onClick={() =>
+            void perform(async () => {
+              await invoke("open_storage", {
+                taskId: selectedTask?.id ?? null,
+              });
+            })
+          }
+        >
+          <FolderOpen size={16} />
+          {tr("Open", "Öffnen")}
+        </Button>
+      </div>
+    );
+  }
   function navigate(next: string) {
     if (page === "editor" && task && JSON.stringify(task) !== original) {
       setConfirm({
@@ -547,18 +587,6 @@ export default function App() {
             {tr("Recovery", "Wiederherstellung")}
           </button>
         </nav>
-        <div className="aside-bottom">
-          <ShieldCheck size={18} />
-          <p>
-            {tr(
-              "Your files stay on your computer.",
-              "Ihre Dateien bleiben auf Ihrem Computer.",
-            )}
-            <small>
-              {tr("No account. No telemetry.", "Kein Konto. Keine Telemetrie.")}
-            </small>
-          </p>
-        </div>
       </aside>
       <div className="workspace">
         <header>
@@ -635,7 +663,7 @@ export default function App() {
             <span className="status-dot" />
             {paused
               ? tr("Automation paused", "Automatik pausiert")
-              : tr("Engine ready", "Engine bereit")}
+              : tr("Ready to sync", "Bereit zum Synchronisieren")}
             <Button
               variant="ghost"
               aria-label={tr(
@@ -1523,9 +1551,7 @@ export default function App() {
                     "Entfernte/ersetzte Dateiinhalte werden hier je Aufgabe gesichert. Wiederherstellen unter Details → Geschützte Versionen. Dies sind Sicherungskopien, kein dritter Sync-Ordner.",
                   )}
                 </p>
-                <code className="storage-path">
-                  {storage}\versions\{task.id}
-                </code>
+                {storageLocation(task)}
                 <small>
                   {tr(
                     "Older flat backup files remain available through the recovery catalog. Retention applies: matching files keep the configured number of versions, others one; empty directories store no file content.",
@@ -1550,7 +1576,7 @@ export default function App() {
                   />
                   {tr(
                     "Propagate proven deletions automatically",
-                    "L�schungen automatisch �bernehmen",
+                    "Löschungen automatisch übernehmen",
                   )}
                 </label>
                 <div className="form-grid">
@@ -1755,9 +1781,7 @@ export default function App() {
                     "Ersetzte und gelöschte Dateien werden außerhalb beider Ordner geschützt.",
                   )}
                 </p>
-                <code className="storage-path">
-                  {storage}\versions\{task?.id}
-                </code>
+                {storageLocation(task)}
                 <div className="form-grid">
                   <label>
                     {tr(
@@ -2314,9 +2338,7 @@ export default function App() {
                   <ShieldCheck size={20} />
                   {tr("Protected versions", "Geschützte Versionen")}
                 </h2>
-                <code className="storage-path">
-                  {storage}\versions\{task?.id}
-                </code>
+                {storageLocation(task)}
                 {versions.length === 0 ? (
                   <p>
                     {tr(
@@ -2509,27 +2531,71 @@ export default function App() {
                           "Banner und Ton hängen zusätzlich von den Windows-Benachrichtigungseinstellungen und „Nicht stören“ ab. FolderSync fordert eine hörbare Benachrichtigung an; Windows kann sie unterdrücken.",
                         )}
                       </p>
-                      <Button
-                        variant="outline"
-                        disabled={busy || !notifications}
-                        onClick={() =>
-                          void perform(async () => {
-                            await invoke("send_test_notification");
-                            setMessage(
-                              tr(
-                                "Test request sent to Windows. Check the notification center if no banner appears.",
-                                "Testbenachrichtigung gesendet. Falls kein Banner erscheint, das Windows-Benachrichtigungscenter prüfen.",
-                              ),
-                            );
-                          })
-                        }
-                      >
-                        {tr(
-                          "Send test notification",
-                          "Testbenachrichtigung senden",
+                      {notificationStatus?.banners === false && (
+                        <p role="status">
+                          {tr(
+                            "Windows has disabled banners for FolderSync. Enable banners in Windows settings.",
+                            "Windows hat Banner für FolderSync deaktiviert. Banner in den Windows-Einstellungen aktivieren.",
+                          )}
+                        </p>
+                      )}
+                      {notificationStatus?.presentation &&
+                        !["available", "unknown"].includes(
+                          notificationStatus.presentation,
+                        ) && (
+                          <p>
+                            {tr(
+                              "Windows reports a presentation or busy state; banners can be suppressed.",
+                              "Windows meldet einen Beschäftigt- oder Präsentationszustand; Banner können unterdrückt werden.",
+                            )}
+                          </p>
                         )}
-                      </Button>
+                      <div className="toolbar">
+                        <Button
+                          variant="outline"
+                          onClick={() =>
+                            void perform(async () => {
+                              await invoke("open_notification_settings");
+                            })
+                          }
+                        >
+                          {tr(
+                            "Windows notification settings",
+                            "Windows-Benachrichtigungseinstellungen",
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          disabled={busy || !notifications}
+                          onClick={() =>
+                            void perform(async () => {
+                              await invoke("send_test_notification");
+                              setNotificationStatus(
+                                await invoke<typeof notificationStatus>(
+                                  "notification_status",
+                                ),
+                              );
+                              setNotificationFeedback(
+                                tr(
+                                  "Test request sent to Windows. Check the notification center if no banner appears.",
+                                  "Testbenachrichtigung gesendet. Falls kein Banner erscheint, das Windows-Benachrichtigungscenter prüfen.",
+                                ),
+                              );
+                            })
+                          }
+                        >
+                          {tr(
+                            "Send test notification",
+                            "Testbenachrichtigung senden",
+                          )}
+                        </Button>
+                      </div>
                     </div>
+                    {notificationFeedback && (
+                      <p role="status" className="notification-feedback">
+                        {notificationFeedback}
+                      </p>
+                    )}
                     <label>
                       {tr(
                         "Local operation logging",
@@ -2637,41 +2703,43 @@ export default function App() {
                   </section>
                   <section className="panel">
                     <h2>{tr("Local data", "Lokale Daten")}</h2>
-                    <code className="storage-path">{storage}</code>
+                    {storageLocation()}
                     <p>
                       {tr(
                         "SQLite state and protected versions are stored here. No telemetry or cloud services are used.",
                         "SQLite-Zustand und geschützte Versionen liegen hier. Keine Telemetrie oder Cloud-Dienste.",
                       )}
                     </p>
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        void perform(async () =>
-                          setLogText(await invoke<string>("logs")),
-                        )
-                      }
-                    >
-                      {tr(
-                        "View recent local log",
-                        "Letztes lokales Protokoll anzeigen",
+                    <div className="toolbar local-data-actions">
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          void perform(async () =>
+                            setLogText(await invoke<string>("logs")),
+                          )
+                        }
+                      >
+                        {tr(
+                          "View recent local log",
+                          "Letztes lokales Protokoll anzeigen",
+                        )}
+                      </Button>
+                      {logText !== null && (
+                        <pre className="local-log">
+                          {logText ||
+                            tr(
+                              "No operation log yet. Enable logging, then apply a plan.",
+                              "Noch kein Protokoll. Protokollierung aktivieren und einen Plan anwenden.",
+                            )}
+                        </pre>
                       )}
-                    </Button>
-                    {logText !== null && (
-                      <pre className="local-log">
-                        {logText ||
-                          tr(
-                            "No operation log yet. Enable logging, then apply a plan.",
-                            "Noch kein Protokoll. Protokollierung aktivieren und einen Plan anwenden.",
-                          )}
-                      </pre>
-                    )}
-                    <Button
-                      variant="outline"
-                      onClick={() => void invoke("quit")}
-                    >
-                      {tr("Quit FolderSync", "FolderSync beenden")}
-                    </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => void invoke("quit")}
+                      >
+                        {tr("Quit FolderSync", "FolderSync beenden")}
+                      </Button>
+                    </div>
                   </section>
                 </div>
               ) : (

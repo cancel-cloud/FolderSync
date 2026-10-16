@@ -1133,7 +1133,7 @@ test("settings exposes version information separately from local data", async ()
   expect(screen.getByRole("heading", { name: "Local data" })).toBeTruthy();
   await user.click(screen.getByRole("tab", { name: "Version" }));
   expect(
-    screen.getByRole("heading", { name: "FolderSync 0.1.2" }),
+    screen.getByRole("heading", { name: "FolderSync 0.1.3" }),
   ).toBeTruthy();
   expect(screen.queryByRole("heading", { name: "Local data" })).toBeNull();
   expect(screen.getByText(/Automatic updates are not configured/)).toBeTruthy();
@@ -1197,6 +1197,12 @@ test("filter examples are placeholders and local help preserves an unsaved draft
     name: "Include files",
   }) as HTMLTextAreaElement;
   expect(include.placeholder).toContain("*.step");
+  expect(include.placeholder).toBe("*.step, *.stp");
+  expect(
+    screen
+      .getByRole("textbox", { name: "Exclude folders" })
+      .getAttribute("placeholder"),
+  ).toBe(".git, node_modules, Archive");
   expect(include.value).toBe("");
   await user.type(
     screen.getByRole("textbox", { name: "Task name" }),
@@ -1213,9 +1219,54 @@ test("filter examples are placeholders and local help preserves an unsaved draft
     (screen.getByRole("textbox", { name: "Task name" }) as HTMLInputElement)
       .value,
   ).toBe("Draft pair unsaved");
+  expect(screen.getAllByText(/Task ID:/).length).toBeGreaterThan(0);
+  await user.click(
+    screen.getAllByRole("button", { name: "Open backup folder" })[0],
+  );
+  expect(api.invoke).toHaveBeenCalledWith("open_storage", { taskId: task.id });
+});
+
+test("test-notification feedback stays in Settings and storage can be opened", async () => {
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks" || command === "statuses") return [];
+    if (command === "storage") return "C:/owned/FolderSync";
+    return null;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  expect(await screen.findByText("Ready to sync")).toBeTruthy();
+  expect(screen.queryByText("Your files stay on your computer.")).toBeNull();
+  await user.click(screen.getByRole("button", { name: "Settings" }));
+  await user.click(
+    screen.getByRole("button", { name: "Open local data folder" }),
+  );
+  expect(api.invoke).toHaveBeenCalledWith("open_storage", { taskId: null });
+  await user.click(
+    screen.getByRole("button", { name: "Send test notification" }),
+  );
+  expect(await screen.findByText(/Test request sent to Windows/)).toBeTruthy();
+  await user.click(screen.getByRole("button", { name: /Tasks/ }));
+  expect(screen.queryByText(/Test request sent to Windows/)).toBeNull();
+});
+
+test("German deletion label uses intact umlauts", async () => {
+  const task = { ...newTask(), name: "Owned", a: "A", b: "B" };
+  api.invoke.mockImplementation(
+    async (command: string, args?: { key: string }) => {
+      if (command === "tasks") return [task];
+      if (command === "statuses") return [];
+      if (command === "setting" && args?.key === "language") return "de";
+      return null;
+    },
+  );
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(
+    await screen.findByRole("button", { name: "Konfigurieren" }),
+  );
   expect(
-    screen.getAllByText("C:/owned/FolderSync\\versions\\" + task.id).length,
-  ).toBeGreaterThan(0);
+    screen.getByRole("checkbox", { name: "Löschungen automatisch übernehmen" }),
+  ).toBeTruthy();
 });
 
 test("bulk deletion failure is visible and preserves the selected task", async () => {
