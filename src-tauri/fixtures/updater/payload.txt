@@ -1,0 +1,1 @@
+FolderSync updater signature verification fixture

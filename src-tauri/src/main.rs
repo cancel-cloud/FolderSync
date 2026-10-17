@@ -20,6 +20,7 @@ mod reconciliation;
 mod startup;
 mod storage_location;
 mod tray_status;
+mod updates;
 fn command_error(error: &anyhow::Error) -> String {
     if error.is::<foldersync_engine::Cancelled>() {
         "[FolderSync:Cancelled]".into()
@@ -299,6 +300,8 @@ fn main() {
         std::process::exit(if result.is_ok() { 0 } else { 1 });
     }
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .manage(updates::Updates::default())
         .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
             if !lifecycle::should_open_window(&args) {
                 return;
@@ -371,6 +374,7 @@ fn main() {
                 de,
             );
             background::start(app.handle().clone(), app.state::<Runtime>().inner().clone());
+            updates::start(app.handle().clone());
             if lifecycle::should_open_window(&std::env::args().collect::<Vec<_>>())
                 && let Some(w) = app.get_webview_window("main")
             {
@@ -401,6 +405,9 @@ fn main() {
             notification_status::notification_status,
             notification_status::send_test_notification,
             notification_status::open_notification_settings,
+            updates::update_status,
+            updates::check_update,
+            updates::install_update,
             open_storage,
             disable_tasks,
             delete_tasks,

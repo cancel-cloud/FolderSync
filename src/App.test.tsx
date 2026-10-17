@@ -1175,7 +1175,9 @@ test("settings exposes version information separately from local data", async ()
     screen.getByRole("heading", { name: `FolderSync ${packageInfo.version}` }),
   ).toBeTruthy();
   expect(screen.queryByRole("heading", { name: "Local data" })).toBeNull();
-  expect(screen.getByText(/Automatic updates are not configured/)).toBeTruthy();
+  expect(
+    screen.getByRole("button", { name: "Check for updates" }),
+  ).toBeTruthy();
 });
 
 test("tile and list views retain selection and bulk delete requires its own confirmation", async () => {
@@ -1504,4 +1506,92 @@ test("failed problems-only save preserves its previous selection", async () => {
       }) as HTMLInputElement
     ).checked,
   ).toBe(true);
+});
+
+test("update indicator opens Version with release notes and installs only on explicit click", async () => {
+  const update = {
+    current_version: "0.1.11",
+    available: {
+      version: "0.1.12",
+      notes: "Fixes and improvements\n<script>untrusted</script>",
+    },
+    checking: false,
+    installing: false,
+    downloaded: 0,
+    total: null,
+    error: null,
+  };
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks" || command === "statuses") return [];
+    if (command === "update_status" || command === "check_update")
+      return update;
+    return null;
+  });
+  const user = userEvent.setup();
+  const { container } = render(<App />);
+  const indicator = await screen.findByRole("button", {
+    name: "Update available: 0.1.12",
+  });
+  expect(
+    container.querySelector(".settings-nav-row")?.contains(indicator),
+  ).toBe(true);
+  expect(
+    api.invoke.mock.calls.some(([command]) => command === "install_update"),
+  ).toBe(false);
+  await user.click(indicator);
+  expect(
+    (
+      screen.getByRole("tab", { name: "Version" }) as HTMLButtonElement
+    ).getAttribute("aria-selected"),
+  ).toBe("true");
+  expect(screen.getByText(/<script>untrusted<\/script>/)).toBeTruthy();
+  expect(container.querySelector(".release-notes script")).toBeNull();
+  await act(async () => {
+    api.listeners.get("run-progress")?.({
+      payload: {
+        task_id: "task",
+        run_id: "run",
+        phase: "Transferring",
+        completed_entries: 0,
+        total_entries: 1,
+        path: "fixture.txt",
+        file_bytes: 0,
+        file_total: 10,
+        active_transfers: 1,
+        max_transfers: 4,
+      },
+    });
+  });
+  expect(
+    (screen.getByRole("button", { name: "Install now" }) as HTMLButtonElement)
+      .disabled,
+  ).toBe(true);
+  await act(async () => api.listeners.get("run-progress")?.({ payload: null }));
+  await user.click(screen.getByRole("button", { name: "Install now" }));
+  await waitFor(() =>
+    expect(api.invoke).toHaveBeenCalledWith("install_update", {
+      version: "0.1.12",
+    }),
+  );
+});
+
+test("update check errors stay in Version and never create an update indicator", async () => {
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks" || command === "statuses") return [];
+    if (command === "update_status") return null;
+    if (command === "check_update") throw new Error("GitHub unavailable");
+    return null;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "Settings" }));
+  await user.click(screen.getByRole("tab", { name: "Version" }));
+  await user.click(screen.getByRole("button", { name: "Check for updates" }));
+  expect(await screen.findByText(/GitHub unavailable/)).toBeTruthy();
+  expect(
+    screen.queryByRole("button", { name: /Update available:/ }),
+  ).toBeNull();
+  expect(
+    api.invoke.mock.calls.some(([command]) => command === "install_update"),
+  ).toBe(false);
 });

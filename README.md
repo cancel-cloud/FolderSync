@@ -26,7 +26,7 @@ Native event through Apply took 340 ms before the configured debounce; peak work
 
 ## Install and run
 
-Download the [Windows x64 installer from release 0.1.11](https://github.com/cancel-cloud/FolderSync/releases/tag/v0.1.11). For local builds, run `target\release\bundle\nsis\FolderSync_0.1.11_x64-setup.exe`. The NSIS installer targets the current user, with no service or administrator requirement. Microsoft Edge WebView2 Runtime is required; the Tauri installer can provision it when missing. This machine already has it. No signing certificate is configured.
+Download the [Windows x64 installer from release 0.1.12](https://github.com/cancel-cloud/FolderSync/releases/tag/v0.1.12). For local builds, run `target\release\bundle\nsis\FolderSync_0.1.12_x64-setup.exe`. The NSIS installer targets the current user, with no service or administrator requirement. Microsoft Edge WebView2 Runtime is required; the Tauri installer can provision it when missing. This machine already has it. No signing certificate is configured.
 
 The optional installer checkbox **Start FolderSync in the tray when I sign in** registers only the current account. It is unchecked for a new install. Silent installation supports `/S /STARTUP=1` or `/S /STARTUP=0`; omitting the option preserves an existing registration. Settings offers the same option. Sign-in uses the quoted installed executable with `--background`, loads saved configuration and leaves the window hidden. Installing or enabling startup does not enable any task, watch, schedule or deletion policy. Previously enabled task triggers still run when FolderSync starts. Uninstall removes its sign-in entry and retains saved data unless you explicitly request removal.
 
@@ -35,6 +35,8 @@ Create a task with two existing writable folders, choose the direction, then Pre
 Closing the window leaves the process running in the tray by default. Settings can instead make Close stop work safely and quit; unsaved task drafts require confirmation. Reopen with the shortcut or executable; single-instance handling shows the existing window. Quit from Settings or the tray stops the process. Triggers are off on new/imported/duplicated tasks. Only enable monitoring after checking the first manual result.
 
 ## Implemented
+
+Release 0.1.12 adds opt-in installation of signed updates from GitHub Releases and defaults background notifications to failures/problems only. Update signatures are separate from Windows publisher signing; the Windows installer remains unsigned.
 
 Release 0.1.11 fixes numeric editing throughout the app: clear an existing number before typing a replacement, without an inserted zero. Leaving a field empty restores its last value; existing numeric limits and defaults remain unchanged.
 
@@ -80,4 +82,4 @@ The dashboard offers persistent Tiles/List views. Selecting tasks exposes Disabl
 
 Settings → General offers a separate **Only notify about failures or problems** preference, enabled by default for both new and existing configurations. It suppresses successful background-sync notifications while keeping failures, conflicts, required reviews and retention-cleanup warnings eligible for alerts. The Windows notifications master switch still disables all automatic notifications. The explicit test-notification button remains available when notifications are enabled.
 
-Settings → Version shows the installed version; an automatic updater is not configured. Notification delivery now requests the default Windows sound. Settings shows Windows delivery permission and offers a test notification. Banner display, sound suppression and Do not disturb remain Windows-controlled; a successful send does not prove a banner appeared. No OS notification/privacy settings are changed by the application.
+Settings → Version shows the installed version and GitHub update status. FolderSync checks at startup and every six hours. A small update button beside Settings appears only for a newer release and opens its release notes. **Install now** explicitly downloads, verifies a version-bound updater signature, then installs only when synchronization is idle. Failures leave the installed files in place. Versions through 0.1.11 need one manual upgrade to gain the updater. [Update architecture, signing-key backup and release procedure](docs/product/github-updates.md). Notification delivery now requests the default Windows sound. Settings shows Windows delivery permission and offers a test notification. Banner display, sound suppression and Do not disturb remain Windows-controlled; a successful send does not prove a banner appeared. No OS notification/privacy settings are changed by the application.

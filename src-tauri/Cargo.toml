@@ -23,7 +23,9 @@ uuid = "1"
 rusqlite = { version = "0.40", features = ["bundled"] }
 windows = { version = "0.62.2", features = ["UI_Notifications"] }
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_Diagnostics_ToolHelp", "Win32_UI_Shell"] }
+tauri-plugin-updater = "2.14.0"
 
 [dev-dependencies]
+tauri = { version = "2", features = ["test"] }
 tempfile = "3"
 

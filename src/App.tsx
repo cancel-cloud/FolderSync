@@ -16,11 +16,13 @@ import {
   Pause,
   Square,
   FileClock,
+  Download,
 } from "lucide-react";
 import { PathPair } from "./components/path-pair";
 import { Confirmation } from "./components/ui/confirmation";
 import { Button } from "./components/ui/button";
 import { NumberInput } from "./components/ui/number-input";
+import { useAppUpdates, UpdatePanel } from "./components/app-updates";
 import type {
   Task,
   Mode,
@@ -69,6 +71,7 @@ const lines = (s: string) =>
     .map((x) => x.trim())
     .filter(Boolean);
 export default function App() {
+  const updates = useAppUpdates();
   const [tasks, setTasks] = useState<Task[]>([]),
     [statuses, setStatuses] = useState<TaskStatus[]>([]),
     [page, setPage] = useState("dashboard"),
@@ -601,13 +604,36 @@ export default function App() {
             <FileClock size={18} />
             {tr("Recovery", "Wiederherstellung")}
           </button>
-          <button
-            className={`settings-nav ${page === "settings" ? "active" : ""}`}
-            onClick={() => navigate("settings")}
-          >
-            <Settings size={18} />
-            {tr("Settings", "Einstellungen")}
-          </button>
+          <div className="settings-nav-row">
+            <button
+              className={`settings-nav ${page === "settings" ? "active" : ""}`}
+              onClick={() => navigate("settings")}
+            >
+              <Settings size={18} />
+              {tr("Settings", "Einstellungen")}
+            </button>
+            {updates.status?.available && (
+              <button
+                className="update-indicator"
+                aria-label={
+                  tr("Update available", "Update verfügbar") +
+                  ": " +
+                  updates.status.available.version
+                }
+                title={
+                  tr("Update available", "Update verfügbar") +
+                  ": " +
+                  updates.status.available.version
+                }
+                onClick={() => {
+                  setSettingsTab("version");
+                  navigate("settings");
+                }}
+              >
+                <Download size={17} />
+              </button>
+            )}
+          </div>
         </nav>
       </aside>
       <div className="workspace">
@@ -2782,13 +2808,15 @@ export default function App() {
                   id="settings-panel-version"
                   aria-labelledby="settings-tab-version"
                 >
-                  <h2>FolderSync {packageInfo.version}</h2>
-                  <p>
-                    {tr(
-                      "Installed application version. Automatic updates are not configured yet; this section is reserved for future update integration.",
-                      "Installierte Anwendungsversion. Automatische Updates sind noch nicht eingerichtet; dieser Bereich ist für die spätere Integration vorgesehen.",
-                    )}
-                  </p>
+                  <h2>
+                    FolderSync{" "}
+                    {updates.status?.current_version || packageInfo.version}
+                  </h2>
+                  <UpdatePanel
+                    updates={updates}
+                    lang={lang}
+                    active={busy || !!progress}
+                  />
                   <p>
                     {tr(
                       "Windows x64 · Rust / Tauri 2 · unsigned build",

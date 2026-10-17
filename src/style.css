@@ -1096,3 +1096,57 @@ header {
   color: #627086;
   font-size: 12px;
 }
+
+.settings-nav-row {
+  margin-top: auto;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  min-width: 0;
+}
+nav .settings-nav-row .settings-nav {
+  flex: 1;
+  min-width: 0;
+  margin-top: 0;
+  padding-left: 6px;
+  padding-right: 6px;
+  gap: 6px;
+}
+nav .update-indicator {
+  flex: 0 0 32px;
+  width: 32px;
+  padding: 10px 7px;
+  background: #285b50;
+  color: #baf1e5;
+  justify-content: center;
+}
+nav .update-indicator:hover {
+  background: #347465;
+}
+.app-updates {
+  display: grid;
+  gap: 14px;
+  justify-items: start;
+}
+.app-updates > p {
+  margin: 0;
+}
+.update-offer {
+  width: 100%;
+  display: grid;
+  gap: 14px;
+}
+.update-offer h3,
+.update-offer h4 {
+  margin: 0;
+}
+.release-notes {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 16px;
+  border: 1px solid #dce3eb;
+  border-radius: 8px;
+  background: #f5f7fa;
+  max-height: 360px;
+  overflow-y: auto;
+}
