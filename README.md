@@ -26,7 +26,7 @@ Native event through Apply took 340 ms before the configured debounce; peak work
 
 ## Install and run
 
-Run `target\release\bundle\nsis\FolderSync_0.1.10_x64-setup.exe`. The NSIS installer targets the current user, with no service or administrator requirement. Microsoft Edge WebView2 Runtime is required; the Tauri installer can provision it when missing. This machine already has it. No signing certificate is configured.
+Download the [Windows x64 installer from the first public release, 0.1.10](https://github.com/cancel-cloud/FolderSync/releases/tag/v0.1.10). For local builds, run `target\release\bundle\nsis\FolderSync_0.1.10_x64-setup.exe`. The NSIS installer targets the current user, with no service or administrator requirement. Microsoft Edge WebView2 Runtime is required; the Tauri installer can provision it when missing. This machine already has it. No signing certificate is configured.
 
 The optional installer checkbox **Start FolderSync in the tray when I sign in** registers only the current account. It is unchecked for a new install. Silent installation supports `/S /STARTUP=1` or `/S /STARTUP=0`; omitting the option preserves an existing registration. Settings offers the same option. Sign-in uses the quoted installed executable with `--background`, loads saved configuration and leaves the window hidden. Installing or enabling startup does not enable any task, watch, schedule or deletion policy. Previously enabled task triggers still run when FolderSync starts. Uninstall removes its sign-in entry and retains saved data unless you explicitly request removal.
 
@@ -74,6 +74,6 @@ Current data folder: `%APPDATA%\FolderSync`; application identifier: `dev.lukas.
 
 The dashboard offers persistent Tiles/List views. Selecting tasks exposes Disable/Delete in the header. Disable turns off automatic triggers and clears pending automatic work; manual Preview stays available. Delete removes task configuration and its sync baseline after confirmation, preserving A/B files and protected recovery copies.
 
-[Filter help and examples](docs/help/filters.md) are also bundled in the app. Empty-field examples are placeholders, never active settings. The repository has no remote URL yet; see [TODO.md](TODO.md).
+[Filter help and examples](docs/help/filters.md) are also bundled in the app. Empty-field examples are placeholders, never active settings. The public repository is [cancel-cloud/FolderSync](https://github.com/cancel-cloud/FolderSync). Adding an external repository link to the in-app help button remains tracked in [TODO.md](TODO.md).
 
 Settings → Version shows the installed version; an automatic updater is not configured. Notification delivery now requests the default Windows sound. Settings shows Windows delivery permission and offers a test notification. Banner display, sound suppression and Do not disturb remain Windows-controlled; a successful send does not prove a banner appeared. No OS notification/privacy settings are changed by the application.
