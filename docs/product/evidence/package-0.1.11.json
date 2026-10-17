@@ -1,0 +1,19 @@
+{
+  "version": "0.1.11",
+  "installer_bytes": 4162891,
+  "installer_sha256": "6E3B5262F2A83BE090AFDF139682C48C292A0ACFD6B2D58AA6A7D6CB7F9EDF0A",
+  "installer_exit_code": 0,
+  "source_commit": "44b4dcd",
+  "installed_payload_bytes": 16940544,
+  "installed_payload_difference_offsets": [
+    12589842,
+    12589843,
+    12589844
+  ],
+  "gui_verified": [
+    "20 -> empty -> 5; retained on blur",
+    "0 -> empty; restored to 0 on blur",
+    "Settings version 0.1.11",
+    "unsaved test draft discarded; saved task count remains 3"
+  ]
+}
