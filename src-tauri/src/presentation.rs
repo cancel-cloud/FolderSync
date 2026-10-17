@@ -1,4 +1,4 @@
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum NoticeKind {
     Success,
     Review,
@@ -43,7 +43,7 @@ pub fn notice(de: bool, kind: NoticeKind, name: &str, pending: u64) -> (String, 
         (true, NoticeKind::Review) => (
             "FolderSync — Prüfung erforderlich",
             format!(
-                "{name}: {pending} offene Konflikte oder zu prüfende Entfernungen. Aufgabe zur Prüfung öffnen."
+                "{name}: Prüfung oder Nacharbeiten erforderlich. {pending} offene Konflikte. Details öffnen."
             ),
         ),
         (true, NoticeKind::Failure) => (
@@ -59,7 +59,7 @@ pub fn notice(de: bool, kind: NoticeKind, name: &str, pending: u64) -> (String, 
         (false, NoticeKind::Review) => (
             "FolderSync — review required",
             format!(
-                "{name}: {pending} pending conflicts or removals requiring review. Open the task to inspect."
+                "{name}: review or follow-up required. {pending} pending conflicts. Open Details to inspect."
             ),
         ),
         (false, NoticeKind::Failure) => (

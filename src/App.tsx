@@ -94,6 +94,7 @@ export default function App() {
     [approved, setApproved] = useState(false),
     [startup, setStartup] = useState(false),
     [notifications, setNotifications] = useState(true),
+    [notificationProblemsOnly, setNotificationProblemsOnly] = useState(true),
     [logLevel, setLogLevel] = useState("off"),
     [closeBehavior, setCloseBehavior] = useState("tray"),
     [logText, setLogText] = useState<string | null>(null),
@@ -260,6 +261,7 @@ export default function App() {
       invoke<string | null>("setting", { key: "close_behavior" }),
       invoke<string | null>("setting", { key: "task_view" }),
       invoke<string | null>("setting", { key: "reconciliation_minutes" }),
+      invoke<string | null>("setting", { key: "notification_problems_only" }),
     ])
       .then(
         ([
@@ -273,6 +275,7 @@ export default function App() {
           closing,
           view,
           reconciliation,
+          problemsOnly,
         ]) => {
           if (mounted) {
             setTasks(tasks);
@@ -281,6 +284,7 @@ export default function App() {
             if (language) setLang(language);
             setStartup(Boolean(enabled));
             setNotifications(notifications !== "off");
+            setNotificationProblemsOnly(problemsOnly !== "off");
             setLogLevel(logging || "off");
             setCloseBehavior(closing === "quit" ? "quit" : "tray");
             setTaskView(view === "list" ? "list" : "tiles");
@@ -2521,6 +2525,27 @@ export default function App() {
                       {tr(
                         "Windows notifications",
                         "Windows-Benachrichtigungen",
+                      )}
+                    </label>
+                    <label className="check-row">
+                      <input
+                        type="checkbox"
+                        checked={notificationProblemsOnly}
+                        disabled={busy}
+                        onChange={(e) => {
+                          const value = e.target.checked;
+                          void perform(async () => {
+                            await invoke("set_setting", {
+                              key: "notification_problems_only",
+                              value: value ? "on" : "off",
+                            });
+                            setNotificationProblemsOnly(value);
+                          });
+                        }}
+                      />
+                      {tr(
+                        "Only notify about failures or problems",
+                        "Nur bei Fehlern oder Problemen benachrichtigen",
                       )}
                     </label>
                     <div className="notification-status">

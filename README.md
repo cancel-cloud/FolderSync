@@ -78,4 +78,6 @@ The dashboard offers persistent Tiles/List views. Selecting tasks exposes Disabl
 
 [Filter help and examples](docs/help/filters.md) are also bundled in the app. Empty-field examples are placeholders, never active settings. The public repository is [cancel-cloud/FolderSync](https://github.com/cancel-cloud/FolderSync). Adding an external repository link to the in-app help button remains tracked in [TODO.md](TODO.md).
 
+Settings → General offers a separate **Only notify about failures or problems** preference, enabled by default for both new and existing configurations. It suppresses successful background-sync notifications while keeping failures, conflicts, required reviews and retention-cleanup warnings eligible for alerts. The Windows notifications master switch still disables all automatic notifications. The explicit test-notification button remains available when notifications are enabled.
+
 Settings → Version shows the installed version; an automatic updater is not configured. Notification delivery now requests the default Windows sound. Settings shows Windows delivery permission and offers a test notification. Banner display, sound suppression and Do not disturb remain Windows-controlled; a successful send does not prove a banner appeared. No OS notification/privacy settings are changed by the application.

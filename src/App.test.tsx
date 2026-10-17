@@ -1426,3 +1426,82 @@ test("numeric settings can be cleared and replaced without inserting zero", asyn
   await waitFor(() => expect(task.debounce_secs).toBe(5));
   expect(task.retries).toBe(0);
 });
+
+test.each([null, "on", "off"])(
+  "problems-only notification preference defaults on and persists independently (%s)",
+  async (stored) => {
+    let preference: string | null = stored;
+    api.invoke.mockImplementation(
+      async (command: string, args?: { key: string; value: string }) => {
+        if (command === "tasks" || command === "statuses") return [];
+        if (command === "setting" && args?.key === "notification_problems_only")
+          return preference;
+        if (
+          command === "set_setting" &&
+          args?.key === "notification_problems_only"
+        )
+          preference = args.value;
+        return null;
+      },
+    );
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(await screen.findByRole("button", { name: "Settings" }));
+    const onlyProblems = screen.getByRole("checkbox", {
+      name: "Only notify about failures or problems",
+    }) as HTMLInputElement;
+    expect(onlyProblems.checked).toBe(stored !== "off");
+    await user.click(onlyProblems);
+    await waitFor(() =>
+      expect(preference).toBe(stored === "off" ? "on" : "off"),
+    );
+    expect(
+      (
+        screen.getByRole("checkbox", {
+          name: "Windows notifications",
+        }) as HTMLInputElement
+      ).checked,
+    ).toBe(true);
+    expect(
+      api.invoke.mock.calls.some(
+        ([command, args]) =>
+          command === "set_setting" && args?.key === "notifications",
+      ),
+    ).toBe(false);
+    cleanup();
+    render(<App />);
+    await user.click(await screen.findByRole("button", { name: "Settings" }));
+    expect(
+      (
+        screen.getByRole("checkbox", {
+          name: "Only notify about failures or problems",
+        }) as HTMLInputElement
+      ).checked,
+    ).toBe(preference !== "off");
+  },
+);
+
+test("failed problems-only save preserves its previous selection", async () => {
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks" || command === "statuses") return [];
+    if (command === "set_setting")
+      throw new Error("Preference storage unavailable");
+    return null;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "Settings" }));
+  await user.click(
+    screen.getByRole("checkbox", {
+      name: "Only notify about failures or problems",
+    }),
+  );
+  await screen.findByText(/Preference storage unavailable/);
+  expect(
+    (
+      screen.getByRole("checkbox", {
+        name: "Only notify about failures or problems",
+      }) as HTMLInputElement
+    ).checked,
+  ).toBe(true);
+});

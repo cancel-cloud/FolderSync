@@ -206,24 +206,25 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
                             .ok()
                             .and_then(|e| e.pending_conflicts(&t.id).ok())
                             .unwrap_or(0);
-                        let attention = pending > 0
-                            || plan.operations.iter().any(|o| o.action == Action::Conflict)
-                            || plan.status == "Review required";
+                        let kind = crate::notification_policy::plan_kind(
+                            &plan.status,
+                            pending,
+                            plan.operations.iter().any(|o| o.action == Action::Conflict),
+                        );
                         let meaningful = plan
                             .operations
                             .iter()
                             .any(|o| o.action != Action::Unchanged);
-                        if meaningful {
+                        if meaningful || kind != crate::presentation::NoticeKind::Success {
                             let _=app.emit("run-finished",serde_json::json!({"task":t.id,"run":plan.id,"status":plan.status,"time":now()}));
                             let enabled = r
                                 .engine
                                 .lock()
                                 .ok()
-                                .and_then(|e| e.setting("notifications").ok().flatten())
-                                .as_deref()
-                                != Some("off");
+                                .is_some_and(|e| crate::notification_policy::enabled(&e, kind));
                             let signature = serde_json::to_string(&(
                                 plan.status.clone(),
+                                pending,
                                 plan.operations
                                     .iter()
                                     .filter(|o| o.action != Action::Unchanged)
@@ -255,16 +256,8 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
                                     .and_then(|e| e.setting("language").ok().flatten())
                                     .as_deref()
                                     == Some("de");
-                                let (title, body) = crate::presentation::notice(
-                                    de,
-                                    if attention {
-                                        crate::presentation::NoticeKind::Review
-                                    } else {
-                                        crate::presentation::NoticeKind::Success
-                                    },
-                                    &t.name,
-                                    pending,
-                                );
+                                let (title, body) =
+                                    crate::presentation::notice(de, kind, &t.name, pending);
                                 let _ = app
                                     .notification()
                                     .builder()
@@ -293,14 +286,12 @@ pub fn start(app: tauri::AppHandle, r: Runtime) {
                             let delay = Duration::from_secs((1u64 << w.failures.min(6)) * 2);
                             w.retry_at = Instant::now() + delay;
                             w.last = Some(Instant::now());
-                        } else if r
-                            .engine
-                            .lock()
-                            .ok()
-                            .and_then(|e| e.setting("notifications").ok().flatten())
-                            .as_deref()
-                            != Some("off")
-                        {
+                        } else if r.engine.lock().ok().is_some_and(|e| {
+                            crate::notification_policy::enabled(
+                                &e,
+                                crate::presentation::NoticeKind::Failure,
+                            )
+                        }) {
                             let de = r
                                 .engine
                                 .lock()

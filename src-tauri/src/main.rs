@@ -12,6 +12,7 @@ use tauri_plugin_notification::NotificationExt;
 mod app_storage;
 mod background;
 mod lifecycle;
+mod notification_policy;
 mod notification_status;
 mod presentation;
 mod progress_runtime;
@@ -170,7 +171,9 @@ async fn set_setting(
 ) -> Result<(), String> {
     let allowed = match key.as_str() {
         "language" => ["en", "de"].contains(&value.as_str()),
-        "notifications" | "paused" => ["on", "off"].contains(&value.as_str()),
+        "notifications" | notification_policy::KEY | "paused" => {
+            ["on", "off"].contains(&value.as_str())
+        }
         "log_level" => ["off", "basic", "detailed"].contains(&value.as_str()),
         "close_behavior" => ["tray", "quit"].contains(&value.as_str()),
         "task_view" => ["tiles", "list"].contains(&value.as_str()),
