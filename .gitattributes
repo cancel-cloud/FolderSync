@@ -1,0 +1,2 @@
+# Signed fixture bytes must survive Windows line-ending conversion unchanged.
+src-tauri/fixtures/updater/payload.txt -text

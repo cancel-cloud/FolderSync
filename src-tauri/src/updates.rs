@@ -327,4 +327,38 @@ mod tests {
                 .is_err()
         );
     }
+    #[test]
+    #[ignore = "release artifact check; requires FOLDERSYNC_RELEASE_MANIFEST and FOLDERSYNC_RELEASE_INSTALLER"]
+    fn verify_packaged_release_signature_and_modified_bytes() {
+        let manifest_path =
+            std::env::var_os("FOLDERSYNC_RELEASE_MANIFEST").expect("manifest path required");
+        let installer_path =
+            std::env::var_os("FOLDERSYNC_RELEASE_INSTALLER").expect("installer path required");
+        let config: serde_json::Value =
+            serde_json::from_str(include_str!("../tauri.conf.json")).unwrap();
+        let mut context = tauri::test::mock_context(tauri::test::noop_assets());
+        context.config_mut().plugins = serde_json::from_value(config["plugins"].clone()).unwrap();
+        let app = tauri::test::mock_builder()
+            .plugin(tauri_plugin_updater::Builder::new().build())
+            .build(context)
+            .unwrap();
+        // Verify any supplied published artifact; this helper never installs it.
+        let updater = app
+            .updater_builder()
+            .version_comparator(|_, _| true)
+            .build()
+            .unwrap();
+        let manifest = serde_json::from_slice(&std::fs::read(manifest_path).unwrap()).unwrap();
+        let update = updater.restore_update(manifest).unwrap().unwrap();
+        let bytes = std::fs::read(installer_path).unwrap();
+        update.verify(&bytes).unwrap();
+        let mut modified = bytes.clone();
+        modified[0] ^= 1;
+        assert!(update.verify(&modified).is_err());
+        println!(
+            "Verified production updater signature/version {} ({} bytes); modified bytes rejected.",
+            update.version,
+            bytes.len()
+        );
+    }
 }

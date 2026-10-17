@@ -21,3 +21,13 @@ Unit tests cover official asset URL pinning, stale/double install requests, busy
 For release 0.1.12, install a local 0.1.12-rc.1 candidate carrying the same updater key, publish stable 0.1.12, then exercise the real GitHub download/verification/installation through Computer Use. The candidate is only for this local upgrade test and is not a public release. Older 0.1.11 installations require one manual upgrade because they contain no updater.
 
 References: https://tauri.app/plugin/updater/ and https://docs.rs/tauri-plugin-updater/2.14.0/tauri_plugin_updater/struct.Update.html.
+
+For a packaged release, run the explicit native artifact check before publishing:
+
+```powershell
+$env:FOLDERSYNC_RELEASE_MANIFEST = (Resolve-Path target/release/bundle/nsis/latest.json).Path
+$env:FOLDERSYNC_RELEASE_INSTALLER = (Resolve-Path target/release/bundle/nsis/FolderSync_0.1.12_x64-setup.exe).Path
+cargo test -p foldersync verify_packaged_release_signature_and_modified_bytes -- --ignored --nocapture
+```
+
+This release-only test uses the production public key, validates the authenticated version, and confirms changed installer bytes fail verification. It is intentionally excluded from normal tests because source checkouts do not contain packaged installers. It never runs the installer.
