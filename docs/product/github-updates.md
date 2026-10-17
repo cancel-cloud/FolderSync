@@ -14,11 +14,13 @@ Run `scripts/package.ps1`, then `scripts/update-manifest.ps1 -Version <stable ve
 
 Unsigned Windows installers can still trigger Norton or other antivirus products. Updater signatures authenticate our package; they do not establish Windows publisher reputation. Store/MSIX and antivirus vendor review remain tracked separately in TODO.
 
-## Verification plan
+## Verification
 
 Unit tests cover official asset URL pinning, stale/double install requests, busy-engine rejection and pause restoration. A separate non-production signing-key fixture exercises Tauri's actual verifier against genuine bytes, modified bytes and substituted version metadata. Frontend tests cover indicator placement/navigation, plaintext notes and explicit install gating/error display.
 
 For release 0.1.13, install a local 0.1.12-rc.1 candidate carrying the same updater key, publish stable 0.1.13, then exercise the real GitHub download/verification/installation through Computer Use. The candidate is only for this local upgrade test and is not a public release. Older 0.1.11 installations require one manual upgrade because they contain no updater.
+
+This upgrade was completed successfully on the development machine on 2026-10-17. See [the release verification record](release-0.1.13-verification.md) for actual results and evidence.
 
 References: https://tauri.app/plugin/updater/ and https://docs.rs/tauri-plugin-updater/2.14.0/tauri_plugin_updater/struct.Update.html.
 
