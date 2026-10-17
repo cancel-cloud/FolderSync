@@ -6,6 +6,19 @@ Var FolderSyncStartupState
 Page custom FolderSyncStartupPage FolderSyncStartupLeave
 
 Function FolderSyncStartupPage
+  ; Passive/in-app updates preserve the saved sign-in choice without another wizard page.
+  ; Hooks are included before Tauri declares its mode variables; read the flags directly.
+  ${GetParameters} $0
+  ClearErrors
+  ${GetOptions} $0 "/P" $1
+  ${IfNot} ${Errors}
+    Abort
+  ${EndIf}
+  ClearErrors
+  ${GetOptions} $0 "/UPDATE" $1
+  ${IfNot} ${Errors}
+    Abort
+  ${EndIf}
   IfSilent 0 +2
     Abort
   !insertmacro MUI_HEADER_TEXT "FolderSync startup" "Optional startup for your Windows account"

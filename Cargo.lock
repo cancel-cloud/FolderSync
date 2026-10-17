@@ -1099,7 +1099,7 @@ checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 
 [[package]]
 name = "foldersync"
-version = "0.1.12"
+version = "0.1.13"
 dependencies = [
  "anyhow",
  "dirs",
@@ -1123,7 +1123,7 @@ dependencies = [
 
 [[package]]
 name = "foldersync-engine"
-version = "0.1.12"
+version = "0.1.13"
 dependencies = [
  "anyhow",
  "blake3",

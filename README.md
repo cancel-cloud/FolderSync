@@ -26,7 +26,7 @@ Native event through Apply took 340 ms before the configured debounce; peak work
 
 ## Install and run
 
-Download the [Windows x64 installer from release 0.1.12](https://github.com/cancel-cloud/FolderSync/releases/tag/v0.1.12). For local builds, run `target\release\bundle\nsis\FolderSync_0.1.12_x64-setup.exe`. The NSIS installer targets the current user, with no service or administrator requirement. Microsoft Edge WebView2 Runtime is required; the Tauri installer can provision it when missing. This machine already has it. No signing certificate is configured.
+Download the [Windows x64 installer from release 0.1.13](https://github.com/cancel-cloud/FolderSync/releases/tag/v0.1.13). For local builds, run `target\release\bundle\nsis\FolderSync_0.1.13_x64-setup.exe`. The NSIS installer targets the current user, with no service or administrator requirement. Microsoft Edge WebView2 Runtime is required; the Tauri installer can provision it when missing. This machine already has it. No signing certificate is configured.
 
 The optional installer checkbox **Start FolderSync in the tray when I sign in** registers only the current account. It is unchecked for a new install. Silent installation supports `/S /STARTUP=1` or `/S /STARTUP=0`; omitting the option preserves an existing registration. Settings offers the same option. Sign-in uses the quoted installed executable with `--background`, loads saved configuration and leaves the window hidden. Installing or enabling startup does not enable any task, watch, schedule or deletion policy. Previously enabled task triggers still run when FolderSync starts. Uninstall removes its sign-in entry and retains saved data unless you explicitly request removal.
 
@@ -36,7 +36,7 @@ Closing the window leaves the process running in the tray by default. Settings c
 
 ## Implemented
 
-Release 0.1.12 adds opt-in installation of signed updates from GitHub Releases and defaults background notifications to failures/problems only. Update signatures are separate from Windows publisher signing; the Windows installer remains unsigned.
+Release 0.1.13 adds opt-in installation of signed updates from GitHub Releases and defaults background notifications to failures/problems only. Update signatures are separate from Windows publisher signing; the Windows installer remains unsigned.
 
 Release 0.1.11 fixes numeric editing throughout the app: clear an existing number before typing a replacement, without an inserted zero. Leaving a field empty restores its last value; existing numeric limits and defaults remain unchanged.
 
