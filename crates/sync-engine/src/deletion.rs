@@ -48,12 +48,7 @@ impl Engine {
         }))
     }
     pub(crate) fn validate_deletion_policy(&self, t: &Task) -> Result<()> {
-        let policy = &t.deletion_policy;
-        ensure!(
-            (1..=100_000).contains(&policy.max_entries) && (1..=100).contains(&policy.max_percent),
-            "Invalid automatic deletion limits"
-        );
-        if policy.enabled {
+        if t.deletion_policy.enabled {
             ensure!(
                 matches!(t.mode, Mode::TwoWay | Mode::Mirror),
                 "Automatic deletion is available only for two-way and mirror tasks; Move requires review"
@@ -84,8 +79,6 @@ impl Engine {
             reason: DeletionReason::Approved,
             entries: removals.len() as u64,
             baseline_entries: baseline_entries as u64,
-            max_entries: policy.max_entries,
-            max_percent: policy.max_percent,
             baseline_run: approval.as_ref().map(|r| r.run.clone()),
         };
         review.reason = if removals.iter().any(|o| o.action == Action::MoveToB) {
@@ -120,15 +113,6 @@ impl Engine {
             }
             if !proven {
                 DeletionReason::UnprovenDeletion
-            } else if review.entries > u64::from(policy.max_entries) {
-                DeletionReason::EntryLimit
-            } else if review.baseline_entries == 0
-                || review.entries.saturating_mul(100)
-                    > review
-                        .baseline_entries
-                        .saturating_mul(u64::from(policy.max_percent))
-            {
-                DeletionReason::PercentLimit
             } else {
                 DeletionReason::Approved
             }

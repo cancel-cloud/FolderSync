@@ -119,11 +119,7 @@ fn conflict_hold_overrides_approved_automatic_deletion_until_explicit_decision()
     let p = e.preview(&t.id).unwrap();
     e.apply(&p.id, true).unwrap();
     t = policy(&t, "Incremental", "RequireChoices");
-    t.deletion_policy = DeletionPolicy {
-        enabled: true,
-        max_entries: 20,
-        max_percent: 100,
-    };
+    t.deletion_policy = DeletionPolicy { enabled: true };
     e.save_task(&t).unwrap();
     fs::write(t.a.join("conflict"), b"left").unwrap();
     fs::write(t.b.join("conflict"), b"right").unwrap();

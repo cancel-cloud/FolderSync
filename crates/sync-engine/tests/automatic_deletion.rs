@@ -30,12 +30,8 @@ fn seed(e: &mut Engine, t: &Task) {
     let p = e.preview(&t.id).unwrap();
     e.apply(&p.id, true).unwrap();
 }
-fn enable(e: &mut Engine, t: &mut Task, max_entries: u32, max_percent: u32) {
-    t.deletion_policy = DeletionPolicy {
-        enabled: true,
-        max_entries,
-        max_percent,
-    };
+fn enable(e: &mut Engine, t: &mut Task) {
+    t.deletion_policy = DeletionPolicy { enabled: true };
     e.save_task(t).unwrap();
 }
 fn queue(e: &Engine, t: &Task, paths: &[&str]) {
@@ -60,7 +56,6 @@ fn native_path(w: &WatchService, path: &str) {
 fn automatic_baselines_do_not_substitute_for_explicit_manual_approval() {
     let (_d, mut e, mut t) = fixture(Mode::TwoWay);
     t.deletion_policy.enabled = true;
-    t.deletion_policy.max_percent = 100;
     e.save_task(&t).unwrap();
     fs::write(t.a.join("auto.txt"), "automatic baseline").unwrap();
     e.queue_paths(&t.id, &[], true).unwrap();
@@ -97,7 +92,7 @@ fn automatic_baselines_do_not_substitute_for_explicit_manual_approval() {
 fn native_both_side_deletions_are_protected_and_conflicts_still_preserve_edits() {
     let (_d, mut e, mut t) = fixture(Mode::TwoWay);
     seed(&mut e, &t);
-    enable(&mut e, &mut t, 3, 50);
+    enable(&mut e, &mut t);
     let watch = WatchService::new(&t).unwrap();
     fs::remove_file(t.a.join("f0.txt")).unwrap();
     native_path(&watch, "f0.txt");
@@ -139,63 +134,50 @@ fn native_both_side_deletions_are_protected_and_conflicts_still_preserve_edits()
     assert_eq!(e.pending_conflicts(&t.id).unwrap(), 1);
 }
 #[test]
-fn entry_and_percentage_limits_stop_batches_before_any_mutation() {
+fn proven_bulk_deletion_has_no_entry_or_percentage_cap() {
     let (_d, mut e, mut t) = fixture(Mode::TwoWay);
-    seed(&mut e, &t);
-    enable(&mut e, &mut t, 1, 100);
-    for i in 0..2 {
-        fs::remove_file(t.a.join(format!("f{i}.txt"))).unwrap();
+    for i in 0..40 {
+        fs::write(t.a.join(format!("bulk-{i}")), format!("content {i}")).unwrap();
     }
-    queue(&e, &t, &["f0.txt", "f1.txt"]);
+    let p = e.preview(&t.id).unwrap();
+    e.apply(&p.id, false).unwrap();
+    enable(&mut e, &mut t);
+    for i in 0..40 {
+        fs::remove_file(t.a.join(format!("bulk-{i}"))).unwrap();
+    }
+    e.queue_paths(&t.id, &[], true).unwrap();
     let p = e.process_queue(&t.id).unwrap().unwrap();
-    assert_eq!(p.status, "Review required");
+    assert_eq!(p.status, "Applied");
     assert_eq!(
         p.deletion_review.as_ref().unwrap().reason,
-        DeletionReason::EntryLimit
+        DeletionReason::Approved
     );
-    for i in 0..2 {
-        assert!(t.b.join(format!("f{i}.txt")).exists());
-    }
-    assert!(e.versions(&t.id).unwrap().is_empty());
-    enable(&mut e, &mut t, 20, 10);
-    queue(&e, &t, &["f0.txt", "f1.txt"]);
-    let p = e.process_queue(&t.id).unwrap().unwrap();
-    assert_eq!(
-        p.deletion_review.as_ref().unwrap().reason,
-        DeletionReason::PercentLimit
-    );
-    assert!(
-        p.deletion_review.as_ref().unwrap().entries == 2
-            && p.deletion_review.as_ref().unwrap().baseline_entries == 10
-    );
-    e.apply(&p.id, true).unwrap();
-    assert!(!t.b.join("f0.txt").exists());
+    assert_eq!(p.deletion_review.as_ref().unwrap().entries, 40);
+    assert_eq!(fs::read_dir(&t.b).unwrap().count(), 0);
+    assert_eq!(e.versions(&t.id).unwrap().len(), 40);
 }
+
 #[test]
-fn percentage_boundary_uses_known_baseline_and_whole_tree_loss_stops() {
+fn all_proven_files_may_be_removed_when_the_root_is_still_reachable() {
     let (_d, mut e, mut t) = fixture(Mode::TwoWay);
     seed(&mut e, &t);
-    enable(&mut e, &mut t, 20, 10);
-    fs::remove_file(t.a.join("f0.txt")).unwrap();
-    queue(&e, &t, &["f0.txt"]);
-    assert_eq!(e.process_queue(&t.id).unwrap().unwrap().status, "Applied");
-    for i in 1..10 {
+    enable(&mut e, &mut t);
+    for i in 0..10 {
         fs::remove_file(t.a.join(format!("f{i}.txt"))).unwrap();
     }
     e.queue_paths(&t.id, &[], true).unwrap();
     let p = e.process_queue(&t.id).unwrap().unwrap();
-    assert_eq!(p.status, "Review required");
-    assert_eq!(
-        p.deletion_review.as_ref().unwrap().reason,
-        DeletionReason::PercentLimit
-    );
-    assert_eq!(fs::read_dir(&t.b).unwrap().count(), 9);
+    assert_eq!(p.status, "Applied");
+    assert_eq!(p.deletion_review.unwrap().reason, DeletionReason::Approved);
+    assert!(t.a.is_dir() && t.b.is_dir());
+    assert_eq!(fs::read_dir(&t.b).unwrap().count(), 0);
 }
+
 #[test]
 fn mirror_extras_without_a_common_baseline_remain_manual() {
     let (_d, mut e, mut t) = fixture(Mode::Mirror);
     seed(&mut e, &t);
-    enable(&mut e, &mut t, 20, 100);
+    enable(&mut e, &mut t);
     fs::write(t.b.join("unproven.txt"), "destination only").unwrap();
     fs::remove_file(t.a.join("f0.txt")).unwrap();
     queue(&e, &t, &["unproven.txt", "f0.txt"]);
@@ -215,7 +197,7 @@ fn mirror_extras_without_a_common_baseline_remain_manual() {
 fn policy_and_manual_approval_persist_but_imports_cannot_enable_deletion() {
     let (d, mut e, mut t) = fixture(Mode::TwoWay);
     seed(&mut e, &t);
-    enable(&mut e, &mut t, 20, 100);
+    enable(&mut e, &mut t);
     let export = e.export().unwrap();
     drop(e);
     let mut e = Engine::open(&d.path().join("state")).unwrap();
@@ -238,7 +220,7 @@ fn policy_and_manual_approval_persist_but_imports_cannot_enable_deletion() {
 fn scope_changes_require_new_manual_review_and_move_cannot_opt_in() {
     let (_d, mut e, mut t) = fixture(Mode::TwoWay);
     seed(&mut e, &t);
-    enable(&mut e, &mut t, 20, 100);
+    enable(&mut e, &mut t);
     t.scope.exclude.push("*.tmp".into());
     e.save_task(&t).unwrap();
     fs::remove_file(t.a.join("f0.txt")).unwrap();
@@ -251,7 +233,7 @@ fn scope_changes_require_new_manual_review_and_move_cannot_opt_in() {
     assert!(t.b.join("f0.txt").exists());
     let p = e.preview(&t.id).unwrap();
     e.apply(&p.id, true).unwrap();
-    enable(&mut e, &mut t, 20, 100);
+    enable(&mut e, &mut t);
     let (_move_d, mut move_e, mut move_t) = fixture(Mode::Move);
     seed(&mut move_e, &move_t);
     move_t.deletion_policy.enabled = true;
@@ -259,29 +241,30 @@ fn scope_changes_require_new_manual_review_and_move_cannot_opt_in() {
 }
 
 #[test]
-fn directory_deletion_counts_descendants_against_limits() {
+fn nested_directory_removal_has_no_descendant_count_cap() {
     let (_d, mut e, mut t) = fixture(Mode::TwoWay);
     fs::create_dir(t.a.join("nested")).unwrap();
-    for i in 0..4 {
+    for i in 0..30 {
         fs::write(t.a.join(format!("nested/f{i}")), "nested bytes").unwrap();
     }
     let p = e.preview(&t.id).unwrap();
     e.apply(&p.id, true).unwrap();
-    enable(&mut e, &mut t, 3, 100);
+    enable(&mut e, &mut t);
     fs::remove_dir_all(t.a.join("nested")).unwrap();
     queue(&e, &t, &["nested"]);
     let p = e.process_queue(&t.id).unwrap().unwrap();
+    assert_eq!(p.status, "Applied");
     let decision = p.deletion_review.as_ref().unwrap();
-    assert_eq!(decision.entries, 5);
-    assert_eq!(decision.reason, DeletionReason::EntryLimit);
-    assert_eq!(fs::read_dir(t.b.join("nested")).unwrap().count(), 4);
+    assert_eq!(decision.entries, 31);
+    assert_eq!(decision.reason, DeletionReason::Approved);
+    assert!(!t.b.join("nested").exists());
     assert_eq!(
         e.plan_header(&p.id)
             .unwrap()
             .deletion_review
             .unwrap()
             .reason,
-        DeletionReason::EntryLimit
+        DeletionReason::Approved
     );
 }
 
@@ -289,7 +272,7 @@ fn directory_deletion_counts_descendants_against_limits() {
 fn enabled_policy_never_turns_an_unavailable_root_into_deletion_evidence() {
     let (d, mut e, mut t) = fixture(Mode::TwoWay);
     seed(&mut e, &t);
-    enable(&mut e, &mut t, 20, 100);
+    enable(&mut e, &mut t);
     let parked = d.path().join("A-offline");
     fs::rename(&t.a, &parked).unwrap();
     e.queue_paths(&t.id, &[], true).unwrap();
@@ -308,7 +291,7 @@ fn reappearing_deleted_side_during_backup_preserves_both_files() {
     fs::write(t.a.join("large.bin"), &bytes).unwrap();
     let p = e.preview(&t.id).unwrap();
     e.apply(&p.id, false).unwrap();
-    enable(&mut e, &mut t, 20, 100);
+    enable(&mut e, &mut t);
     t.bandwidth_kib = 512;
     e.save_task(&t).unwrap();
     fs::remove_file(t.a.join("large.bin")).unwrap();
@@ -345,4 +328,50 @@ fn reappearing_deleted_side_during_backup_preserves_both_files() {
         b"new concurrent edit"
     );
     assert_eq!(fs::read(t.b.join("large.bin")).unwrap(), bytes);
+}
+
+#[test]
+fn legacy_limit_values_are_ignored_and_not_exported_again() {
+    let (_d, mut e, t) = fixture(Mode::TwoWay);
+    seed(&mut e, &t);
+    let mut json = serde_json::to_value(&t).unwrap();
+    json["deletion_policy"] = serde_json::json!({"enabled":true,"max_entries":0,"max_percent":0});
+    let t: Task = serde_json::from_value(json).unwrap();
+    e.save_task(&t).unwrap();
+    let saved = serde_json::to_value(&e.tasks().unwrap()[0]).unwrap();
+    assert_eq!(
+        saved["deletion_policy"],
+        serde_json::json!({"enabled":true})
+    );
+    fs::remove_file(t.a.join("f0.txt")).unwrap();
+    queue(&e, &t, &["f0.txt"]);
+    assert_eq!(e.process_queue(&t.id).unwrap().unwrap().status, "Applied");
+}
+
+#[test]
+fn bulk_external_moves_propagate_new_paths_and_remove_old_paths_without_caps() {
+    let (_d, mut e, mut t) = fixture(Mode::TwoWay);
+    for i in 0..30 {
+        fs::write(t.a.join(format!("old-{i}")), format!("unique {i}")).unwrap();
+    }
+    let p = e.preview(&t.id).unwrap();
+    e.apply(&p.id, false).unwrap();
+    enable(&mut e, &mut t);
+    let mut paths = vec![];
+    for i in 0..30 {
+        let old = format!("old-{i}");
+        let new = format!("new-{i}");
+        fs::rename(t.a.join(&old), t.a.join(&new)).unwrap();
+        paths.extend([old, new]);
+    }
+    e.queue_paths(&t.id, &paths, false).unwrap();
+    let p = e.process_queue(&t.id).unwrap().unwrap();
+    assert_eq!(p.status, "Applied");
+    for i in 0..30 {
+        assert!(!t.b.join(format!("old-{i}")).exists());
+        assert_eq!(
+            fs::read_to_string(t.b.join(format!("new-{i}"))).unwrap(),
+            format!("unique {i}")
+        );
+    }
 }

@@ -58,8 +58,6 @@ export interface Task {
   login: boolean;
   deletion_policy: {
     enabled: boolean;
-    max_entries: number;
-    max_percent: number;
   };
 }
 export interface Entry {
@@ -118,8 +116,6 @@ export interface Plan {
       | "MoveRequiresReview";
     entries: number;
     baseline_entries: number;
-    max_entries: number;
-    max_percent: number;
     baseline_run: string | null;
   } | null;
 }
@@ -217,8 +213,6 @@ export function newTask(mode: Mode = "TwoWay"): Task {
     login: false,
     deletion_policy: {
       enabled: mode === "TwoWay" || mode === "Mirror",
-      max_entries: 20,
-      max_percent: 10,
     },
   };
 }

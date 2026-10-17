@@ -463,8 +463,8 @@ export default function App() {
           "Automatische Entfernung aktivieren?",
         ),
         body: tr(
-          `Future automatic runs may remove up to ${snapshot.deletion_policy.max_entries} entries and ${snapshot.deletion_policy.max_percent}% of the indexed common baseline per run, only when deletion is proven. A: ${snapshot.a}. B: ${snapshot.b}. ${snapshot.history_enabled !== false ? "Old file contents are retained according to the version policy." : "File versioning is OFF: removed contents normally cannot be restored."} Until a full manual Preview and Apply completes successfully for this configuration, automatic deletions remain blocked. Automatic runs do not unlock them. Unproven removals and Move require review.`,
-          `Künftige automatische Läufe dürfen je Lauf bis zu ${snapshot.deletion_policy.max_entries} Einträge und ${snapshot.deletion_policy.max_percent}% des indizierten gemeinsamen Ausgangszustands entfernen, sofern die Entfernung nachgewiesen ist. A: ${snapshot.a}. B: ${snapshot.b}. ${snapshot.history_enabled !== false ? "Bisherige Inhalte werden gemäß Versionsregel aufbewahrt." : "Dateiversionen sind AUS: Entfernte Inhalte können normalerweise nicht wiederhergestellt werden."} Bis ein vollständiger manueller Vorschau-und-Anwenden-Lauf für diese Konfiguration erfolgreich abgeschlossen ist, bleiben automatische Löschungen gesperrt. Automatische Läufe schalten sie nicht frei. Unbelegte Entfernungen und Verschieben erfordern Prüfung.`,
+          `Future automatic runs may propagate all proven deletions and external moves, without count or percentage limits. A: ${snapshot.a}. B: ${snapshot.b}. ${snapshot.history_enabled !== false ? "Old file contents are retained according to the version policy." : "File versioning is OFF: removed contents normally cannot be restored."} Until a full manual Preview and Apply completes successfully for this configuration, automatic deletions remain blocked. Automatic runs do not unlock them. Unproven removals and Move require review.`,
+          `Künftige automatische Läufe dürfen alle nachgewiesenen Löschungen und externen Verschiebungen ohne Mengen- oder Prozentgrenze übernehmen. A: ${snapshot.a}. B: ${snapshot.b}. ${snapshot.history_enabled !== false ? "Bisherige Inhalte werden gemäß Versionsregel aufbewahrt." : "Dateiversionen sind AUS: Entfernte Inhalte können normalerweise nicht wiederhergestellt werden."} Bis ein vollständiger manueller Vorschau-und-Anwenden-Lauf für diese Konfiguration erfolgreich abgeschlossen ist, bleiben automatische Löschungen gesperrt. Automatische Läufe schalten sie nicht frei. Unbelegte Entfernungen und Verschieben erfordern Prüfung.`,
         ),
         action: saveTask,
       });
@@ -741,32 +741,6 @@ export default function App() {
           aria-busy={busy}
           className={page === "settings" ? "settings-main" : undefined}
         >
-          {error && (
-            <div className="alert error" role="alert">
-              <strong>
-                {tr(
-                  "Action could not complete",
-                  "Aktion konnte nicht abgeschlossen werden",
-                )}
-              </strong>
-              <p>{error}</p>
-              <button onClick={() => setError("")}>
-                {tr("Dismiss", "Schließen")}
-              </button>
-            </div>
-          )}
-          {message && (
-            <div
-              className={
-                message.startsWith("Run cancelled.") || message === "Cancelled"
-                  ? "alert warning"
-                  : "alert success"
-              }
-              role="status"
-            >
-              {messageLabel(message, lang)}
-            </div>
-          )}
           {page === "dashboard" && (
             <>
               <div className="page-heading">
@@ -1514,8 +1488,8 @@ export default function App() {
                 <h2>{tr("Propagate deletions", "Löschungen übernehmen")}</h2>
                 <p>
                   {tr(
-                    "Propagates proven deletions after a successful manual baseline. If you delete an unchanged file on one side, automation can remove its counterpart. Both per-run limits apply; offline folders and conflicts never count as deletion proof.",
-                    "Übernimmt nachgewiesene Löschungen nach einem erfolgreichen manuellen Erstabgleich: Löschst du eine unveränderte Datei auf einer Seite, darf die Automatik ihr Gegenstück entfernen. Beide Grenzen gelten je Lauf. Offline-Ordner und Konflikte sind kein Löschbeweis.",
+                    "Propagates proven deletions after a successful manual baseline. If you delete an unchanged file on one side, automation can remove its counterpart. There is no count or percentage limit. Offline folders and conflicts never count as deletion proof.",
+                    "Übernimmt nachgewiesene Löschungen nach einem erfolgreichen manuellen Erstabgleich: Löschst du eine unveränderte Datei auf einer Seite, darf die Automatik ihr Gegenstück entfernen. Es gibt keine Mengen- oder Prozentgrenze. Offline-Ordner und Konflikte sind kein Löschbeweis.",
                   )}
                 </p>
                 <p>
@@ -1558,60 +1532,18 @@ export default function App() {
                       ? tr("Automatic deletion is off.", "Automatische Löschungen sind ausgeschaltet.")
                       : !deletionReady
                         ? tr(
-                            "Selected, but not active yet. Save the task, create a full manual Preview and apply the reviewed plan successfully. Only then can future runs delete proven removals within the limits below. Automatic runs do not unlock this setting. Changed filters require another manual full reconciliation.",
-                            "Vorgemerkt – noch nicht aktiv. Aufgabe speichern, eine vollständige manuelle Vorschau erstellen und den geprüften Plan erfolgreich anwenden. Erst danach dürfen künftige Läufe nachgewiesene Löschungen innerhalb der Grenzen unten ausführen. Automatische Läufe schalten dies nicht frei. Geänderte Filter erfordern einen erneuten manuellen Vollabgleich.",
+                            "Selected, but not active yet. Save the task, create a full manual Preview and apply the reviewed plan successfully. Only then can future runs propagate all proven deletions and external moves. Automatic runs do not unlock this setting. Changed filters require another manual full reconciliation.",
+                            "Vorgemerkt – noch nicht aktiv. Aufgabe speichern, eine vollständige manuelle Vorschau erstellen und den geprüften Plan erfolgreich anwenden. Erst danach dürfen künftige Läufe alle nachgewiesenen Löschungen und externen Verschiebungen übernehmen. Automatische Läufe schalten dies nicht frei. Geänderte Filter erfordern einen erneuten manuellen Vollabgleich.",
                           )
                         : tr(
-                            "Manual baseline confirmed. After saving, automatic deletion is allowed within the limits below when monitoring or a schedule runs.",
-                            "Manueller Erstabgleich bestätigt. Nach dem Speichern sind automatische Löschungen innerhalb der Grenzen unten erlaubt, wenn Überwachung oder Zeitplan einen Lauf auslösen.",
+                            "Manual baseline confirmed. After saving, all proven deletions and external moves can be propagated when monitoring or a schedule runs.",
+                            "Manueller Erstabgleich bestätigt. Nach dem Speichern werden alle nachgewiesenen Löschungen und externen Verschiebungen übernommen, wenn Überwachung oder Zeitplan einen Lauf auslösen.",
                           )}
                 </p>
-                <div className="form-grid">
-                  <label>
-                    {tr(
-                      "Maximum removed entries per run",
-                      "Maximal entfernte Einträge je Lauf",
-                    )}
-                    <NumberInput
-                      min={1}
-                      max={100000}
-                      disabled={!task.deletion_policy.enabled}
-                      value={task.deletion_policy.max_entries}
-                      onChange={(e) =>
-                        patch({
-                          deletion_policy: {
-                            ...task.deletion_policy,
-                            max_entries: Number(e.target.value),
-                          },
-                        })
-                      }
-                    />
-                  </label>
-                  <label>
-                    {tr(
-                      "Maximum percentage of indexed baseline",
-                      "Maximaler Anteil am indizierten Ausgangszustand",
-                    )}
-                    <NumberInput
-                      min={1}
-                      max={100}
-                      disabled={!task.deletion_policy.enabled}
-                      value={task.deletion_policy.max_percent}
-                      onChange={(e) =>
-                        patch({
-                          deletion_policy: {
-                            ...task.deletion_policy,
-                            max_percent: Number(e.target.value),
-                          },
-                        })
-                      }
-                    />
-                  </label>
-                </div>
                 <small>
                   {tr(
-                    "Unproven deletions, Move and exceeded limits wait for review. File recovery depends on the version setting below. Enabling deletion does not enable monitoring or schedules.",
-                    "Unbelegte Entfernungen, Verschieben und überschrittene Grenzen warten auf Prüfung. Die Wiederherstellung hängt von der Einstellung für Dateiversionen unten ab. Diese Freigabe aktiviert weder Überwachung noch Zeitpläne.",
+                    "Unproven deletions and the Move task mode wait for review. File recovery depends on the version setting below. Enabling deletion does not enable monitoring or schedules.",
+                    "Unbelegte Entfernungen und der Aufgabenmodus Verschieben warten auf Prüfung. Die Wiederherstellung hängt von der Einstellung für Dateiversionen unten ab. Diese Freigabe aktiviert weder Überwachung noch Zeitpläne.",
                   )}
                 </small>
               </section>
@@ -1971,8 +1903,8 @@ export default function App() {
                   </p>
                   <p>
                     {tr(
-                      `${plan.deletion_review.entries} removals / ${plan.deletion_review.baseline_entries} indexed baseline entries. Limits: ${plan.deletion_review.max_entries} entries and ${plan.deletion_review.max_percent}% per run.`,
-                      `${plan.deletion_review.entries} Entfernungen / ${plan.deletion_review.baseline_entries} indizierte Ausgangseinträge. Grenzen: ${plan.deletion_review.max_entries} Einträge und ${plan.deletion_review.max_percent}% je Lauf.`,
+                      `${plan.deletion_review.entries} removals / ${plan.deletion_review.baseline_entries} indexed baseline entries.`,
+                      `${plan.deletion_review.entries} Entfernungen / ${plan.deletion_review.baseline_entries} indizierte Ausgangseinträge.`,
                     )}
                   </p>
                   {plan.deletion_review.baseline_run && (
@@ -2850,6 +2782,35 @@ export default function App() {
           className="run-status"
           aria-label={tr("Synchronization status", "Synchronisationsstatus")}
         >
+          {error && (
+            <div className="alert error" role="alert">
+              <strong>
+                {tr(
+                  "Action could not complete",
+                  "Aktion konnte nicht abgeschlossen werden",
+                )}
+              </strong>
+              <p>{error}</p>
+              <button onClick={() => setError("")}>
+                {tr("Dismiss", "Schließen")}
+              </button>
+            </div>
+          )}
+          {message && !error && (
+            <div
+              className={
+                message.startsWith("Run cancelled.") || message === "Cancelled"
+                  ? "alert warning"
+                  : "alert success"
+              }
+              role="status"
+            >
+              <span>{messageLabel(message, lang)}</span>
+              <button aria-label={tr("Dismiss status", "Statusmeldung schließen")} onClick={() => setMessage("")}>
+                {tr("Dismiss", "Schließen")}
+              </button>
+            </div>
+          )}
           {(progress || (busy && page !== "settings")) && (
             <div className="working" role="status">
               <RefreshCw size={16} className="spin" />
@@ -2936,7 +2897,7 @@ export default function App() {
               </Button>
             </div>
           )}
-          {!progress && !(busy && page !== "settings") && (
+          {!progress && !(busy && page !== "settings") && !error && !message && (
             <span className="run-idle">
               {tr("No active run", "Kein aktiver Lauf")}
             </span>

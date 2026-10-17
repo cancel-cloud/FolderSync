@@ -45,8 +45,26 @@ const { chromium } = require('playwright');
       await vertical.mouse.wheel(0, 400);
       await vertical.waitForTimeout(500);
       assert.ok(await vertical.locator('main').evaluate(e => e.scrollTop) > 0, 'vertical scrolling must work');
+      const geometry = () => vertical.evaluate(() => ({
+        main: document.querySelector('main').getBoundingClientRect().toJSON(),
+        header: document.querySelector('header').getBoundingClientRect().toJSON(),
+        dock: document.querySelector('.run-status').getBoundingClientRect().toJSON(),
+        scrollTop: document.querySelector('main').scrollTop,
+        outerHeight: document.documentElement.scrollHeight,
+      }));
+      const beforeNotices = await geometry();
+      for (const content of [
+        '<div class="alert success" role="status">Run finished. <button>Dismiss</button></div>',
+        '<div class="alert warning" role="status">Run cancelled. <button>Dismiss</button></div>',
+        '<div class="alert error" role="alert"><strong>Destination unavailable</strong><p>' + 'Error details '.repeat(300) + '</p><button>Dismiss</button></div>',
+        '<div class="alert error" role="alert">A task failed</div><div class="working"><div class="run-progress"><strong>Copying another task</strong><progress></progress></div></div>',
+        '<span class="run-idle">No active run</span>',
+      ]) {
+        await vertical.locator('.run-status').evaluate((e, html) => { e.innerHTML = html; }, content);
+        assert.deepEqual(await geometry(), beforeNotices, 'status/error/progress changed page geometry or scroll offset');
+      }
       await vertical.close();
-      console.log(`PASS ${width}px: no page pan; vertical and nested table scrolling work`);
+      console.log(`PASS ${width}px: no page pan or notice-induced shift; vertical and nested table scrolling work`);
       await page.close();
     }
   } finally {

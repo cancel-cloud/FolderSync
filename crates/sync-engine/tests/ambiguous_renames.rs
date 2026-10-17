@@ -129,11 +129,7 @@ fn native_opposing_rename_notifications_reach_incremental_conflict_planning() {
 #[test]
 fn coalesced_incremental_events_hold_ambiguous_creates_and_removals_even_with_delete_approval() {
     let (_d, mut e, mut t) = pair();
-    t.deletion_policy = DeletionPolicy {
-        enabled: true,
-        max_entries: 20,
-        max_percent: 100,
-    };
+    t.deletion_policy = DeletionPolicy { enabled: true };
     e.save_task(&t).unwrap();
     let p = e.preview(&t.id).unwrap();
     e.apply(&p.id, true).unwrap();

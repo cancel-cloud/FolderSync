@@ -91,8 +91,8 @@ export function reasonLabel(reason: string, language: string) {
 export function deletionReasonLabel(reason: string, language: string) {
   const labels: Record<string, [string, string]> = {
     Approved: [
-      "Automatic deletion approved against the common baseline and configured limits.",
-      "Automatische Entfernung anhand des gemeinsamen Ausgangszustands und der eingestellten Grenzen freigegeben.",
+      "Automatic deletion approved against the common baseline.",
+      "Automatische Entfernung anhand des gemeinsamen Ausgangszustands freigegeben.",
     ],
     Disabled: [
       "Automatic deletion is off. Review this run before applying.",
@@ -107,12 +107,12 @@ export function deletionReasonLabel(reason: string, language: string) {
       "Für einige Entfernungen fehlt ein unveränderter gemeinsamer Ausgangszustand. Manuelle Prüfung erforderlich.",
     ],
     EntryLimit: [
-      "The entry limit was exceeded. Review this run before applying.",
-      "Die Eintragsgrenze wurde überschritten. Prüfen Sie diesen Lauf vor dem Anwenden.",
+      "Historical run stopped by a former entry limit. Create a fresh preview.",
+      "Historischer Lauf durch eine frühere Eintragsgrenze angehalten. Neue Vorschau erstellen.",
     ],
     PercentLimit: [
-      "The percentage limit was exceeded. Review this run before applying.",
-      "Die Prozentgrenze wurde überschritten. Prüfen Sie diesen Lauf vor dem Anwenden.",
+      "Historical run stopped by a former percentage limit. Create a fresh preview.",
+      "Historischer Lauf durch eine frühere Prozentgrenze angehalten. Neue Vorschau erstellen.",
     ],
     MoveRequiresReview: [
       "Move source removals always require manual review.",

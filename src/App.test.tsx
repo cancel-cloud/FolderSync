@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
 import packageInfo from "../package.json";
@@ -1395,7 +1395,7 @@ test("numeric settings can be cleared and replaced without inserting zero", asyn
   render(<App />);
   await user.click(await screen.findByRole("button", { name: "Configure" }));
   const inputs = screen.getAllByRole("spinbutton") as HTMLInputElement[];
-  expect(inputs.length).toBe(8);
+  expect(inputs.length).toBe(6);
   for (const input of inputs) {
     await user.clear(input);
     expect(input.value).toBe("");
@@ -1655,4 +1655,39 @@ test("existing tasks without a manual baseline can select deletion without claim
 test("new deletion defaults apply only to two-way and mirror tasks", () => {
   for (const mode of ["TwoWay", "Mirror"] as const) expect(newTask(mode).deletion_policy.enabled).toBe(true);
   for (const mode of ["Copy", "Move"] as const) expect(newTask(mode).deletion_policy.enabled).toBe(false);
+});
+
+
+test("deletion settings have no entry or percentage limit controls", async () => {
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks" || command === "statuses") return [];
+    return null;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "New task" }));
+  expect(screen.queryByRole("spinbutton", { name: "Maximum removed entries per run" })).toBeNull();
+  expect(screen.queryByRole("spinbutton", { name: "Maximum percentage of indexed baseline" })).toBeNull();
+  await user.click(screen.getByRole("button", { name: "Save task" }));
+  const dialog = await screen.findByRole("dialog", { name: "Enable automatic deletion?" });
+  expect(dialog.textContent).toContain("without count or percentage limits");
+});
+
+test("completion, cancellation and errors stay in the bottom status region", async () => {
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks" || command === "statuses") return [];
+    return null;
+  });
+  render(<App />);
+  await screen.findByRole("button", { name: "New task" });
+  await waitFor(() => expect(api.listeners.has("run-finished")).toBe(true));
+  const dock = screen.getByRole("region", { name: "Synchronization status" });
+  for (const status of ["Applied", "Cancelled"]) {
+    act(() => api.listeners.get("run-finished")?.({ payload: { status } }));
+    expect(within(dock).getByRole("status").textContent).toBeTruthy();
+    expect(within(screen.getByRole("main")).queryByRole("status")).toBeNull();
+  }
+  act(() => api.listeners.get("background-error")?.({ payload: "Test destination unavailable" }));
+  expect(within(dock).getByRole("alert").textContent).toContain("Test destination unavailable");
+  expect(within(screen.getByRole("main")).queryByRole("alert")).toBeNull();
 });

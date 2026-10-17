@@ -914,14 +914,7 @@ header {
 .settings-main {
   max-width: 1150px;
 }
-.settings-main > .alert {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  max-width: min(480px, 80vw);
-  z-index: 15;
-  margin: 0;
-}
+
 .settings-tabs {
   display: flex;
   gap: 6px;
@@ -1087,7 +1080,7 @@ header {
   overscroll-behavior-x: none;
 }
 .run-status .working {
-  min-height: 100%;
+  min-height: 0;
   margin: 0;
 }
 .run-status .working > svg,
@@ -1162,4 +1155,34 @@ nav .update-indicator:hover {
   background: #f5f7fa;
   max-height: 360px;
   overflow-y: auto;
+}
+
+/* Feedback stays inside the fixed dock; it never changes the page's geometry. */
+.run-status {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.run-status .alert,
+.run-status .working {
+  flex: 0 0 auto;
+  margin: 0;
+}
+.run-status .alert {
+  padding: 10px 12px;
+  overflow-wrap: anywhere;
+}
+.run-status .alert.success,
+.run-status .alert.warning {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.run-status .alert button {
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  text-decoration: underline;
+  font-size: 11px;
 }

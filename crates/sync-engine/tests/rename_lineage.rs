@@ -338,11 +338,7 @@ fn restoring_the_old_name_allows_later_unrelated_copies_with_the_historical_cont
 #[test]
 fn successive_unique_automatic_renames_advance_the_common_identity_checkpoint() {
     let (_d, mut e, mut t) = fixture();
-    t.deletion_policy = DeletionPolicy {
-        enabled: true,
-        max_entries: 20,
-        max_percent: 100,
-    };
+    t.deletion_policy = DeletionPolicy { enabled: true };
     e.save_task(&t).unwrap();
     for (from, to) in [("old.txt", "middle.txt"), ("middle.txt", "final.txt")] {
         fs::rename(t.a.join(from), t.a.join(to)).unwrap();
