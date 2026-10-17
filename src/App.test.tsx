@@ -7,6 +7,13 @@ import packageInfo from "../package.json";
 import { newTask } from "./types";
 import type { Plan, Operation } from "./types";
 import { summarize, directions } from "./review";
+// Existing stored tasks retain their explicit deletion preference.
+function existingTask() {
+  const task = newTask();
+  task.deletion_policy.enabled = false;
+  return task;
+}
+
 type FixturePlan = Omit<Plan, "summary"> & {
   operations: Operation[];
   root_a?: string;
@@ -139,7 +146,7 @@ test("quit-on-close immediately requests safe quit when there is no draft", asyn
 });
 
 test("quit-on-close asks before discarding an unsaved task draft", async () => {
-  const task = { ...newTask(), name: "Saved pair", a: "A", b: "B" };
+  const task = { ...existingTask(), name: "Saved pair", a: "A", b: "B" };
   let quit = false;
   api.invoke.mockImplementation(async (command: string) => {
     if (command === "tasks") return [task];
@@ -237,7 +244,7 @@ test("close behavior persists and failed preference saves do not change the sele
 });
 
 test("required conflict decisions block Apply until Ignore and leave attention after confirmed Apply", async () => {
-  const task = Object.assign(newTask(), {
+  const task = Object.assign(existingTask(), {
     name: "Ignore acceptance",
     a: "A",
     b: "B",
@@ -342,7 +349,7 @@ test("required conflict decisions block Apply until Ignore and leave attention a
 });
 
 test("comparison and conflict policies save and reload through the actual editor", async () => {
-  let task = newTask();
+  let task = existingTask();
   task = { ...task, name: "Policy acceptance", a: "A", b: "B" };
   api.invoke.mockImplementation(
     async (command: string, args?: { task: typeof task }) => {
@@ -396,7 +403,7 @@ test("comparison and conflict policies save and reload through the actual editor
 });
 
 test("editable task identifiers save without replacing internal task identity", async () => {
-  let task = { ...newTask(), name: "Engineering pair", a: "A", b: "B" };
+  let task = { ...existingTask(), name: "Engineering pair", a: "A", b: "B" };
   const internalId = task.id;
   api.invoke.mockImplementation(
     async (command: string, args?: { task: typeof task }) => {
@@ -434,7 +441,7 @@ test("editable task identifiers save without replacing internal task identity", 
 
 test("deleted-task recovery stays separate from synchronization and restore requires confirmation", async () => {
   const task = {
-    ...newTask(),
+    ...existingTask(),
     name: "Deleted pair",
     a: "C:/owned/A",
     b: "C:/owned/B",
@@ -507,7 +514,7 @@ test("deleted-task recovery stays separate from synchronization and restore requ
   expect(screen.queryByRole("button", { name: "Fresh preview" })).toBeNull();
 });
 test("enabling automatic deletion requires a separate policy confirmation before saving", async () => {
-  let saved = { ...newTask(), name: "Approved baseline", a: "A", b: "B" };
+  let saved = { ...existingTask(), name: "Approved baseline", a: "A", b: "B" };
   api.invoke.mockImplementation(
     async (command: string, args?: { task: typeof saved }) => {
       if (command === "tasks") return [saved];
@@ -543,8 +550,8 @@ test("enabling automatic deletion requires a separate policy confirmation before
 });
 test("group filtering clears hidden selections and bulk reassignment refreshes collapsible groups", async () => {
   let tasks = [
-    { ...newTask(), name: "Mechanical", group: "Engineering", a: "A", b: "B" },
-    { ...newTask(), name: "Archive", group: "Archive", a: "C", b: "D" },
+    { ...existingTask(), name: "Mechanical", group: "Engineering", a: "A", b: "B" },
+    { ...existingTask(), name: "Archive", group: "Archive", a: "C", b: "D" },
   ];
   api.invoke.mockImplementation(
     async (command: string, args?: { ids: string[]; group: string }) => {
@@ -602,7 +609,7 @@ test("group filtering clears hidden selections and bulk reassignment refreshes c
 });
 test("saving a selected task into another group clears its hidden bulk selection", async () => {
   let task = {
-    ...newTask(),
+    ...existingTask(),
     name: "Move group",
     group: "Before",
     a: "A",
@@ -766,11 +773,11 @@ test("nested conflict choice only revises preview; Apply requires its separate c
 
 test("saved German preference localizes dashboard, conflict review and metadata", async () => {
   const task = {
-    ...newTask(),
+    ...existingTask(),
     name: "Deutsches Prüfpaar",
     a: "C:/fixture/A",
     b: "C:/fixture/B",
-    schedule: { ...newTask().schedule, kind: "weekly" },
+    schedule: { ...existingTask().schedule, kind: "weekly" },
   };
   const entry = {
     path: "f",
@@ -850,7 +857,7 @@ test("saved German preference localizes dashboard, conflict review and metadata"
 });
 
 test("review requests bounded pages and resets paging when filters change", async () => {
-  const task = { ...newTask(), name: "Large review", a: "A", b: "B" };
+  const task = { ...existingTask(), name: "Large review", a: "A", b: "B" };
   const plan: Plan = {
     id: "large",
     task,
@@ -939,7 +946,7 @@ test("review requests bounded pages and resets paging when filters change", asyn
 test.each(["Failed: destination locked", "Cancelled"])(
   "terminal Apply result %s updates the dashboard and requires a fresh preview",
   async (status) => {
-    const task = { ...newTask(), name: "Failed copy", a: "A", b: "B" };
+    const task = { ...existingTask(), name: "Failed copy", a: "A", b: "B" };
     let failed = false;
     const plan: Plan = {
       id: "failed-run",
@@ -1070,7 +1077,7 @@ test("latest progress is visible during background work and Cancel reaches the n
 });
 
 test("cancelled discovery refreshes persisted status and shows a localized cancellation message", async () => {
-  const task = { ...newTask(), name: "Cancelled discovery", a: "A", b: "B" };
+  const task = { ...existingTask(), name: "Cancelled discovery", a: "A", b: "B" };
   let cancelled = false;
   const plan: Plan = {
     id: "cancelled-discovery",
@@ -1181,7 +1188,7 @@ test("settings exposes version information separately from local data", async ()
 });
 
 test("tile and list views retain selection and bulk delete requires its own confirmation", async () => {
-  const task = { ...newTask(), name: "Owned pair", a: "A", b: "B" };
+  const task = { ...existingTask(), name: "Owned pair", a: "A", b: "B" };
   let tasks = [task];
   api.invoke.mockImplementation(async (command: string) => {
     if (command === "tasks") return tasks;
@@ -1224,7 +1231,7 @@ test("tile and list views retain selection and bulk delete requires its own conf
 });
 
 test("filter examples are placeholders and local help preserves an unsaved draft", async () => {
-  const task = { ...newTask(), name: "Draft pair", a: "A", b: "B" };
+  const task = { ...existingTask(), name: "Draft pair", a: "A", b: "B" };
   api.invoke.mockImplementation(async (command: string) => {
     if (command === "tasks") return [task];
     if (command === "statuses") return [];
@@ -1291,7 +1298,7 @@ test("test-notification feedback stays in Settings and storage can be opened", a
 });
 
 test("German deletion label uses intact umlauts", async () => {
-  const task = { ...newTask(), name: "Owned", a: "A", b: "B" };
+  const task = { ...existingTask(), name: "Owned", a: "A", b: "B" };
   api.invoke.mockImplementation(
     async (command: string, args?: { key: string }) => {
       if (command === "tasks") return [task];
@@ -1345,7 +1352,7 @@ test("unsaved task shows a draft ID hint and versioning can be disabled before s
 });
 
 test("bulk deletion failure is visible and preserves the selected task", async () => {
-  const task = { ...newTask(), name: "Recoverable pair", a: "A", b: "B" };
+  const task = { ...existingTask(), name: "Recoverable pair", a: "A", b: "B" };
   api.invoke.mockImplementation(async (command: string) => {
     if (command === "tasks") return [task];
     if (command === "statuses") return [];
@@ -1373,7 +1380,7 @@ test("bulk deletion failure is visible and preserves the selected task", async (
 });
 
 test("numeric settings can be cleared and replaced without inserting zero", async () => {
-  let task = { ...newTask(), name: "Numeric editing", a: "A", b: "B" };
+  let task = { ...existingTask(), name: "Numeric editing", a: "A", b: "B" };
   task.deletion_policy.enabled = true;
   task.schedule.kind = "periodic";
   api.invoke.mockImplementation(
@@ -1594,4 +1601,58 @@ test("update check errors stay in Version and never create an update indicator",
   expect(
     api.invoke.mock.calls.some(([command]) => command === "install_update"),
   ).toBe(false);
+});
+
+
+test("new supported tasks select deletion by default and explain pending manual approval", async () => {
+  api.invoke.mockImplementation(async (command: string) => {
+    if (command === "tasks" || command === "statuses") return [];
+    return null;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "New task" }));
+  const checkbox = screen.getByRole("checkbox", { name: "Propagate proven deletions automatically" }) as HTMLInputElement;
+  expect(checkbox.checked).toBe(true);
+  expect(checkbox.disabled).toBe(false);
+  expect(screen.getByText(/Selected, but not active yet/)).toBeTruthy();
+  await user.click(checkbox);
+  expect(checkbox.checked).toBe(false);
+  expect(screen.getByText(/Automatic deletion is off/)).toBeTruthy();
+  await user.click(checkbox);
+  await user.click(screen.getByRole("button", { name: "Save task" }));
+  const dialog = await screen.findByRole("dialog", { name: "Enable automatic deletion?" });
+  expect(dialog.textContent).toContain("Until a full manual Preview and Apply");
+  expect(api.invoke.mock.calls.some(([command]) => command === "save_task")).toBe(false);
+  await user.click(screen.getByRole("button", { name: "Confirm" }));
+  await waitFor(() => expect(api.invoke.mock.calls.some(([command, args]) =>
+    command === "save_task" && args.task.deletion_policy.enabled === true)).toBe(true));
+});
+
+test("existing tasks without a manual baseline can select deletion without claiming it is active", async () => {
+  let saved = { ...existingTask(), name: "Pending baseline", a: "A", b: "B" };
+  api.invoke.mockImplementation(async (command: string, args?: { task: typeof saved }) => {
+    if (command === "tasks") return [saved];
+    if (command === "statuses") return [];
+    if (command === "save_task" && args) saved = args.task;
+    return null;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "Configure" }));
+  const checkbox = screen.getByRole("checkbox", { name: "Propagate proven deletions automatically" }) as HTMLInputElement;
+  expect(checkbox.disabled).toBe(false);
+  await user.click(checkbox);
+  expect(screen.getByText(/Selected, but not active yet/)).toBeTruthy();
+  await user.click(screen.getByRole("button", { name: "Save task" }));
+  const dialog = await screen.findByRole("dialog", { name: "Enable automatic deletion?" });
+  expect(dialog.textContent).toContain("Until a full manual Preview and Apply");
+  expect(saved.deletion_policy.enabled).toBe(false);
+  await user.click(screen.getByRole("button", { name: "Confirm" }));
+  await waitFor(() => expect(saved.deletion_policy.enabled).toBe(true));
+});
+
+test("new deletion defaults apply only to two-way and mirror tasks", () => {
+  for (const mode of ["TwoWay", "Mirror"] as const) expect(newTask(mode).deletion_policy.enabled).toBe(true);
+  for (const mode of ["Copy", "Move"] as const) expect(newTask(mode).deletion_policy.enabled).toBe(false);
 });

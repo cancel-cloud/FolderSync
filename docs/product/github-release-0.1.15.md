@@ -1,0 +1,7 @@
+Make deletion settings usable before the first manual reconciliation. New two-way and mirror tasks now select automatic deletion by default. Existing task preferences remain unchanged; Copy and Move do not enable this option.
+
+The setting now explains whether deletion is off, selected but pending, or authorized by a manual baseline. A selected policy can be saved immediately, with a separate confirmation. Automatic deletion remains blocked until a full manual Preview and Apply succeeds for the same folders, mode and filters. Automatic runs cannot grant this approval. Changing filters requires a new manual reconciliation. Entry/percentage limits, conflict handling, root-identity validation and unavailable-folder protections remain enforced. Imported and duplicated tasks retain automatic deletion disabled.
+
+Validation: the complete verification script passed, including 179 workspace Rust tests, 8 patched notify tests, 45 frontend tests, formatting, Clippy, TypeScript, ESLint and a frontend production build. Tests cover pending policy persistence across restart, rejecting deletion before manual approval, unlocking after manual reconciliation and invalidating approval after filter changes.
+
+Windows x64, current-user installation. Update through Settings > Version > Check for updates > Install now. Updater signatures authenticate the package; the Windows executable and installer remain Authenticode unsigned, with existing antivirus limitations unresolved.

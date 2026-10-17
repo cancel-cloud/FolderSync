@@ -186,7 +186,7 @@ impl Engine {
         syncfs::Matcher::new(&t.scope)?;
         crate::scheduler::next_due(&t.schedule, chrono::Local::now())?;
         let (a, b) = validate_roots(t, self.storage())?;
-        self.validate_deletion_policy(t, &a, &b)?;
+        self.validate_deletion_policy(t)?;
         if let Ok(old) = self.index.task(&t.id) {
             if old.schedule != t.schedule {
                 self.index.db.execute(

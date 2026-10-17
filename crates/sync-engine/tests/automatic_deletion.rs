@@ -60,19 +60,38 @@ fn native_path(w: &WatchService, path: &str) {
 fn automatic_baselines_do_not_substitute_for_explicit_manual_approval() {
     let (_d, mut e, mut t) = fixture(Mode::TwoWay);
     t.deletion_policy.enabled = true;
-    assert!(e.save_task(&t).is_err());
-    t.deletion_policy.enabled = false;
+    t.deletion_policy.max_percent = 100;
+    e.save_task(&t).unwrap();
     fs::write(t.a.join("auto.txt"), "automatic baseline").unwrap();
     e.queue_paths(&t.id, &[], true).unwrap();
-    e.process_queue(&t.id).unwrap();
-    t.deletion_policy.enabled = true;
+    assert_eq!(e.process_queue(&t.id).unwrap().unwrap().status, "Applied");
+    fs::remove_file(t.a.join("auto.txt")).unwrap();
+    queue(&e, &t, &["auto.txt"]);
+    let blocked = e.process_queue(&t.id).unwrap().unwrap();
+    assert_eq!(blocked.status, "Review required");
+    assert_eq!(
+        blocked.deletion_review.unwrap().reason,
+        DeletionReason::BaselineApprovalRequired
+    );
     assert!(
-        e.save_task(&t).is_err(),
+        t.b.join("auto.txt").exists(),
         "An unattended scan is not manual approval"
     );
+    drop(e);
+    let mut e = Engine::open(&_d.path().join("state")).unwrap();
+    assert!(e.tasks().unwrap()[0].deletion_policy.enabled);
+    queue(&e, &t, &["auto.txt"]);
+    assert_eq!(
+        e.process_queue(&t.id).unwrap().unwrap().status,
+        "Review required"
+    );
+    fs::write(t.a.join("auto.txt"), "automatic baseline").unwrap();
     let p = e.preview(&t.id).unwrap();
     e.apply(&p.id, false).unwrap();
-    enable(&mut e, &mut t, 20, 100);
+    fs::remove_file(t.a.join("auto.txt")).unwrap();
+    queue(&e, &t, &["auto.txt"]);
+    assert_eq!(e.process_queue(&t.id).unwrap().unwrap().status, "Applied");
+    assert!(!t.b.join("auto.txt").exists());
 }
 #[test]
 fn native_both_side_deletions_are_protected_and_conflicts_still_preserve_edits() {
@@ -221,14 +240,17 @@ fn scope_changes_require_new_manual_review_and_move_cannot_opt_in() {
     seed(&mut e, &t);
     enable(&mut e, &mut t, 20, 100);
     t.scope.exclude.push("*.tmp".into());
-    assert!(e.save_task(&t).is_err());
-    t.deletion_policy.enabled = false;
     e.save_task(&t).unwrap();
-    t.deletion_policy.enabled = true;
-    assert!(e.save_task(&t).is_err());
-    t.deletion_policy.enabled = false;
+    fs::remove_file(t.a.join("f0.txt")).unwrap();
+    queue(&e, &t, &["f0.txt"]);
+    let blocked = e.process_queue(&t.id).unwrap().unwrap();
+    assert_eq!(
+        blocked.deletion_review.unwrap().reason,
+        DeletionReason::BaselineApprovalRequired
+    );
+    assert!(t.b.join("f0.txt").exists());
     let p = e.preview(&t.id).unwrap();
-    e.apply(&p.id, false).unwrap();
+    e.apply(&p.id, true).unwrap();
     enable(&mut e, &mut t, 20, 100);
     let (_move_d, mut move_e, mut move_t) = fixture(Mode::Move);
     seed(&mut move_e, &move_t);

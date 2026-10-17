@@ -47,12 +47,7 @@ impl Engine {
             r.mode == t.mode && r.scope == t.scope && r.root_a == root_a && r.root_b == root_b
         }))
     }
-    pub(crate) fn validate_deletion_policy(
-        &self,
-        t: &Task,
-        root_a: &str,
-        root_b: &str,
-    ) -> Result<()> {
+    pub(crate) fn validate_deletion_policy(&self, t: &Task) -> Result<()> {
         let policy = &t.deletion_policy;
         ensure!(
             (1..=100_000).contains(&policy.max_entries) && (1..=100).contains(&policy.max_percent),
@@ -63,10 +58,8 @@ impl Engine {
                 matches!(t.mode, Mode::TwoWay | Mode::Mirror),
                 "Automatic deletion is available only for two-way and mirror tasks; Move requires review"
             );
-            ensure!(
-                self.approved_baseline(t, root_a, root_b)?.is_some(),
-                "Complete a successful full manual Preview and Apply for these roots, mode and scope before enabling automatic deletion"
-            );
+            // A selected policy may be saved before the first manual baseline.
+            // Execution remains gated by approved_baseline in deletion_review.
         }
         Ok(())
     }

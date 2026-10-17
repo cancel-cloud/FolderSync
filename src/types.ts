@@ -215,6 +215,10 @@ export function newTask(mode: Mode = "TwoWay"): Task {
       month_day: 1,
     },
     login: false,
-    deletion_policy: { enabled: false, max_entries: 20, max_percent: 10 },
+    deletion_policy: {
+      enabled: mode === "TwoWay" || mode === "Mirror",
+      max_entries: 20,
+      max_percent: 10,
+    },
   };
 }

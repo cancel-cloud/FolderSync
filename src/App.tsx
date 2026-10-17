@@ -449,7 +449,8 @@ export default function App() {
       });
     if (
       snapshot.deletion_policy.enabled &&
-      (JSON.stringify(snapshot.deletion_policy) !==
+      (!tasks.some((stored) => stored.id === snapshot.id) ||
+        JSON.stringify(snapshot.deletion_policy) !==
         JSON.stringify(previous?.deletion_policy) ||
         snapshot.monitor !== previous?.monitor ||
         snapshot.login !== previous?.login ||
@@ -462,8 +463,8 @@ export default function App() {
           "Automatische Entfernung aktivieren?",
         ),
         body: tr(
-          `Future automatic runs may remove up to ${snapshot.deletion_policy.max_entries} entries and ${snapshot.deletion_policy.max_percent}% of the indexed common baseline per run, only when deletion is proven. A: ${snapshot.a}. B: ${snapshot.b}. ${snapshot.history_enabled !== false ? "Old file contents are retained according to the version policy." : "File versioning is OFF: removed contents normally cannot be restored."} Unproven removals and Move require review.`,
-          `Künftige automatische Läufe dürfen je Lauf bis zu ${snapshot.deletion_policy.max_entries} Einträge und ${snapshot.deletion_policy.max_percent}% des indizierten gemeinsamen Ausgangszustands entfernen, sofern die Entfernung nachgewiesen ist. A: ${snapshot.a}. B: ${snapshot.b}. ${snapshot.history_enabled !== false ? "Bisherige Inhalte werden gemäß Versionsregel aufbewahrt." : "Dateiversionen sind AUS: Entfernte Inhalte können normalerweise nicht wiederhergestellt werden."} Unbelegte Entfernungen und Verschieben erfordern Prüfung.`,
+          `Future automatic runs may remove up to ${snapshot.deletion_policy.max_entries} entries and ${snapshot.deletion_policy.max_percent}% of the indexed common baseline per run, only when deletion is proven. A: ${snapshot.a}. B: ${snapshot.b}. ${snapshot.history_enabled !== false ? "Old file contents are retained according to the version policy." : "File versioning is OFF: removed contents normally cannot be restored."} Until a full manual Preview and Apply completes successfully for this configuration, automatic deletions remain blocked. Automatic runs do not unlock them. Unproven removals and Move require review.`,
+          `Künftige automatische Läufe dürfen je Lauf bis zu ${snapshot.deletion_policy.max_entries} Einträge und ${snapshot.deletion_policy.max_percent}% des indizierten gemeinsamen Ausgangszustands entfernen, sofern die Entfernung nachgewiesen ist. A: ${snapshot.a}. B: ${snapshot.b}. ${snapshot.history_enabled !== false ? "Bisherige Inhalte werden gemäß Versionsregel aufbewahrt." : "Dateiversionen sind AUS: Entfernte Inhalte können normalerweise nicht wiederhergestellt werden."} Bis ein vollständiger manueller Vorschau-und-Anwenden-Lauf für diese Konfiguration erfolgreich abgeschlossen ist, bleiben automatische Löschungen gesperrt. Automatische Läufe schalten sie nicht frei. Unbelegte Entfernungen und Verschieben erfordern Prüfung.`,
         ),
         action: saveTask,
       });
@@ -1531,9 +1532,8 @@ export default function App() {
                   <input
                     type="checkbox"
                     checked={task.deletion_policy.enabled}
-                    disabled={
-                      busy || (!deletionReady && !task.deletion_policy.enabled)
-                    }
+                    aria-describedby="deletion-policy-status"
+                    disabled={busy || !["TwoWay", "Mirror"].includes(task.mode)}
                     onChange={(e) =>
                       patch({
                         deletion_policy: {
@@ -1548,6 +1548,24 @@ export default function App() {
                     "Löschungen automatisch übernehmen",
                   )}
                 </label>
+                <p id="deletion-policy-status" role="status">
+                  {!["TwoWay", "Mirror"].includes(task.mode)
+                    ? tr(
+                        "Unavailable in this mode: Copy keeps extra destination files; Move always requires manual review.",
+                        "In diesem Modus nicht verfügbar: Kopieren behält zusätzliche Zieldateien; Verschieben erfordert immer eine manuelle Prüfung.",
+                      )
+                    : !task.deletion_policy.enabled
+                      ? tr("Automatic deletion is off.", "Automatische Löschungen sind ausgeschaltet.")
+                      : !deletionReady
+                        ? tr(
+                            "Selected, but not active yet. Save the task, create a full manual Preview and apply the reviewed plan successfully. Only then can future runs delete proven removals within the limits below. Automatic runs do not unlock this setting. Changed filters require another manual full reconciliation.",
+                            "Vorgemerkt – noch nicht aktiv. Aufgabe speichern, eine vollständige manuelle Vorschau erstellen und den geprüften Plan erfolgreich anwenden. Erst danach dürfen künftige Läufe nachgewiesene Löschungen innerhalb der Grenzen unten ausführen. Automatische Läufe schalten dies nicht frei. Geänderte Filter erfordern einen erneuten manuellen Vollabgleich.",
+                          )
+                        : tr(
+                            "Manual baseline confirmed. After saving, automatic deletion is allowed within the limits below when monitoring or a schedule runs.",
+                            "Manueller Erstabgleich bestätigt. Nach dem Speichern sind automatische Löschungen innerhalb der Grenzen unten erlaubt, wenn Überwachung oder Zeitplan einen Lauf auslösen.",
+                          )}
+                </p>
                 <div className="form-grid">
                   <label>
                     {tr(
