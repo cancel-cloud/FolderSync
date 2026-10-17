@@ -1369,3 +1369,60 @@ test("bulk deletion failure is visible and preserves the selected task", async (
     ).checked,
   ).toBe(true);
 });
+
+test("numeric settings can be cleared and replaced without inserting zero", async () => {
+  let task = { ...newTask(), name: "Numeric editing", a: "A", b: "B" };
+  task.deletion_policy.enabled = true;
+  task.schedule.kind = "periodic";
+  api.invoke.mockImplementation(
+    async (command: string, args?: { task: typeof task }) => {
+      if (command === "tasks") return [task];
+      if (command === "statuses") return [];
+      if (command === "save_task" && args) task = args.task;
+      return null;
+    },
+  );
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "Configure" }));
+  const inputs = screen.getAllByRole("spinbutton") as HTMLInputElement[];
+  expect(inputs.length).toBe(8);
+  for (const input of inputs) {
+    await user.clear(input);
+    expect(input.value).toBe("");
+    await user.type(input, "5");
+    expect(input.value).toBe("5");
+  }
+  await user.selectOptions(
+    screen.getByRole("combobox", { name: "Schedule" }),
+    "monthly",
+  );
+  const monthDay = screen.getByRole("spinbutton", {
+    name: "Day of month (missing days skipped)",
+  }) as HTMLInputElement;
+  await user.clear(monthDay);
+  expect(monthDay.value).toBe("");
+  await user.type(monthDay, "15");
+  expect(monthDay.value).toBe("15");
+  const delay = screen.getByRole("spinbutton", {
+    name: "Debounce (seconds)",
+  }) as HTMLInputElement;
+  await user.clear(delay);
+  await user.tab();
+  expect(delay.value).toBe("5");
+  const retries = screen.getByRole("spinbutton", {
+    name: "Retry attempts",
+  }) as HTMLInputElement;
+  await user.clear(retries);
+  await user.type(retries, "0");
+  await user.tab();
+  expect(retries.value).toBe("0");
+  await user.click(
+    screen.getByRole("checkbox", {
+      name: "Propagate proven deletions automatically",
+    }),
+  );
+  await user.click(screen.getByRole("button", { name: "Save task" }));
+  await waitFor(() => expect(task.debounce_secs).toBe(5));
+  expect(task.retries).toBe(0);
+});

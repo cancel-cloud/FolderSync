@@ -20,6 +20,7 @@ import {
 import { PathPair } from "./components/path-pair";
 import { Confirmation } from "./components/ui/confirmation";
 import { Button } from "./components/ui/button";
+import { NumberInput } from "./components/ui/number-input";
 import type {
   Task,
   Mode,
@@ -1368,8 +1369,7 @@ export default function App() {
                 <div className="form-grid">
                   <label>
                     {tr("Debounce (seconds)", "Wartezeit (Sekunden)")}
-                    <input
-                      type="number"
+                    <NumberInput
                       min={1}
                       max={3600}
                       value={task.debounce_secs}
@@ -1383,8 +1383,7 @@ export default function App() {
                       "Bandwidth limit (KiB/s; 0 = unlimited)",
                       "Bandbreite (KiB/s; 0 = unbegrenzt)",
                     )}
-                    <input
-                      type="number"
+                    <NumberInput
                       min={0}
                       value={task.bandwidth_kib}
                       onChange={(e) =>
@@ -1397,8 +1396,7 @@ export default function App() {
                       "Parallel transfers (1–16)",
                       "Parallele Übertragungen (1–16)",
                     )}
-                    <input
-                      type="number"
+                    <NumberInput
                       min={1}
                       max={16}
                       value={task.transfer_concurrency}
@@ -1526,8 +1524,7 @@ export default function App() {
                       "Maximum removed entries per run",
                       "Maximal entfernte Einträge je Lauf",
                     )}
-                    <input
-                      type="number"
+                    <NumberInput
                       min={1}
                       max={100000}
                       disabled={!task.deletion_policy.enabled}
@@ -1547,8 +1544,7 @@ export default function App() {
                       "Maximum percentage of indexed baseline",
                       "Maximaler Anteil am indizierten Ausgangszustand",
                     )}
-                    <input
-                      type="number"
+                    <NumberInput
                       min={1}
                       max={100}
                       disabled={!task.deletion_policy.enabled}
@@ -1611,8 +1607,7 @@ export default function App() {
                   {task.schedule.kind === "periodic" ? (
                     <label>
                       {tr("Interval (minutes)", "Intervall (Minuten)")}
-                      <input
-                        type="number"
+                      <NumberInput
                         min={1}
                         value={task.schedule.interval_minutes}
                         onChange={(e) =>
@@ -1650,8 +1645,7 @@ export default function App() {
                         "Day of month (missing days skipped)",
                         "Monatstag (fehlende Tage überspringen)",
                       )}
-                      <input
-                        type="number"
+                      <NumberInput
                         min={1}
                         max={31}
                         value={task.schedule.month_day}
@@ -1668,8 +1662,7 @@ export default function App() {
                   )}
                   <label>
                     {tr("Retry attempts", "Wiederholungsversuche")}
-                    <input
-                      type="number"
+                    <NumberInput
                       min={0}
                       max={10}
                       value={task.retries}
@@ -1765,8 +1758,7 @@ export default function App() {
                       "Versions per matching file",
                       "Versionen je passender Datei",
                     )}
-                    <input
-                      type="number"
+                    <NumberInput
                       min={1}
                       max={1000}
                       disabled={task.history_enabled === false}
